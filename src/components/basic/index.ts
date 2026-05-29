@@ -1,18 +1,33 @@
 /**
  * 基础组件导出
- * 后续将在此导入各个组件
  */
 
-// export { Button } from './Button';
-// export { Input } from './Input';
-// export { Label } from './Label';
-// export { TextBox } from './TextBox';
-// export { Select } from './Select';
-// export { Checkbox } from './Checkbox';
-// export { Radio } from './Radio';
-// export { Slider } from './Slider';
-// export { DatePicker } from './DatePicker';
-// export { FileUpload } from './FileUpload';
-// export { Image } from './Image';
-// export { Canvas } from './Canvas';
+export {Button} from './Button';
+export type {ButtonProps} from './Button';
 
+export {Input} from './Input';
+export type {InputProps} from './Input';
+
+export {Label} from './Label';
+export type {LabelProps} from './Label';
+
+export {TextBox} from './TextBox';
+export type {TextBoxProps} from './TextBox';
+
+export {Select} from './Select';
+export type {SelectProps, SelectOption} from './Select';
+
+export {Checkbox} from './Checkbox';
+export type {CheckboxProps} from './Checkbox';
+
+export {Radio} from './Radio';
+export type {RadioProps} from './Radio';
+
+export {Slider} from './Slider';
+export type {SliderProps} from './Slider';
+
+export {DatePicker} from './DatePicker';
+export type {DatePickerProps} from './DatePicker';
+
+export {FileUpload} from './FileUpload';
+export type {FileUploadProps} from './FileUpload';
