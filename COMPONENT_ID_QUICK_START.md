@@ -9,14 +9,14 @@ const id = component.getId();
 
 ### 查询组件
 ```typescript
-// 通过ID获取组件实例
-const component = BaseComponent.getComponentById('my-id');
+// 在容器作用域通过ID获取组件实例
+const component = BaseComponent.queryComponentById(container, 'my-id');
 
-// 通过ID获取DOM元素
-const element = BaseComponent.getElementById('my-id');
+// 在容器作用域通过ID获取DOM元素
+const element = BaseComponent.queryElementById(container, 'my-id');
 
-// 获取所有已注册的组件
-const allComponents = BaseComponent.getAllComponents();
+// 在当前组件根元素中查找后代组件
+const child = parentComponent.findComponentById('child-id');
 ```
 
 ## 创建组件
@@ -47,8 +47,8 @@ const form = new Container({
       id: 'submit',
       text: 'Login',
       onClick: () => {
-        const username = (BaseComponent.getComponentById('username') as Input)?.getValue();
-        const password = (BaseComponent.getComponentById('password') as Input)?.getValue();
+        const username = BaseComponent.queryComponentById<Input>(document.body, 'username')?.getValue();
+        const password = BaseComponent.queryComponentById<Input>(document.body, 'password')?.getValue();
         // 提交...
       }
     })
@@ -63,7 +63,7 @@ const incrementBtn = new Button({
   id: 'increment',
   text: '+',
   onClick: () => {
-    const label = BaseComponent.getComponentById('counter') as Label;
+    const label = BaseComponent.queryComponentById<Label>(document.body, 'counter');
     // 更新显示...
   }
 });
@@ -75,16 +75,16 @@ const showPasswordBtn = new Button({
   id: 'show-pwd',
   text: 'Show',
   onClick: () => {
-    const pwdInput = BaseComponent.getComponentById('password') as Input;
+    const pwdInput = BaseComponent.queryComponentById<Input>(document.body, 'password');
     // 切换输入类型...
   }
 });
 ```
 
-### 场景4：批量操作
+### 场景4：按容器批量操作
 ```typescript
-const components = BaseComponent.getAllComponents();
-components.forEach(comp => {
+container.querySelectorAll('[id]').forEach((el) => {
+  const comp = BaseComponent.queryComponentById(container, el.id);
   if (comp instanceof Button) {
     comp.setDisabled(true);
   }
@@ -102,31 +102,31 @@ components.forEach(comp => {
 
 ## 注意事项
 
-⚠️ **ID重复**：相同ID会导致后注册的组件覆盖先前的
+⚠️ **ID重复**：相同容器内重复ID会导致查询结果不确定
 ```typescript
 // ❌ 不推荐
 const btn1 = new Button({ id: 'btn', text: 'Button 1' }).mount(container);
 const btn2 = new Button({ id: 'btn', text: 'Button 2' }).mount(container);
-// 只能通过ID查询到btn2
+// 结果可能命中其中一个，不应依赖顺序
 
 // ✅ 推荐
 const btn1 = new Button({ id: 'btn-1', text: 'Button 1' }).mount(container);
 const btn2 = new Button({ id: 'btn-2', text: 'Button 2' }).mount(container);
 ```
 
-⚠️ **挂载状态**：只有已挂载的组件才会被注册
+⚠️ **挂载状态**：只有已挂载在该容器内的组件才能被查询
 ```typescript
 const button = new Button();
-BaseComponent.getComponentById(button.getId()); // 返回undefined
+BaseComponent.queryComponentById(container, button.getId()); // 返回null
 
 button.mount(container);
-BaseComponent.getComponentById(button.getId()); // 返回button实例
+BaseComponent.queryComponentById(container, button.getId()); // 返回button实例
 ```
 
-⚠️ **卸载清理**：卸载时自动从注册表移除
+⚠️ **卸载清理**：卸载后组件会离开容器作用域
 ```typescript
-button.unmount(); // 自动清理
-button.destroy(); // 也会自动清理
+button.unmount();
+BaseComponent.queryComponentById(container, button.getId()); // 返回null
 ```
 
 ## 完整示例
@@ -154,8 +154,8 @@ const form = new Container({
     new Button({
       text: 'Register',
       onClick: () => {
-        const name = (BaseComponent.getComponentById('name-field') as Input)?.getValue();
-        const email = (BaseComponent.getComponentById('email-field') as Input)?.getValue();
+        const name = BaseComponent.queryComponentById<Input>(document.body, 'name-field')?.getValue();
+        const email = BaseComponent.queryComponentById<Input>(document.body, 'email-field')?.getValue();
         
         if (name && email) {
           console.log('Registering:', { name, email });
@@ -169,10 +169,10 @@ const form = new Container({
 form.mount(document.getElementById('app')!);
 
 // 后续查询和操作
-const nameInput = BaseComponent.getComponentById('name-field') as Input;
+const nameInput = BaseComponent.queryComponentById<Input>(document.body, 'name-field');
 nameInput?.setValue('John Doe');
 
-const emailInput = BaseComponent.getComponentById('email-field');
+const emailInput = BaseComponent.queryComponentById<Input>(document.body, 'email-field');
 emailInput?.focus();
 ```
 

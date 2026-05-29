@@ -46,39 +46,41 @@ button.mount(container);
 const id = button.getId();
 ```
 
-### 方式2：通过ID获取组件实例
+### 方式2：在容器作用域通过ID获取组件实例
 
 ```typescript
 // 挂载组件
 const button = new Button({ text: 'Click' });
 button.mount(container);
 
-// 通过ID获取组件
-const resolvedButton = BaseComponent.getComponentById(button.getId());
+// 在容器作用域通过ID获取组件
+const resolvedButton = BaseComponent.queryComponentById<Button>(container, button.getId());
 if (resolvedButton instanceof Button) {
   resolvedButton.setText('Updated');
 }
 ```
 
-### 方式3：通过ID获取DOM元素
+### 方式3：在容器作用域通过ID获取DOM元素
 
 ```typescript
 const button = new Button({ text: 'Click' });
 button.mount(container);
 
-// 直接获取DOM元素
-const element = BaseComponent.getElementById(button.getId());
+// 在容器作用域获取DOM元素
+const element = BaseComponent.queryElementById(container, button.getId());
 if (element) {
   element.style.backgroundColor = 'blue';
 }
 ```
 
-### 方式4：获取所有已注册的组件
+### 方式4：在组件实例范围内查询
 
 ```typescript
-// 获取所有已挂载的组件
-const allComponents = BaseComponent.getAllComponents();
-console.log(`已注册 ${allComponents.length} 个组件`);
+const form = new Container({ /* ... */ });
+form.mount(appElement);
+
+const nameInput = form.findComponentById<Input>('name-input');
+nameInput?.focus();
 ```
 
 ## 在容器组件中使用
@@ -95,8 +97,8 @@ const container = new Container({
 container.mount(appElement);
 
 // 通过ID查询和修改组件
-const okButton = BaseComponent.getComponentById('btn-ok');
-const nameInput = BaseComponent.getComponentById('name-input');
+const okButton = BaseComponent.queryComponentById<Button>(appElement, 'btn-ok');
+const nameInput = BaseComponent.queryComponentById<Input>(appElement, 'name-input');
 
 // 使用组件方法
 if (okButton instanceof Button) {
@@ -118,17 +120,9 @@ const button = new Button({
     console.log(`Button ${componentId} was clicked`);
     
     // 通过ID获取其他相关组件
-    const relatedComponent = BaseComponent.getComponentById('some-other-id');
+    const relatedComponent = BaseComponent.queryComponentById(appElement, 'some-other-id');
   }
 });
-```
-
-## 清理注册表
-
-当您需要清空所有已注册的组件时（例如在应用卸载时）：
-
-```typescript
-BaseComponent.clearRegistry();
 ```
 
 ## 最佳实践
@@ -148,7 +142,7 @@ BaseComponent.clearRegistry();
          id: 'show-password',
          text: 'Show',
          onClick: () => {
-           const pwdInput = BaseComponent.getComponentById('password');
+           const pwdInput = BaseComponent.queryComponentById<Input>(document.body, 'password');
            if (pwdInput instanceof Input) {
              // 切换密码可见性
            }
@@ -158,11 +152,10 @@ BaseComponent.clearRegistry();
    });
    ```
 
-3. **在组件卸载前清理**
+3. **在组件卸载后按作用域查询**
    ```typescript
-   button.unmount(); // 自动从注册表中移除
-   // 或
-   button.destroy(); // 完全销毁
+   button.unmount();
+   BaseComponent.queryComponentById(document.body, button.getId()); // null
    ```
 
 ## API 参考
@@ -171,17 +164,17 @@ BaseComponent.clearRegistry();
 
 - `getId(): string` - 获取组件ID
 
-### 静态查询方法
+### 查询方法
 
-- `BaseComponent.getComponentById(id: string): BaseComponent | undefined` - 通过ID获取组件
-- `BaseComponent.getElementById(id: string): HTMLElement | null` - 通过ID获取DOM元素
-- `BaseComponent.getAllComponents(): BaseComponent[]` - 获取所有已注册的组件
-- `BaseComponent.clearRegistry(): void` - 清空组件注册表
+- `BaseComponent.queryComponentById(container: ParentNode | null, id: string): BaseComponent | null` - 在容器作用域获取组件
+- `BaseComponent.queryElementById(container: ParentNode | null, id: string): HTMLElement | null` - 在容器作用域获取元素
+- `findComponentById(id: string): BaseComponent | null` - 在当前组件根元素范围查询组件
+- `findElementById(id: string): HTMLElement | null` - 在当前组件根元素范围查询元素
 
 ## 注意事项
 
 1. 自动生成的IDs会在每次创建新的同类型组件时生成，因此可能不稳定
 2. 对于需要持久化查询的组件，建议显式指定ID
-3. 组件卸载时会自动从注册表中移除
-4. 重复的ID会导致后注册的组件覆盖先前的
+3. 组件卸载后将不在对应容器作用域内可查
+4. 重复的ID在同一作用域内会导致匹配歧义
 

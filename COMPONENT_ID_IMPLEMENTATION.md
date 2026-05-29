@@ -17,29 +17,24 @@
 
 ### 3. 组件查询API
 - `component.getId()` - 获取组件的ID
-- `BaseComponent.getComponentById(id)` - 通过ID获取组件实例
-- `BaseComponent.getElementById(id)` - 通过ID获取DOM元素
-- `BaseComponent.getAllComponents()` - 获取所有已注册的组件
-- `BaseComponent.clearRegistry()` - 清空组件注册表
+- `BaseComponent.queryComponentById(container, id)` - 在容器作用域通过ID获取组件实例
+- `BaseComponent.queryElementById(container, id)` - 在容器作用域通过ID获取DOM元素
+- `component.findComponentById(id)` - 在当前组件根元素范围查询组件
+- `component.findElementById(id)` - 在当前组件根元素范围查询元素
 
 ## 实现细节
 
 ### 修改的文件
 
 #### 1. `src/core/BaseComponent.ts`
-- 添加了 `private static componentRegistry` 静态属性来存储已挂载的组件
 - 添加了 `initializeComponentId()` 私有方法自动生成ID（如果未提供）
 - 添加了 `getId()` 公共方法来获取组件ID
-- 在 `mount()` 方法中注册组件到全局注册表
-- 在 `unmount()` 方法中从注册表中移除组件
-- 在 `destroy()` 方法中清理注册表
-- 添加了四个静态查询方法：
-  - `registerComponent()` - 私有，用于注册组件
-  - `unregisterComponent()` - 私有，用于移除组件
-  - `getComponentById()` - 公开，通过ID查询组件
-  - `getElementById()` - 公开，通过ID查询DOM元素
-  - `getAllComponents()` - 公开，获取所有组件
-  - `clearRegistry()` - 公开，清空注册表
+- 在 `mount()/rerender()/unmount()` 中同步绑定和解绑元素元数据
+- 添加了作用域查询方法：
+  - `queryComponentById()` - 静态，按容器范围查找组件
+  - `queryElementById()` - 静态，按容器范围查找元素
+  - `findComponentById()` - 实例，在当前组件作用域查找组件
+  - `findElementById()` - 实例，在当前组件作用域查找元素
 
 ### 自动生成ID的工作流程
 
@@ -57,10 +52,10 @@
    - 如果 `props.id` 不存在，使用组件类名和随机字符串生成ID
 
 3. 组件挂载时（`mount()` 方法中）：
-   - 调用 `BaseComponent.registerComponent(this)` 将组件注册到全局注册表
+   - 将组件实例绑定到根元素元数据，并同步元素ID
 
-4. 组件卸载时（`unmount()` 或 `destroy()` 方法中）：
-   - 调用 `BaseComponent.unregisterComponent(this)` 从注册表中移除组件
+4. 查询时：
+   - 通过 `container` + `id` 在局部作用域中定位元素并恢复组件实例引用
 
 ## 使用示例
 
@@ -83,14 +78,14 @@ console.log(customButton.getId()); // submit-btn
 const button = new Button({ id: 'my-btn', text: 'Click' });
 button.mount(container);
 
-// 通过ID获取组件实例
-const found = BaseComponent.getComponentById('my-btn');
+// 在容器作用域通过ID获取组件实例
+const found = BaseComponent.queryComponentById<Button>(container, 'my-btn');
 if (found instanceof Button) {
   found.setText('Updated');
 }
 
-// 通过ID获取DOM元素
-const dom = BaseComponent.getElementById('my-btn');
+// 在容器作用域通过ID获取DOM元素
+const dom = BaseComponent.queryElementById(container, 'my-btn');
 dom?.style.backgroundColor = 'blue';
 ```
 
@@ -104,8 +99,8 @@ const form = new Container({
       id: 'submit',
       text: 'Submit',
       onClick: () => {
-        const name = BaseComponent.getComponentById('name') as Input;
-        const email = BaseComponent.getComponentById('email') as Input;
+        const name = BaseComponent.queryComponentById<Input>(document.body, 'name');
+        const email = BaseComponent.queryComponentById<Input>(document.body, 'email');
         console.log({ name: name.getValue(), email: email.getValue() });
       }
     })
@@ -122,16 +117,16 @@ form.mount(document.body);
 测试用例包括：
 - ✅ 自动ID生成
 - ✅ 自定义ID使用
-- ✅ 挂载时的组件注册
-- ✅ 卸载时的组件移除
-- ✅ 销毁时的组件移除
+- ✅ 挂载后的作用域查询
+- ✅ 卸载后的不可查询
+- ✅ 销毁后的不可查询
 - ✅ 通过ID查询DOM元素
 - ✅ 非存在ID的查询
 - ✅ 多个组件的追踪
 - ✅ ID更新场景
 - ✅ 容器组件中的ID使用
 - ✅ 不同类型组件的唯一ID
-- ✅ 注册表清空
+- ✅ 多挂载点作用域隔离
 
 所有13个测试都通过。
 
@@ -144,9 +139,9 @@ form.mount(document.body);
 
 ## 性能考虑
 
-- 使用 `Map` 数据结构确保O(1)的查询性能
-- 注册/卸载操作都是O(1)的
-- 不会给组件本身增加显著的内存开销
+- 查询发生在指定容器内，建议优先传入最小必要范围
+- 仅在组件根元素存储轻量实例引用，不依赖全局单例/静态状态
+- 不会引入跨挂载点的共享状态污染
 
 ## 最佳实践
 
@@ -169,7 +164,7 @@ form.mount(document.body);
 4. **使用ID实现组件间通信**
    ```typescript
    onClick: () => {
-     const relatedComponent = BaseComponent.getComponentById('other-id');
+     const relatedComponent = BaseComponent.queryComponentById(document.body, 'other-id');
      // 与其他组件交互
    }
    ```

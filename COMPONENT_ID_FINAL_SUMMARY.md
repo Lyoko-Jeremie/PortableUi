@@ -15,8 +15,8 @@
 |--------|---------|------|
 | 为每个组件添加id参数 | ✅ 完成 | BaseComponent中实现自动/手动ID |
 | ID不填自动生成 | ✅ 完成 | 格式: `{CompName}_{randomString}` |
-| 可通过ID查询组件 | ✅ 完成 | 4个静态查询方法 |
-| 可通过ID查询DOM元素 | ✅ 完成 | `getElementById()` 方法 |
+| 可通过ID查询组件 | ✅ 完成 | 按容器作用域查询 |
+| 可通过ID查询DOM元素 | ✅ 完成 | `queryElementById()` 方法 |
 | 保证向后兼容 | ✅ 完成 | 现有代码无需修改 |
 
 ---
@@ -27,7 +27,7 @@
 ```
 ✏️ src/core/BaseComponent.ts
    - 添加组件ID初始化逻辑
-   - 添加全局组件注册系统
+   - 移除全局组件注册系统
    - 添加4个公开查询API
    - 修改mount/unmount/destroy方法
    总计: ~150行新增/修改代码
@@ -74,17 +74,14 @@ console.log(button.getId()); // my-button (使用指定的ID)
 
 ### 3. 组件查询
 ```typescript
-// 获取组件实例
-const component = BaseComponent.getComponentById('my-id');
+// 获取组件实例（容器作用域）
+const component = BaseComponent.queryComponentById(container, 'my-id');
 
-// 获取DOM元素
-const element = BaseComponent.getElementById('my-id');
+// 获取DOM元素（容器作用域）
+const element = BaseComponent.queryElementById(container, 'my-id');
 
-// 获取所有已注册组件
-const allComponents = BaseComponent.getAllComponents();
-
-// 清空注册表
-BaseComponent.clearRegistry();
+// 在组件实例作用域查询
+const child = parentComponent.findComponentById('child-id');
 ```
 
 ---
@@ -95,14 +92,14 @@ BaseComponent.clearRegistry();
 ```
 ✅ 自动ID生成           
 ✅ 自定义ID使用         
-✅ 组件注册/注销       
+✅ 作用域隔离查询      
 ✅ 组件查询             
 ✅ DOM元素查询          
 ✅ 错误处理             
-✅ 多组件追踪           
+✅ 多根节点隔离         
 ✅ 容器组件支持         
 ✅ ID唯一性            
-✅ 注册表清空           
+✅ 无全局状态            
 ```
 
 ### 测试结果
@@ -125,7 +122,7 @@ Time:        1.279 s
 | 向后兼容 | ✅ | 零破坏性变更 |
 | 文档完整性 | ✅ | 5个完整文档 |
 | 示例完整性 | ✅ | 8个实用示例 |
-| 性能影响 | ✅ | O(1)查询，无性能问题 |
+| 性能影响 | ✅ | 作用域可控，建议限定查询根节点 |
 | 可维护性 | ✅ | 代码清晰，注释详细 |
 
 ---
@@ -139,10 +136,10 @@ component.getId(): string
 
 ### 静态方法
 ```typescript
-BaseComponent.getComponentById(id: string): BaseComponent | undefined
-BaseComponent.getElementById(id: string): HTMLElement | null
-BaseComponent.getAllComponents(): BaseComponent[]
-BaseComponent.clearRegistry(): void
+BaseComponent.queryComponentById(container: ParentNode | null, id: string): BaseComponent | null
+BaseComponent.queryElementById(container: ParentNode | null, id: string): HTMLElement | null
+component.findComponentById(id: string): BaseComponent | null
+component.findElementById(id: string): HTMLElement | null
 ```
 
 ---
@@ -156,7 +153,7 @@ const input = new Input({ id: 'username' });
 input.mount(container);
 
 // 后续查询和操作
-const found = BaseComponent.getComponentById('username');
+const found = BaseComponent.queryComponentById(container, 'username');
 if (found instanceof Input) {
   found.setValue('admin');
   found.focus();
@@ -172,8 +169,8 @@ const form = new Container({
     new Button({
       text: 'Login',
       onClick: () => {
-        const email = (BaseComponent.getComponentById('email') as Input)?.getValue();
-        const pwd = (BaseComponent.getComponentById('password') as Input)?.getValue();
+        const email = BaseComponent.queryComponentById<Input>(document.body, 'email')?.getValue();
+        const pwd = BaseComponent.queryComponentById<Input>(document.body, 'password')?.getValue();
         // 登录...
       }
     })
@@ -200,12 +197,12 @@ form.mount(document.body);
 ## 🔒 安全性和稳定性
 
 ✅ **无安全隐患**
-- 注册表仅存储组件引用
+- 无全局注册表
 - ID不保存敏感信息
 - 自动生成ID使用安全随机方式
 
 ✅ **高度稳定**
-- Map数据结构确保可靠性
+- 查询基于容器作用域，隔离性更高
 - 完整的错误处理
 - 自动清理机制
 
@@ -255,7 +252,7 @@ form.mount(document.body);
 ### 中期
 - [ ] 收集用户反馈
 - [ ] 优化API设计
-- [ ] 性能监控
+- [ ] 性能监控（重点关注查询作用域）
 
 ### 长期
 - [ ] 与事件系统集成

@@ -3,11 +3,11 @@
  * 这个示例展示了如何使用组件ID来查询和操作组件
  */
 
-import {Button} from '../../../src/components/basic/Button';
-import {Input} from '../../../src/components/basic/Input';
-import {Container} from '../../../src/components/container/Container';
-import {Label} from '../../../src/components/basic/Label';
-import {BaseComponent} from '../../../src/core/BaseComponent';
+import {Button} from '../../src/components/basic/Button';
+import {Input} from '../../src/components/basic/Input';
+import {Container} from '../../src/components/container/Container';
+import {Label} from '../../src/components/basic/Label';
+import {BaseComponent} from '../../src/core/BaseComponent';
 
 // ============ 示例1：自动ID生成 ============
 
@@ -57,7 +57,7 @@ function example3_QueryComponents() {
   button.mount(container);
 
   // 通过ID获取组件实例
-  const foundButton = BaseComponent.getComponentById('my-button');
+  const foundButton = BaseComponent.queryComponentById<Button>(container, 'my-button');
   console.log('找到的组件:', foundButton instanceof Button); // true
 
   // 修改组件
@@ -66,7 +66,7 @@ function example3_QueryComponents() {
   }
 
   // 通过ID直接获取DOM元素
-  const dom = BaseComponent.getElementById('my-button');
+  const dom = BaseComponent.queryElementById(container, 'my-button');
   console.log('DOM元素内容:', dom?.textContent); // Updated!
 }
 
@@ -103,11 +103,11 @@ function example4_ContainerWithIds() {
       new Button({
         id: 'register-btn',
         text: 'Register',
-        onClick: (self) => {
-          // 通过ID获取表单字段
-          const nameField = BaseComponent.getComponentById('name-field') as Input;
-          const emailField = BaseComponent.getComponentById('email-field') as Input;
-          const pwdField = BaseComponent.getComponentById('password-field') as Input;
+        onClick: () => {
+          // 在 form 组件根元素作用域中查询字段
+          const nameField = form.findComponentById<Input>('name-field');
+          const emailField = form.findComponentById<Input>('email-field');
+          const pwdField = form.findComponentById<Input>('password-field');
 
           const userData = {
             name: nameField?.getValue(),
@@ -124,17 +124,17 @@ function example4_ContainerWithIds() {
   form.mount(container);
 
   // 演示如何修改表单字段
-  const nameInput = BaseComponent.getComponentById('name-field') as Input;
+  const nameInput = form.findComponentById<Input>('name-field');
   nameInput?.setValue('John Doe');
 
-  const emailInput = BaseComponent.getComponentById('email-field') as Input;
+  const emailInput = form.findComponentById<Input>('email-field');
   emailInput?.setValue('john@example.com');
 }
 
-// ============ 示例5：列出所有已注册的组件 ============
+// ============ 示例5：列出当前容器内的组件 ============
 
 function example5_ListAllComponents() {
-  console.log('\n=== 示例5：列出所有已注册的组件 ===');
+  console.log('\n=== 示例5：列出当前容器内的组件 ===');
 
   const container = document.createElement('div');
 
@@ -147,11 +147,13 @@ function example5_ListAllComponents() {
   btn2.mount(container);
   input1.mount(container);
 
-  // 获取所有已注册的组件
-  const allComponents = BaseComponent.getAllComponents();
-  console.log('已注册的组件数量:', allComponents.length); // 3
+  // 在当前容器范围内收集组件
+  const allComponents: BaseComponent[] = Array.from(container.querySelectorAll('[id]'))
+    .map((element) => BaseComponent.queryComponentById(container, element.id))
+    .filter((component): component is BaseComponent => component !== null);
+  console.log('当前容器组件数量:', allComponents.length); // 3
 
-  allComponents.forEach((comp, index) => {
+  allComponents.forEach((comp: BaseComponent, index: number) => {
     console.log(`${index + 1}. ID: ${comp.getId()}, 类型: ${comp.constructor.name}`);
   });
 }
@@ -192,7 +194,7 @@ function example6_ComponentCommunication() {
     currentCount += delta;
 
     // 通过ID更新显示
-    const display = BaseComponent.getComponentById('counter-display') as Label;
+    const display = counter.findComponentById<Label>('counter-display');
     if (display) {
       display.setText(`Count: ${currentCount}`);
     }
@@ -209,13 +211,19 @@ function example7_ValidationAndCleanup() {
   const button = new Button({id: 'temp-button', text: 'Temporary'});
   button.mount(container);
 
-  console.log('挂载前，组件数量:', BaseComponent.getAllComponents().length); // 1
+  const getMountedCount = () => {
+    return Array.from(container.querySelectorAll('[id]'))
+      .map((element) => BaseComponent.queryComponentById(container, element.id))
+      .filter((component): component is BaseComponent => component !== null).length;
+  };
+
+  console.log('挂载前，组件数量:', getMountedCount()); // 1
 
   // 卸载单个组件
   button.unmount();
-  console.log('卸载后，组件数量:', BaseComponent.getAllComponents().length); // 0
+  console.log('卸载后，组件数量:', getMountedCount()); // 0
 
-  console.log('卸载后查询:', BaseComponent.getComponentById('temp-button')); // undefined
+  console.log('卸载后查询:', BaseComponent.queryComponentById(container, 'temp-button')); // null
 }
 
 // ============ 示例8：ID重复处理 ============
@@ -231,12 +239,11 @@ function example8_DuplicateIdHandling() {
   btn1.mount(container);
   btn2.mount(container);
 
-  // 后登记的组件会覆盖先前的ID
-  const found = BaseComponent.getComponentById('duplicate');
-  console.log('找到的组件:', found === btn2); // true，btn2覆盖了btn1
+  // 重复ID会导致查询结果不确定（取决于DOM中的匹配顺序）
+  const found = BaseComponent.queryComponentById(container, 'duplicate');
+  console.log('查询结果是否确定:', found === btn1 || found === btn2); // true，但不应依赖顺序
 
   // 为了避免这种情况，应该为每个组件使用唯一的ID
-  BaseComponent.clearRegistry();
 }
 
 // ============ 导出所有示例 ============

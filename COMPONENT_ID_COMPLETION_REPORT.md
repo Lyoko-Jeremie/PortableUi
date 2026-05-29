@@ -10,7 +10,7 @@
 |--------|------|------|
 | 核心功能实现 | ✅ 完成 | BaseComponent中实现了ID初始化和查询逻辑 |
 | 自动ID生成 | ✅ 完成 | 未提供ID时自动生成 `{ClassName}_{randomString}` |
-| 组件注册系统 | ✅ 完成 | 已挂载的组件自动注册到全局注册表 |
+| 组件查询系统 | ✅ 完成 | 基于容器作用域查询，无全局单例状态 |
 | 查询API | ✅ 完成 | 实现了4个公共查询方法 |
 | 向后兼容性 | ✅ 完成 | 现有代码无需修改，完全兼容 |
 | 测试覆盖 | ✅ 完成 | 13个测试用例全部通过 |
@@ -25,31 +25,16 @@
 
 **关键改动**:
 ```typescript
-// 1. 添加全局注册表
-private static componentRegistry: Map<string, BaseComponent> = new Map();
-
 // 2. 在构造函数中初始化ID
 constructor(props, lifecycle) {
   this.initializeComponentId();  // 自动生成ID
 }
 
-// 3. 在mount时注册组件
-mount(container) {
-  // ...
-  BaseComponent.registerComponent(this);
-}
-
-// 4. 在unmount时取消注册
-unmount() {
-  // ...
-  BaseComponent.unregisterComponent(this);
-}
-
-// 5. 公开查询API
-static getComponentById(id: string): BaseComponent | undefined
-static getElementById(id: string): HTMLElement | null
-static getAllComponents(): BaseComponent[]
-static clearRegistry(): void
+// 3. 公开查询API（按容器作用域）
+static queryComponentById(container: ParentNode | null, id: string): BaseComponent | null
+static queryElementById(container: ParentNode | null, id: string): HTMLElement | null
+findComponentById(id: string): BaseComponent | null
+findElementById(id: string): HTMLElement | null
 ```
 
 ### 2. 新增公共方法
@@ -57,11 +42,11 @@ static clearRegistry(): void
 #### 实例方法
 - `getId(): string` - 获取组件ID
 
-#### 静态方法（查询）
-- `getComponentById(id)` - 通过ID获取组件实例
-- `getElementById(id)` - 通过ID获取DOM元素
-- `getAllComponents()` - 获取所有已注册的组件
-- `clearRegistry()` - 清空组件注册表
+#### 查询方法
+- `queryComponentById(container, id)` - 在容器作用域获取组件实例
+- `queryElementById(container, id)` - 在容器作用域获取DOM元素
+- `findComponentById(id)` - 在当前组件作用域查询组件
+- `findElementById(id)` - 在当前组件作用域查询元素
 
 ### 3. ID生成逻辑
 
@@ -89,17 +74,17 @@ private initializeComponentId(): void {
 ```
 ✓ should auto-generate ID when not provided
 ✓ should use provided ID
-✓ should register component on mount
-✓ should unregister component on unmount
-✓ should unregister component on destroy
+✓ should query component by ID in a specific container
+✓ should not find component after unmount in container scope
+✓ should not find component after destroy in container scope
 ✓ should retrieve component DOM element by ID
-✓ should return undefined for non-existent component ID
+✓ should return null for non-existent component ID
 ✓ should return null for non-existent element ID
 ✓ should track multiple components
 ✓ should update ID when props are updated
 ✓ should work with Container component
 ✓ should generate unique IDs for different component types
-✓ should clear registry properly
+✓ should isolate same ID in different mount roots
 ```
 
 ### 测试执行结果
@@ -149,7 +134,7 @@ const button = new Button({ text: 'Click' });
 button.mount(document.body);
 
 // 查询和操作组件
-const found = BaseComponent.getComponentById(button.getId());
+const found = BaseComponent.queryComponentById(document.body, button.getId());
 if (found instanceof Button) {
   found.setText('Updated');
 }
@@ -164,8 +149,8 @@ const form = new Container({
     new Button({
       text: 'Submit',
       onClick: () => {
-        const name = (BaseComponent.getComponentById('name') as Input)?.getValue();
-        const email = (BaseComponent.getComponentById('email') as Input)?.getValue();
+        const name = BaseComponent.queryComponentById<Input>(document.body, 'name')?.getValue();
+        const email = BaseComponent.queryComponentById<Input>(document.body, 'email')?.getValue();
         console.log({ name, email });
       }
     })
@@ -180,18 +165,18 @@ form.mount(document.body);
 | 特点 | 说明 |
 |------|------|
 | **自动生成** | ID不提供时自动生成，无需手动处理 |
-| **查询快速** | 使用Map数据结构，查询时间O(1) |
-| **自动清理** | 组件卸载时自动从注册表移除 |
+| **查询隔离** | 按容器作用域查询，避免跨挂载点污染 |
+| **自动清理** | 组件卸载后脱离作用域，查询返回null |
 | **易于集成** | 无需修改现有代码，完全透明 |
 | **类型安全** | 完整的TypeScript类型支持 |
 | **零配置** | 开箱即用，无需额外配置 |
 
 ## 📊 性能指标
 
-- **查询性能**: O(1) - 使用Map数据结构
-- **注册性能**: O(1) - 直接Map操作
-- **内存占用**: 最小化 - 仅存储id和组件引用
-- **无内存泄漏**: 卸载时自动清理
+- **查询性能**: 取决于容器范围，建议缩小查询根节点
+- **状态隔离**: 无全局注册表，避免多挂载点相互影响
+- **内存占用**: 仅在组件根元素绑定轻量实例引用
+- **无内存泄漏**: 卸载时自动解绑元素元数据
 
 ## ✨ 向后兼容性
 

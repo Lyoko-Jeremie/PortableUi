@@ -7,6 +7,8 @@ import {ComponentProps, ComponentState, ComponentElement, ComponentLifecycle} fr
 import {DOMAccessor} from './DOMAccessor';
 import {extensibilityManager} from './Extensibility';
 
+const COMPONENT_INSTANCE_KEY = '__portableui_component_instance__';
+
 export abstract class BaseComponent {
   /** 组件 DOM 元素 */
   protected element: ComponentElement = null;
@@ -22,9 +24,6 @@ export abstract class BaseComponent {
 
   /** 是否已挂载 */
   protected mounted: boolean = false;
-
-  /** 全局组件注册表，用于通过id查询组件 */
-  private static componentRegistry: Map<string, BaseComponent> = new Map();
 
   /**
    * 构造函数
@@ -71,10 +70,9 @@ export abstract class BaseComponent {
       extensibilityManager.runLifecycle('mount', this, {container}, () => {
         this.element = this.render();
         if (this.element) {
+          this.bindElementMetadata(this.element);
           container.appendChild(this.element);
           this.mounted = true;
-          // 注册组件到全局注册表
-          BaseComponent.registerComponent(this);
           this.lifecycle.onMount?.(this);
         }
       });
@@ -98,10 +96,9 @@ export abstract class BaseComponent {
         if (this.element?.parentNode) {
           this.element.parentNode.removeChild(this.element);
         }
+        this.unbindElementMetadata(this.element);
         this.element = null;
         this.mounted = false;
-        // 从全局注册表中移除组件
-        BaseComponent.unregisterComponent(this);
       });
     } catch (error) {
       this.lifecycle.onError?.(this, error as Error);
@@ -157,6 +154,8 @@ export abstract class BaseComponent {
 
     const newElement = this.render();
     if (newElement && this.element.parentNode) {
+      this.bindElementMetadata(newElement);
+      this.unbindElementMetadata(this.element);
       this.element.parentNode.replaceChild(newElement, this.element);
       this.element = newElement;
     }
@@ -195,65 +194,93 @@ export abstract class BaseComponent {
    */
   destroy(): void {
     this.unmount();
-    BaseComponent.unregisterComponent(this);
     this.props = {};
     this.state = {};
     this.lifecycle = {};
   }
 
-  // ============ 组件注册和查询 API ============
+  // ============ 组件查询 API（DOM 范围） ============
 
   /**
-   * 注册组件到全局注册表
-   * @param component - 要注册的组件
-   */
-  private static registerComponent(component: BaseComponent): void {
-    const id = component.getId();
-    if (id) {
-      BaseComponent.componentRegistry.set(id, component);
-    }
-  }
-
-  /**
-   * 从全局注册表中移除组件
-   * @param component - 要移除的组件
-   */
-  private static unregisterComponent(component: BaseComponent): void {
-    const id = component.getId();
-    if (id) {
-      BaseComponent.componentRegistry.delete(id);
-    }
-  }
-
-  /**
-   * 通过ID查询组件
+   * 在当前组件根元素范围内，通过ID查询组件实例
    * @param id - 组件ID
    */
-  static getComponentById(id: string): BaseComponent | undefined {
-    return BaseComponent.componentRegistry.get(id);
+  findComponentById<T extends BaseComponent = BaseComponent>(id: string): T | null {
+    return BaseComponent.queryComponentById<T>(this.element, id);
   }
 
   /**
-   * 通过ID查询组件的DOM元素
+   * 在当前组件根元素范围内，通过ID查询组件元素
    * @param id - 组件ID
    */
-  static getElementById(id: string): HTMLElement | null {
-    const component = BaseComponent.componentRegistry.get(id);
-    return component ? component.getElement() : null;
+  findElementById(id: string): HTMLElement | null {
+    return BaseComponent.queryElementById(this.element, id);
   }
 
   /**
-   * 获取所有已注册的组件
+   * 在指定容器范围内，通过ID查询组件实例（不依赖全局静态存储）
+   * @param container - 查询范围容器
+   * @param id - 组件ID
    */
-  static getAllComponents(): BaseComponent[] {
-    return Array.from(BaseComponent.componentRegistry.values());
+  static queryComponentById<T extends BaseComponent = BaseComponent>(
+    container: ParentNode | null,
+    id: string
+  ): T | null {
+    const element = BaseComponent.queryElementById(container, id);
+    if (!element) {
+      return null;
+    }
+
+    return BaseComponent.readComponentFromElement<T>(element);
   }
 
   /**
-   * 清空所有已注册的组件
+   * 在指定容器范围内，通过ID查询组件DOM元素
+   * @param container - 查询范围容器
+   * @param id - 组件ID
    */
-  static clearRegistry(): void {
-    BaseComponent.componentRegistry.clear();
+  static queryElementById(container: ParentNode | null, id: string): HTMLElement | null {
+    if (!container || !id) {
+      return null;
+    }
+
+    const selectorId = id.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+    return container.querySelector(`[id="${selectorId}"]`);
+  }
+
+  /**
+   * 将组件实例绑定到其根元素，供范围查询读取
+   */
+  private bindElementMetadata(element: HTMLElement): void {
+    if (!this.props.id) {
+      return;
+    }
+
+    element.id = this.props.id;
+    (element as HTMLElement & {[COMPONENT_INSTANCE_KEY]?: BaseComponent})[COMPONENT_INSTANCE_KEY] = this;
+  }
+
+  /**
+   * 解除根元素上的组件实例绑定
+   */
+  private unbindElementMetadata(element: ComponentElement): void {
+    if (!element) {
+      return;
+    }
+
+    delete (element as HTMLElement & {[COMPONENT_INSTANCE_KEY]?: BaseComponent})[COMPONENT_INSTANCE_KEY];
+  }
+
+  /**
+   * 从元素上读取组件实例绑定
+   */
+  private static readComponentFromElement<T extends BaseComponent = BaseComponent>(element: HTMLElement): T | null {
+    const component = (element as HTMLElement & {[COMPONENT_INSTANCE_KEY]?: BaseComponent})[COMPONENT_INSTANCE_KEY];
+    if (!component) {
+      return null;
+    }
+
+    return component as T;
   }
 
   // ============ DOM 访问和修改 API ============

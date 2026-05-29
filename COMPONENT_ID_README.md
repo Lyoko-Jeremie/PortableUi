@@ -7,7 +7,7 @@
 - 🔍 **精确定位组件** - 通过ID快速查找特定组件
 - 📌 **标记重要组件** - 为需要交互的组件指定语义化ID
 - 🔄 **组件间通信** - 轻松实现组件之间的联动
-- ⚡ **快速操作** - O(1)时间复杂度的组件查询
+- ⚡ **快速操作** - 基于容器作用域的直接查询
 
 ## 核心特性
 
@@ -27,14 +27,14 @@ const button = new Button({
 
 ### 3️⃣ 组件查询
 ```typescript
-// 获取组件实例
-const component = BaseComponent.getComponentById('my-id');
+// 在容器作用域获取组件实例
+const component = BaseComponent.queryComponentById(container, 'my-id');
 
-// 获取DOM元素
-const element = BaseComponent.getElementById('my-id');
+// 在容器作用域获取DOM元素
+const element = BaseComponent.queryElementById(container, 'my-id');
 
-// 获取所有已注册组件
-const allComponents = BaseComponent.getAllComponents();
+// 在组件实例自身作用域查询
+const child = componentA.findComponentById('child-id');
 ```
 
 ## 快速开始
@@ -42,6 +42,8 @@ const allComponents = BaseComponent.getAllComponents();
 ### 最简单的用法
 ```typescript
 import { Button, Input, Container, BaseComponent } from 'portableui';
+
+const root = document.body;
 
 // 创建表单
 const form = new Container({
@@ -52,8 +54,8 @@ const form = new Container({
       text: 'Submit',
       onClick: () => {
         // 通过ID获取输入框
-        const nameInput = BaseComponent.getComponentById('name') as Input;
-        const emailInput = BaseComponent.getComponentById('email') as Input;
+        const nameInput = BaseComponent.queryComponentById<Input>(root, 'name');
+        const emailInput = BaseComponent.queryComponentById<Input>(root, 'email');
         
         console.log({
           name: nameInput?.getValue(),
@@ -65,13 +67,13 @@ const form = new Container({
 });
 
 // 挂载到页面
-form.mount(document.body);
+form.mount(root);
 ```
 
 ### 后续修改组件
 ```typescript
 // 获取并修改现有组件
-const nameInput = BaseComponent.getComponentById('name') as Input;
+const nameInput = BaseComponent.queryComponentById<Input>(root, 'name');
 nameInput?.setValue('John Doe');
 nameInput?.focus();
 ```
@@ -86,10 +88,8 @@ nameInput?.focus();
 ### BaseComponent 静态方法
 | 方法 | 说明 | 返回值 |
 |------|------|--------|
-| `getComponentById(id)` | 通过ID获取组件 | `BaseComponent \| undefined` |
-| `getElementById(id)` | 通过ID获取DOM元素 | `HTMLElement \| null` |
-| `getAllComponents()` | 获取所有已注册的组件 | `BaseComponent[]` |
-| `clearRegistry()` | 清空组件注册表 | `void` |
+| `queryComponentById(container, id)` | 在容器作用域通过ID获取组件 | `BaseComponent \| null` |
+| `queryElementById(container, id)` | 在容器作用域通过ID获取DOM元素 | `HTMLElement \| null` |
 
 ## 使用场景
 
@@ -98,7 +98,7 @@ nameInput?.focus();
 new Button({
   text: 'Submit',
   onClick: () => {
-    const nameField = BaseComponent.getComponentById('name') as Input;
+    const nameField = BaseComponent.queryComponentById<Input>(root, 'name');
     if (!nameField?.getValue()) {
       alert('Please enter a name');
       return;
@@ -114,7 +114,7 @@ new Button({
   id: 'increment',
   text: '+',
   onClick: () => {
-    const counter = BaseComponent.getComponentById('counter') as Label;
+    const counter = BaseComponent.queryComponentById<Label>(root, 'counter');
     let count = parseInt(counter?.getText() ?? '0') + 1;
     counter?.setText(`Count: ${count}`);
   }
@@ -126,7 +126,7 @@ new Button({
 new Button({
   text: 'Toggle',
   onClick: () => {
-    const preview = BaseComponent.getElementById('preview');
+    const preview = BaseComponent.queryElementById(root, 'preview');
     if (preview) {
       preview.style.display = 
         preview.style.display === 'none' ? 'block' : 'none';
@@ -153,7 +153,7 @@ const form = new Container({
 // 不要使用重复的ID
 const btn1 = new Button({ id: 'btn', text: 'Button 1' });
 const btn2 = new Button({ id: 'btn', text: 'Button 2' });
-// 只能查询到btn2
+// 查询结果只在当前容器内生效，且重复ID会带来歧义
 ```
 
 ## 完整文档
@@ -174,13 +174,13 @@ A: 系统会自动为您生成一个ID，格式为 `{ComponentName}_{randomStrin
 A: 不会。ID在组件创建时分配，之后保持不变。
 
 ### Q: 可以修改组件的ID吗？
-A: 可以通过 `update({id: 'new-id'})` 修改props中的ID，但注册表中仍旧保留旧ID。建议在创建时就指定ID。
+A: 可以通过 `update({id: 'new-id'})` 修改。组件重渲染后，新的ID可在相同容器作用域内被查询到。
 
 ### Q: 已卸载的组件还能查询到吗？
-A: 不能。卸载时组件会自动从注册表中移除。
+A: 不能。卸载后元素已脱离容器作用域，查询会返回 `null`。
 
 ### Q: 这会影响性能吗？
-A: 不会。使用Map数据结构，查询时间为O(1)，没有性能影响。
+A: 查询基于容器范围执行，通常开销可控。建议限制查询范围到最近父容器。
 
 ## 兼容性
 

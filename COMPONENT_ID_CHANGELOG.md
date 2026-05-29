@@ -22,9 +22,6 @@
 
 **具体改动**：
 ```typescript
-// 1. 添加全局组件注册表
-private static componentRegistry: Map<string, BaseComponent> = new Map();
-
 // 2. 在构造函数中初始化ID
 constructor(props, lifecycle) {
   this.props = props;
@@ -46,32 +43,13 @@ getId(): string {
   return this.props.id || '';
 }
 
-// 5. 在mount中注册组件
-mount(container) {
-  // ...
-  BaseComponent.registerComponent(this);  // 新增
-  // ...
-}
+// 5. 按容器作用域查询
+static queryComponentById(container: ParentNode | null, id: string): BaseComponent | null
+static queryElementById(container: ParentNode | null, id: string): HTMLElement | null
 
-// 6. 在unmount中取消注册
-unmount() {
-  // ...
-  BaseComponent.unregisterComponent(this);  // 新增
-  // ...
-}
-
-// 7. 在destroy中清理
-destroy() {
-  // ...
-  BaseComponent.unregisterComponent(this);  // 新增
-  // ...
-}
-
-// 8. 添加4个静态查询方法
-static getComponentById(id: string): BaseComponent | undefined
-static getElementById(id: string): HTMLElement | null
-static getAllComponents(): BaseComponent[]
-static clearRegistry(): void
+// 6. 在当前组件范围查询
+findComponentById(id: string): BaseComponent | null
+findElementById(id: string): HTMLElement | null
 ```
 
 ---
@@ -160,17 +138,16 @@ Time:        1.279 s
 
 ### 自动化功能
 - ✅ 自动ID生成（无需手动指定）
-- ✅ 自动组件注册（挂载时）
-- ✅ 自动组件注销（卸载时）
+- ✅ 无全局单例状态
+- ✅ 多挂载点查询隔离
 
 ### 查询功能
 - ✅ 通过ID查询组件实例
 - ✅ 通过ID查询DOM元素
-- ✅ 查询所有已注册组件
-- ✅ 清空注册表
+- ✅ 支持组件实例局部查询
 
 ### 性能
-- ✅ O(1)时间复杂度查询
+- ✅ 按容器作用域可控查询
 - ✅ 最小化内存占用
 - ✅ 无内存泄漏
 
@@ -190,7 +167,7 @@ const input = new Input({ id: 'name-field' });
 input.mount(container);
 
 // 后续查询
-const found = BaseComponent.getComponentById('name-field');
+const found = BaseComponent.queryComponentById(container, 'name-field');
 if (found instanceof Input) {
   found.setValue('John');
 }
@@ -205,8 +182,8 @@ const form = new Container({
     new Button({
       text: 'Login',
       onClick: () => {
-        const email = (BaseComponent.getComponentById('email') as Input)?.getValue();
-        const pwd = (BaseComponent.getComponentById('password') as Input)?.getValue();
+        const email = BaseComponent.queryComponentById<Input>(container, 'email')?.getValue();
+        const pwd = BaseComponent.queryComponentById<Input>(container, 'password')?.getValue();
         // 登录逻辑...
       }
     })
@@ -258,7 +235,7 @@ const form = new Container({
 ## 🎯 下一步建议
 
 1. **集成到CI/CD** - 添加ComponentID测试到自动化测试流程
-2. **性能监控** - 监控大规模应用中的注册表大小
+2. **性能监控** - 监控大规模应用中的查询作用域设置
 3. **扩展功能** - 可考虑添加事件总线等高级功能
 4. **用户反馈** - 收集用户使用反馈，优化API设计
 
