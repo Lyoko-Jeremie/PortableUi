@@ -31,3 +31,9 @@ export type {DatePickerProps} from './DatePicker';
 
 export {FileUpload} from './FileUpload';
 export type {FileUploadProps} from './FileUpload';
+
+export {Image} from './Image';
+export type {ImageProps} from './Image';
+
+export {Canvas} from './Canvas';
+export type {CanvasProps} from './Canvas';
