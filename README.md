@@ -48,3 +48,9 @@ yarn dev:examples
 ```
 
 执行 `yarn dev:examples` 后，默认会启动开发服务器并打开 `basic.html`。
+
+## 使用文档
+
+- 布局系统：`docs/LAYOUT_GUIDE.md`
+- 可扩展性：`docs/EXTENSIBILITY_GUIDE.md`
+

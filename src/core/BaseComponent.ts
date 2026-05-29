@@ -5,6 +5,7 @@
 
 import {ComponentProps, ComponentState, ComponentElement, ComponentLifecycle} from '../types';
 import {DOMAccessor} from './DOMAccessor';
+import {extensibilityManager} from './Extensibility';
 
 export abstract class BaseComponent {
   /** 组件 DOM 元素 */
@@ -42,11 +43,18 @@ export abstract class BaseComponent {
       return;
     }
 
-    this.element = this.render();
-    if (this.element) {
-      container.appendChild(this.element);
-      this.mounted = true;
-      this.lifecycle.onMount?.(this);
+    try {
+      extensibilityManager.runLifecycle('mount', this, {container}, () => {
+        this.element = this.render();
+        if (this.element) {
+          container.appendChild(this.element);
+          this.mounted = true;
+          this.lifecycle.onMount?.(this);
+        }
+      });
+    } catch (error) {
+      this.lifecycle.onError?.(this, error as Error);
+      throw error;
     }
   }
 
@@ -58,12 +66,19 @@ export abstract class BaseComponent {
       return;
     }
 
-    this.lifecycle.onUnmount?.(this);
-    if (this.element?.parentNode) {
-      this.element.parentNode.removeChild(this.element);
+    try {
+      extensibilityManager.runLifecycle('unmount', this, undefined, () => {
+        this.lifecycle.onUnmount?.(this);
+        if (this.element?.parentNode) {
+          this.element.parentNode.removeChild(this.element);
+        }
+        this.element = null;
+        this.mounted = false;
+      });
+    } catch (error) {
+      this.lifecycle.onError?.(this, error as Error);
+      throw error;
     }
-    this.element = null;
-    this.mounted = false;
   }
 
   /**
@@ -71,10 +86,22 @@ export abstract class BaseComponent {
    * @param props - 新的属性
    */
   update(props: Partial<ComponentProps>): void {
-    this.props = {...this.props, ...props};
-    if (this.mounted && this.element) {
-      this.rerender();
-      this.lifecycle.onUpdate?.(this);
+    const nextProps = {...this.props, ...props};
+
+    if (!this.mounted || !this.element) {
+      this.props = nextProps;
+      return;
+    }
+
+    try {
+      extensibilityManager.runLifecycle('update', this, {props: nextProps}, () => {
+        this.props = nextProps;
+        this.rerender();
+        this.lifecycle.onUpdate?.(this);
+      });
+    } catch (error) {
+      this.lifecycle.onError?.(this, error as Error);
+      throw error;
     }
   }
 
