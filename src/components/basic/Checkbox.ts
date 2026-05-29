@@ -10,7 +10,7 @@ export interface CheckboxProps extends ComponentProps {
   value?: string;
   label?: string;
   indeterminate?: boolean;
-  onChange?: (event: Event, checked: boolean) => void;
+  onChange?: (self: Checkbox, event: Event, checked: boolean) => void;
 }
 
 export class Checkbox extends BaseComponent {
@@ -43,7 +43,7 @@ export class Checkbox extends BaseComponent {
     text.textContent = props.label ?? '';
 
     input.addEventListener('change', (event) => {
-      props.onChange?.(event, input.checked);
+      props.onChange?.(this, event, input.checked);
     });
 
     wrapper.appendChild(input);

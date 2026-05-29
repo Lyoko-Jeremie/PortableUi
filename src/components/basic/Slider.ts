@@ -9,8 +9,8 @@ export interface SliderProps extends ComponentProps {
   value?: number;
   disabled?: boolean;
   showValue?: boolean;
-  onInput?: (event: Event, value: number) => void;
-  onChange?: (event: Event, value: number) => void;
+  onInput?: (self: Slider, event: Event, value: number) => void;
+  onChange?: (self: Slider, event: Event, value: number) => void;
 }
 
 export class Slider extends BaseComponent {
@@ -47,11 +47,11 @@ export class Slider extends BaseComponent {
       if (valueDisplay) {
         valueDisplay.textContent = input.value;
       }
-      props.onInput?.(event, currentValue);
+      props.onInput?.(this, event, currentValue);
     });
 
     input.addEventListener('change', (event) => {
-      props.onChange?.(event, Number(input.value));
+      props.onChange?.(this, event, Number(input.value));
     });
 
     return wrapper;

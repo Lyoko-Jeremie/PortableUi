@@ -16,7 +16,7 @@ export interface SelectProps extends ComponentProps {
   required?: boolean;
   name?: string;
   placeholder?: string;
-  onChange?: (event: Event, value: string | string[]) => void;
+  onChange?: (self: Select, event: Event, value: string | string[]) => void;
 }
 
 export class Select extends BaseComponent {
@@ -40,7 +40,7 @@ export class Select extends BaseComponent {
     this.buildOptions(select, props);
 
     select.addEventListener('change', (event) => {
-      props.onChange?.(event, this.readSelectValue(select));
+      props.onChange?.(this, event, this.readSelectValue(select));
     });
 
     return select;

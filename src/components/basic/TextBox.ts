@@ -11,8 +11,8 @@ export interface TextBoxProps extends ComponentProps {
   readonly?: boolean;
   required?: boolean;
   resize?: 'none' | 'both' | 'horizontal' | 'vertical';
-  onInput?: (event: Event, value: string) => void;
-  onChange?: (event: Event, value: string) => void;
+  onInput?: (self: TextBox, event: Event, value: string) => void;
+  onChange?: (self: TextBox, event: Event, value: string) => void;
 }
 
 export class TextBox extends BaseComponent {
@@ -38,11 +38,11 @@ export class TextBox extends BaseComponent {
     }
 
     textarea.addEventListener('input', (event) => {
-      props.onInput?.(event, textarea.value);
+      props.onInput?.(this, event, textarea.value);
     });
 
     textarea.addEventListener('change', (event) => {
-      props.onChange?.(event, textarea.value);
+      props.onChange?.(this, event, textarea.value);
     });
 
     return textarea;

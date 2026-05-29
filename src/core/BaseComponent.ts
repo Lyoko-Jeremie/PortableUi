@@ -46,7 +46,7 @@ export abstract class BaseComponent {
     if (this.element) {
       container.appendChild(this.element);
       this.mounted = true;
-      this.lifecycle.onMount?.();
+      this.lifecycle.onMount?.(this);
     }
   }
 
@@ -58,7 +58,7 @@ export abstract class BaseComponent {
       return;
     }
 
-    this.lifecycle.onUnmount?.();
+    this.lifecycle.onUnmount?.(this);
     if (this.element?.parentNode) {
       this.element.parentNode.removeChild(this.element);
     }
@@ -74,7 +74,7 @@ export abstract class BaseComponent {
     this.props = {...this.props, ...props};
     if (this.mounted && this.element) {
       this.rerender();
-      this.lifecycle.onUpdate?.();
+      this.lifecycle.onUpdate?.(this);
     }
   }
 

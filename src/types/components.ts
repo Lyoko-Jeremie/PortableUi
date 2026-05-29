@@ -2,6 +2,8 @@
  * 组件相关的类型定义
  */
 
+import type {BaseComponent} from '../core/BaseComponent';
+
 /** 组件属性基类 */
 export interface ComponentProps {
   /** 组件唯一标识 */
@@ -26,10 +28,10 @@ export interface ComponentConfig extends ComponentProps {
 
 /** 组件生命周期回调 */
 export interface ComponentLifecycle {
-  onMount?: () => void;
-  onUpdate?: () => void;
-  onUnmount?: () => void;
-  onError?: (error: Error) => void;
+  onMount?: (self: BaseComponent) => void;
+  onUpdate?: (self: BaseComponent) => void;
+  onUnmount?: (self: BaseComponent) => void;
+  onError?: (self: BaseComponent, error: Error) => void;
 }
 
 /** DOM 元素 */

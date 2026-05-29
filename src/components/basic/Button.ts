@@ -6,7 +6,7 @@ export interface ButtonProps extends ComponentProps {
   text?: string;
   type?: 'button' | 'submit' | 'reset';
   disabled?: boolean;
-  onClick?: (event: MouseEvent) => void;
+  onClick?: (self: Button, event: MouseEvent) => void;
 }
 
 export class Button extends BaseComponent {
@@ -25,7 +25,7 @@ export class Button extends BaseComponent {
 
     if (props.onClick) {
       button.addEventListener('click', (event) => {
-        props.onClick?.(event as MouseEvent);
+        props.onClick?.(this, event as MouseEvent);
       });
     }
 

@@ -8,7 +8,7 @@ export interface DatePickerProps extends ComponentProps {
   max?: string;
   disabled?: boolean;
   required?: boolean;
-  onChange?: (event: Event, value: string) => void;
+  onChange?: (self: DatePicker, event: Event, value: string) => void;
 }
 
 export class DatePicker extends BaseComponent {
@@ -36,7 +36,7 @@ export class DatePicker extends BaseComponent {
     }
 
     input.addEventListener('change', (event) => {
-      props.onChange?.(event, input.value);
+      props.onChange?.(this, event, input.value);
     });
 
     return input;

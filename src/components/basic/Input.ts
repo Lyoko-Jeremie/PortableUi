@@ -13,8 +13,8 @@ export interface InputProps extends ComponentProps {
   autocomplete?: string;
   minLength?: number;
   maxLength?: number;
-  onInput?: (event: Event, value: string) => void;
-  onChange?: (event: Event, value: string) => void;
+  onInput?: (self: Input, event: Event, value: string) => void;
+  onChange?: (self: Input, event: Event, value: string) => void;
 }
 
 export class Input extends BaseComponent {
@@ -51,11 +51,11 @@ export class Input extends BaseComponent {
     }
 
     input.addEventListener('input', (event) => {
-      props.onInput?.(event, input.value);
+      props.onInput?.(this, event, input.value);
     });
 
     input.addEventListener('change', (event) => {
-      props.onChange?.(event, input.value);
+      props.onChange?.(this, event, input.value);
     });
 
     return input;

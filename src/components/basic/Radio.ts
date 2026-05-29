@@ -9,7 +9,7 @@ export interface RadioProps extends ComponentProps {
   name?: string;
   value?: string;
   label?: string;
-  onChange?: (event: Event, checked: boolean) => void;
+  onChange?: (self: Radio, event: Event, checked: boolean) => void;
 }
 
 export class Radio extends BaseComponent {
@@ -41,7 +41,7 @@ export class Radio extends BaseComponent {
     text.textContent = props.label ?? '';
 
     input.addEventListener('change', (event) => {
-      props.onChange?.(event, input.checked);
+      props.onChange?.(this, event, input.checked);
     });
 
     wrapper.appendChild(input);

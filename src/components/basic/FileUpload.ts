@@ -7,7 +7,7 @@ export interface FileUploadProps extends ComponentProps {
   multiple?: boolean;
   disabled?: boolean;
   capture?: string;
-  onChange?: (event: Event, files: File[]) => void;
+  onChange?: (self: FileUpload, event: Event, files: File[]) => void;
 }
 
 export class FileUpload extends BaseComponent {
@@ -34,7 +34,7 @@ export class FileUpload extends BaseComponent {
     }
 
     input.addEventListener('change', (event) => {
-      props.onChange?.(event, Array.from(input.files ?? []));
+      props.onChange?.(this, event, Array.from(input.files ?? []));
     });
 
     return input;
