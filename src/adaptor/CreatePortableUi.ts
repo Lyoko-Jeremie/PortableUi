@@ -1,5 +1,13 @@
 import {BaseComponent} from '../core';
 import {
+  ComponentCtor,
+  DeclarativeChildren,
+  DeclarativeNodeUnion,
+  DeclarativeRegistry,
+  PortableUiAdapter,
+  PortableUiDeclarativeConfig,
+} from './types';
+import {
   Button,
   Canvas,
   Checkbox,
@@ -24,11 +32,8 @@ import {
   TreeView,
 } from '../components/complex';
 import {Container, Flex, Grid, GridItem, Group} from '../components/container';
-import {DeclarativeChildren, DeclarativeComponentNode, PortableUiAdapter, PortableUiDeclarativeConfig} from './types';
 
-type ComponentCtor = new (props?: Record<string, any>) => BaseComponent;
-
-const builtInComponentRegistry: Record<string, ComponentCtor> = {
+const builtInComponentRegistry = {
   Autocomplete,
   Button,
   Canvas,
@@ -54,9 +59,13 @@ const builtInComponentRegistry: Record<string, ComponentCtor> = {
   TextBox,
   Toast,
   TreeView,
-};
+} satisfies DeclarativeRegistry;
 
-function toEntries(children: DeclarativeChildren | undefined): Array<[string, DeclarativeComponentNode]> {
+export type BuiltInDeclarativeRegistry = typeof builtInComponentRegistry;
+
+function toEntries<TRegistry extends DeclarativeRegistry>(
+  children: DeclarativeChildren<TRegistry> | undefined
+): Array<[string, DeclarativeNodeUnion<TRegistry>]> {
   if (!children) {
     return [];
   }
@@ -83,13 +92,14 @@ function normalizeProps(type: string, props: Record<string, any>, fallbackId: st
   return normalized;
 }
 
-function mountNode(
+function mountNode<TRegistry extends DeclarativeRegistry>(
+  registry: TRegistry,
   key: string,
-  node: DeclarativeComponentNode,
+  node: DeclarativeNodeUnion<TRegistry>,
   parent: HTMLElement,
   components: Map<string, BaseComponent>
 ): void {
-  const ctor = builtInComponentRegistry[node.type];
+  const ctor = registry[node.type];
   if (!ctor) {
     throw new Error(`Unknown component type: ${node.type}`);
   }
@@ -114,11 +124,24 @@ function mountNode(
   }
 
   for (const [childKey, childNode] of toEntries(node.children)) {
-    mountNode(childKey, childNode, element, components);
+    mountNode(registry, childKey, childNode, element, components);
   }
 }
 
-export function CreatePortableUi(container: HTMLElement, config: PortableUiDeclarativeConfig): PortableUiAdapter {
+export function CreatePortableUi(
+  container: HTMLElement,
+  config: PortableUiDeclarativeConfig<BuiltInDeclarativeRegistry>
+): PortableUiAdapter;
+export function CreatePortableUi<TRegistry extends DeclarativeRegistry>(
+  container: HTMLElement,
+  config: PortableUiDeclarativeConfig<TRegistry>,
+  registry: TRegistry
+): PortableUiAdapter;
+export function CreatePortableUi<TRegistry extends DeclarativeRegistry>(
+  container: HTMLElement,
+  config: PortableUiDeclarativeConfig<TRegistry>,
+  registry?: TRegistry
+): PortableUiAdapter {
   if (!container) {
     throw new Error('CreatePortableUi requires a valid container element.');
   }
@@ -129,8 +152,10 @@ export function CreatePortableUi(container: HTMLElement, config: PortableUiDecla
     container.setAttribute('data-portableui-id', config.id);
   }
 
+  const effectiveRegistry = (registry ?? builtInComponentRegistry) as DeclarativeRegistry;
+
   for (const [key, node] of toEntries(config.children)) {
-    mountNode(key, node, container, components);
+    mountNode(effectiveRegistry, key, node as DeclarativeNodeUnion<DeclarativeRegistry>, container, components);
   }
 
   const adapter: PortableUiAdapter = {
@@ -160,12 +185,18 @@ export function CreatePortableUi(container: HTMLElement, config: PortableUiDecla
   return adapter;
 }
 
+export function createPortableUiFactory<TRegistry extends DeclarativeRegistry>(registry: TRegistry) {
+  return (container: HTMLElement, config: PortableUiDeclarativeConfig<TRegistry>): PortableUiAdapter => {
+    return CreatePortableUi(container, config, registry);
+  };
+}
+
 export function registerDeclarativeComponent(type: string, ctor: ComponentCtor): void {
   if (!type || !ctor) {
     throw new Error('registerDeclarativeComponent requires both type and constructor.');
   }
 
-  builtInComponentRegistry[type] = ctor;
+  (builtInComponentRegistry as DeclarativeRegistry)[type] = ctor;
 }
 
 

@@ -1,5 +1,5 @@
-import {CreatePortableUi} from '../../src/adaptor';
-import {Button, Container} from '../../src';
+import {CreatePortableUi, createPortableUiFactory, type PortableUiDeclarativeConfig} from '../../src/adaptor';
+import {BaseComponent, Button, Container} from '../../src';
 
 describe('CreatePortableUi', () => {
   let host: HTMLElement;
@@ -84,8 +84,34 @@ describe('CreatePortableUi', () => {
             type: 'UnknownComponent',
           },
         },
-      });
+      } as any);
     }).toThrow('Unknown component type: UnknownComponent');
+  });
+
+  it('supports a custom typed registry through createPortableUiFactory', () => {
+    class Badge extends BaseComponent {
+      protected render(): HTMLElement {
+        const el = document.createElement('span');
+        el.textContent = String(this.getProps().text ?? '');
+        return el;
+      }
+    }
+
+    const registry = {Badge};
+    const createUi = createPortableUiFactory(registry);
+
+    const config: PortableUiDeclarativeConfig<typeof registry> = {
+      children: {
+        badge1: {
+          type: 'Badge',
+          props: {text: 'typed custom'},
+        },
+      },
+    };
+
+    createUi(host, config);
+
+    expect(host.querySelector('#badge1')?.textContent).toBe('typed custom');
   });
 });
 

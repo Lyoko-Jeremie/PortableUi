@@ -84,6 +84,57 @@ ui.destroy();
 - `getAllComponents()` - 获取所有已创建组件
 - `destroy()` - 卸载并清理全部组件
 
+## 更严格的类型约束（TypeScript）
+
+适配器现在把 `type` 和对应组件 `props` 关联起来，推荐这样写：
+
+```typescript
+import {CreatePortableUi, type PortableUiDeclarativeConfig, type BuiltInDeclarativeRegistry} from 'PortableUi';
+
+const config: PortableUiDeclarativeConfig<BuiltInDeclarativeRegistry> = {
+  children: {
+    okButton: {
+      type: 'Button',
+      props: {
+        text: 'OK',
+        // 兼容写法：label 也可用
+        label: 'OK',
+      },
+    },
+  },
+};
+
+CreatePortableUi(document.getElementById('app')!, config);
+```
+
+如果你有自定义组件，使用 `createPortableUiFactory` 能获得同样严格的类型推导：
+
+```typescript
+import {BaseComponent, createPortableUiFactory, type PortableUiDeclarativeConfig} from 'PortableUi';
+
+class Badge extends BaseComponent {
+  protected render(): HTMLElement {
+    const el = document.createElement('span');
+    el.textContent = String(this.getProps().text ?? '');
+    return el;
+  }
+}
+
+const registry = {Badge};
+const createUi = createPortableUiFactory(registry);
+
+const config: PortableUiDeclarativeConfig<typeof registry> = {
+  children: {
+    badge1: {
+      type: 'Badge',
+      props: {text: 'typed custom'},
+    },
+  },
+};
+
+createUi(document.getElementById('app')!, config);
+```
+
 ## 测试
 
 新增测试文件：`test/adaptor/CreatePortableUi.test.ts`，覆盖：
