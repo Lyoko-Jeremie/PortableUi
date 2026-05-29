@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PortableUi — 基础组件示例</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 24px 16px 64px;
+      background: #f8f9fa;
+      color: #212529;
+    }
+    h1 { font-size: 22px; border-bottom: 2px solid #4f46e5; padding-bottom: 8px; color: #4f46e5; }
+    section {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 20px 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    }
+    h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: #6b7280; margin: 0 0 14px; }
+    .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 8px; }
+    .output { font-size: 13px; color: #6b7280; margin-top: 6px; }
+
+    /* ── 组件基础样式 ── */
+    .portableui-button {
+      padding: 6px 16px; border: 1px solid #d1d5db; border-radius: 5px;
+      background: #fff; cursor: pointer; font-size: 14px;
+      transition: background .15s;
+    }
+    .portableui-button:hover:not(:disabled) { background: #f3f4f6; }
+    .portableui-button:disabled { opacity: .5; cursor: not-allowed; }
+
+    .portableui-input,
+    .portableui-textbox,
+    .portableui-select,
+    .portableui-date-picker,
+    .portableui-file-upload {
+      padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 5px;
+      font-size: 14px; background: #fff; outline: none;
+      transition: border-color .15s;
+    }
+    .portableui-input:focus,
+    .portableui-textbox:focus,
+    .portableui-select:focus,
+    .portableui-date-picker:focus { border-color: #4f46e5; }
+    .portableui-input:disabled,
+    .portableui-textbox:disabled,
+    .portableui-select:disabled,
+    .portableui-date-picker:disabled { background: #f3f4f6; }
+
+    .portableui-label { font-size: 14px; font-weight: 500; }
+
+    .portableui-checkbox,
+    .portableui-radio { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; cursor: pointer; }
+
+    .portableui-slider { display: inline-flex; align-items: center; gap: 10px; }
+    .portableui-slider input[type=range] { width: 200px; accent-color: #4f46e5; }
+    .portableui-slider-value { font-size: 13px; font-weight: 600; color: #4f46e5; min-width: 32px; }
+  </style>
+</head>
+<body>
+
+<h1>PortableUi — 基础组件示例</h1>
+
+<!-- ① 注意：这里通过 importmap 或直接引用编译后的 JS。
+     本示例使用纯 JS 内联演示，无需构建步骤。 -->
+<script type="module">
+// ─── 精简版组件 polyfill（直接内联，模拟 PortableUi 核心逻辑）────────────
+// 生产场景请替换为：import { Button, ... } from './dist/index.js'
+
+class BaseComponent {
+  constructor(props = {}) {
+    this.props = props;
+    this.element = null;
+    this.mounted = false;
+  }
+  mount(container) {
+    if (this.mounted) return;
+    this.element = this.render();
+    if (this.element) { container.appendChild(this.element); this.mounted = true; }
+  }
+  unmount() {
+    if (!this.mounted) return;
+    this.element?.parentNode?.removeChild(this.element);
+    this.element = null;
+    this.mounted = false;
+  }
+  update(newProps) {
+    this.props = { ...this.props, ...newProps };
+    if (this.mounted && this.element) {
+      const next = this.render();
+      if (next) { this.element.parentNode?.replaceChild(next, this.element); this.element = next; }
+    }
+  }
+  isMounted() { return this.mounted; }
+  _apply(el, defaultClass) {
+    const { id, className, style } = this.props;
+    if (id) el.id = id;
+    el.className = [defaultClass, className ?? ''].filter(Boolean).join(' ');
+    if (style) Object.assign(el.style, style);
+  }
+}
+
+class Button extends BaseComponent {
+  render() {
+    const { text='', type='button', disabled=false, onClick } = this.props;
+    const el = document.createElement('button');
+    this._apply(el, 'portableui-button');
+    el.type = type; el.disabled = disabled; el.textContent = text;
+    if (onClick) el.addEventListener('click', e => onClick(this, e));
+    return el;
+  }
+  setText(t) { this.update({ text: t }); }
+  setDisabled(d) { this.update({ disabled: d }); }
+}
+
+class Input extends BaseComponent {
+  render() {
+    const { type='text', value='', placeholder='', disabled=false, readonly=false,
+            required=false, name, autocomplete, minLength, maxLength, onInput, onChange } = this.props;
+    const el = document.createElement('input');
+    this._apply(el, 'portableui-input');
+    el.type = type; el.value = value; el.placeholder = placeholder;
+    el.disabled = disabled; el.readOnly = readonly; el.required = required;
+    if (name) el.name = name;
+    if (autocomplete) el.setAttribute('autocomplete', autocomplete);
+    if (minLength != null) el.minLength = minLength;
+    if (maxLength != null) el.maxLength = maxLength;
+    el.addEventListener('input', e => onInput?.(this, e, el.value));
+    el.addEventListener('change', e => onChange?.(this, e, el.value));
+    return el;
+  }
+  getValue() { return this.element?.value ?? ''; }
+  setValue(v) { this.update({ value: v }); }
+  focus() { this.element?.focus(); }
+  blur()  { this.element?.blur(); }
+}
+
+class Label extends BaseComponent {
+  render() {
+    const { text='', htmlFor } = this.props;
+    const el = document.createElement('label');
+    this._apply(el, 'portableui-label');
+    el.textContent = text;
+    if (htmlFor) el.htmlFor = htmlFor;
+    return el;
+  }
+  setText(t) { this.update({ text: t }); }
+}
+
+class TextBox extends BaseComponent {
+  render() {
+    const { value='', placeholder='', rows=4, cols=30, disabled=false,
+            readonly=false, required=false, resize, onInput, onChange } = this.props;
+    const el = document.createElement('textarea');
+    this._apply(el, 'portableui-textbox');
+    el.value = value; el.placeholder = placeholder;
+    el.rows = rows; el.cols = cols;
+    el.disabled = disabled; el.readOnly = readonly; el.required = required;
+    if (resize) el.style.resize = resize;
+    el.addEventListener('input', e => onInput?.(this, e, el.value));
+    el.addEventListener('change', e => onChange?.(this, e, el.value));
+    return el;
+  }
+  getValue() { return this.element?.value ?? ''; }
+  setValue(v) { this.update({ value: v }); }
+}
+
+class Select extends BaseComponent {
+  render() {
+    const { options=[], value, multiple=false, disabled=false, required=false,
+            name, placeholder, onChange } = this.props;
+    const el = document.createElement('select');
+    this._apply(el, 'portableui-select');
+    el.multiple = multiple; el.disabled = disabled; el.required = required;
+    if (name) el.name = name;
+    const valueSet = new Set(Array.isArray(value) ? value : [value ?? '']);
+    if (placeholder && !multiple) {
+      const ph = document.createElement('option');
+      ph.value = ''; ph.textContent = placeholder;
+      ph.disabled = true; ph.selected = !value;
+      el.appendChild(ph);
+    }
+    for (const opt of options) {
+      const o = document.createElement('option');
+      o.value = opt.value; o.textContent = opt.label;
+      o.disabled = opt.disabled ?? false; o.selected = valueSet.has(opt.value);
+      el.appendChild(o);
+    }
+    el.addEventListener('change', e => {
+      const v = multiple ? Array.from(el.selectedOptions).map(o => o.value) : el.value;
+      onChange?.(this, e, v);
+    });
+    return el;
+  }
+  getValue() {
+    if (!this.element) return '';
+    return this.element.multiple
+      ? Array.from(this.element.selectedOptions).map(o => o.value)
+      : this.element.value;
+  }
+  setValue(v) { this.update({ value: v }); }
+  setOptions(opts) { this.update({ options: opts }); }
+}
+
+class Checkbox extends BaseComponent {
+  render() {
+    const { checked=false, disabled=false, required=false, indeterminate=false,
+            name, value, label='', onChange } = this.props;
+    const wrapper = document.createElement('label');
+    this._apply(wrapper, 'portableui-checkbox');
+    const input = document.createElement('input');
+    input.type = 'checkbox'; input.checked = checked;
+    input.disabled = disabled; input.required = required;
+    input.indeterminate = indeterminate;
+    if (name)  input.name  = name;
+    if (value) input.value = value;
+    const span = document.createElement('span');
+    span.textContent = label;
+    input.addEventListener('change', e => onChange?.(this, e, input.checked));
+    wrapper.appendChild(input); wrapper.appendChild(span);
+    return wrapper;
+  }
+  isChecked() { return this.element?.querySelector('input')?.checked ?? false; }
+  setChecked(c) { this.update({ checked: c }); }
+}
+
+class Radio extends BaseComponent {
+  render() {
+    const { checked=false, disabled=false, required=false,
+            name, value, label='', onChange } = this.props;
+    const wrapper = document.createElement('label');
+    this._apply(wrapper, 'portableui-radio');
+    const input = document.createElement('input');
+    input.type = 'radio'; input.checked = checked;
+    input.disabled = disabled; input.required = required;
+    if (name)  input.name  = name;
+    if (value) input.value = value;
+    const span = document.createElement('span');
+    span.textContent = label;
+    input.addEventListener('change', e => onChange?.(this, e, input.checked));
+    wrapper.appendChild(input); wrapper.appendChild(span);
+    return wrapper;
+  }
+  isChecked() { return this.element?.querySelector('input')?.checked ?? false; }
+  setChecked(c) { this.update({ checked: c }); }
+}
+
+class Slider extends BaseComponent {
+  render() {
+    const { min=0, max=100, step=1, value, disabled=false,
+            showValue=true, onInput, onChange } = this.props;
+    const initVal = value ?? min;
+    const wrapper = document.createElement('div');
+    this._apply(wrapper, 'portableui-slider');
+    const input = document.createElement('input');
+    input.type = 'range';
+    input.min = String(min); input.max = String(max);
+    input.step = String(step); input.value = String(initVal);
+    input.disabled = disabled;
+    wrapper.appendChild(input);
+    let display = null;
+    if (showValue) {
+      display = document.createElement('span');
+      display.className = 'portableui-slider-value';
+      display.textContent = String(initVal);
+      wrapper.appendChild(display);
+    }
+    input.addEventListener('input', e => {
+      if (display) display.textContent = input.value;
+      onInput?.(this, e, Number(input.value));
+    });
+    input.addEventListener('change', e => onChange?.(this, e, Number(input.value)));
+    return wrapper;
+  }
+  getValue() { return Number(this.element?.querySelector('input')?.value ?? 0); }
+  setValue(v) { this.update({ value: v }); }
+}
+
+class DatePicker extends BaseComponent {
+  render() {
+    const { value='', min, max, disabled=false, required=false, onChange } = this.props;
+    const el = document.createElement('input');
+    this._apply(el, 'portableui-date-picker');
+    el.type = 'date'; el.value = value;
+    el.disabled = disabled; el.required = required;
+    if (min) el.min = min;
+    if (max) el.max = max;
+    el.addEventListener('change', e => onChange?.(this, e, el.value));
+    return el;
+  }
+  getValue() { return this.element?.value ?? ''; }
+  setValue(v) { this.update({ value: v }); }
+}
+
+class FileUpload extends BaseComponent {
+  render() {
+    const { accept, multiple=false, disabled=false, capture, onChange } = this.props;
+    const el = document.createElement('input');
+    this._apply(el, 'portableui-file-upload');
+    el.type = 'file'; el.multiple = multiple; el.disabled = disabled;
+    if (accept)  el.accept = accept;
+    if (capture) el.setAttribute('capture', capture);
+    el.addEventListener('change', e => onChange?.(this, e, Array.from(el.files ?? [])));
+    return el;
+  }
+  getFiles() { return Array.from(this.element?.files ?? []); }
+  clearFiles() { if (this.element) this.element.value = ''; }
+}
+
+// ─── 辅助：区块构建器 ──────────────────────────────────────────────────────
+function makeSection(id, title) {
+  const sec = document.createElement('section');
+  sec.id = id;
+  const h2 = document.createElement('h2'); h2.textContent = title;
+  sec.appendChild(h2);
+  document.body.appendChild(sec);
+  return sec;
+}
+function row(parent) {
+  const div = document.createElement('div'); div.className = 'row';
+  parent.appendChild(div); return div;
+}
+function out(parent) {
+  const p = document.createElement('p'); p.className = 'output';
+  parent.appendChild(p); return p;
+}
+
+// ─── 1. Button ────────────────────────────────────────────────────────────
+{
+  const sec = makeSection('button', '1. Button');
+  const r = row(sec);
+
+  const btnNormal = new Button({ text: '点击我', onClick(self) { self.setText('已点击 ✔'); self.setDisabled(true); } });
+  btnNormal.mount(r);
+  new Button({ text: '提交', type: 'submit' }).mount(r);
+  new Button({ text: '禁用', disabled: true }).mount(r);
+  new Button({
+    text: '自定义颜色',
+    style: { background: '#4f46e5', color: '#fff', border: 'none', borderRadius: '20px' },
+    onClick: () => alert('Hello PortableUi!'),
+  }).mount(r);
+}
+
+// ─── 2. Input ─────────────────────────────────────────────────────────────
+{
+  const sec = makeSection('input', '2. Input');
+  const o = out(sec);
+  new Label({ text: '邮箱', htmlFor: 'email' }).mount(sec);
+  new Input({
+    id: 'email', type: 'email', placeholder: 'user@example.com',
+    onInput: (_s, _e, v) => { o.textContent = `实时值：${v}`; },
+  }).mount(sec);
+  new Input({ type: 'password', placeholder: '密码（minLength=8）', minLength: 8 }).mount(sec);
+  new Input({ type: 'number', placeholder: '数量', value: '1' }).mount(sec);
+}
+
+// ─── 3. Label ─────────────────────────────────────────────────────────────
+{
+  const sec = makeSection('label', '3. Label');
+  const lbl = new Label({ text: '姓名：', htmlFor: 'name' });
+  lbl.mount(sec);
+  new Input({ id: 'name', placeholder: '请输入姓名' }).mount(sec);
+  new Button({
+    text: '中/英切换',
+    onClick: () => lbl.setText(lbl.element.textContent === '姓名：' ? 'Name: ' : '姓名：'),
+  }).mount(sec);
+}
+
+// ─── 4. TextBox ───────────────────────────────────────────────────────────
+{
+  const sec = makeSection('textbox', '4. TextBox');
+  const tb = new TextBox({ placeholder: '多行文本...', rows: 4, resize: 'vertical' });
+  tb.mount(sec);
+  const r = row(sec);
+  new Button({ text: '清空', onClick: () => tb.setValue('') }).mount(r);
+  new Button({ text: '填入示例', onClick: () => tb.setValue('PortableUi 让 UI 创建更简单。\n支持多行文本输入。') }).mount(r);
+}
+
+// ─── 5. Select ───────────────────────────────────────────���────────────────
+{
+  const sec = makeSection('select', '5. Select');
+  const o = out(sec);
+  const cityOpts = [
+    { label: '北京', value: 'beijing' }, { label: '上海', value: 'shanghai' },
+    { label: '广州', value: 'guangzhou' }, { label: '深圳', value: 'shenzhen' },
+    { label: '香港（暂停）', value: 'hk', disabled: true },
+  ];
+  const sel = new Select({ placeholder: '请选择城市', options: cityOpts,
+    onChange: (_s, _e, v) => { o.textContent = `已选：${v}`; } });
+  sel.mount(sec);
+  new Button({ text: '切换为国际城市', onClick: () => sel.setOptions([
+    { label: 'Tokyo', value: 'tokyo' }, { label: 'London', value: 'london' },
+  ]) }).mount(sec);
+
+  const mo = out(sec); mo.textContent = '多选：';
+  new Select({ multiple: true,
+    options: [
+      { label: '篮球', value: 'basketball' }, { label: '足球', value: 'football' },
+      { label: '游泳', value: 'swimming' },
+    ],
+    value: ['basketball'],
+    onChange: (_s, _e, v) => { mo.textContent = `多选已选：${v.join(', ')}`; },
+  }).mount(sec);
+}
+
+// ─── 6. Checkbox ──────────────────────────────────────────────────────────
+{
+  const sec = makeSection('checkbox', '6. Checkbox');
+  const submitBtn = new Button({ text: '提交', disabled: true });
+  new Checkbox({
+    label: '我已阅读并同意《用户协议》',
+    onChange: (_s, _e, checked) => submitBtn.setDisabled(!checked),
+  }).mount(sec);
+  submitBtn.mount(sec);
+
+  new Checkbox({ label: '半选（indeterminate）', indeterminate: true }).mount(sec);
+}
+
+// ─── 7. Radio ─────────────────────────────────────────────────────────────
+{
+  const sec = makeSection('radio', '7. Radio');
+  const o = out(sec); o.textContent = '已选：男';
+  ['男', '女', '不愿透露'].forEach((label, i) => {
+    new Radio({ name: 'gender', label, value: String(i), checked: i === 0,
+      onChange: (_s, _e, c) => { if (c) o.textContent = `已选：${label}`; },
+    }).mount(sec);
+  });
+}
+
+// ─── 8. Slider ────────────────────────────────────────────────────────────
+{
+  const sec = makeSection('slider', '8. Slider');
+  const volSlider = new Slider({ min: 0, max: 100, step: 1, value: 50,
+    onInput: (_s, _e, v) => console.log('volume:', v) });
+  new Label({ text: '音量' }).mount(sec);
+  volSlider.mount(sec);
+  new Label({ text: '透明度（0–1）' }).mount(sec);
+  new Slider({ min: 0, max: 1, step: 0.05, value: 1 }).mount(sec);
+  new Button({ text: '音量重置为 50', onClick: () => volSlider.setValue(50) }).mount(sec);
+}
+
+// ─── 9. DatePicker ────────────────────────────────────────────────────────
+{
+  const sec = makeSection('datepicker', '9. DatePicker');
+  const o = out(sec);
+  const today = new Date().toISOString().slice(0, 10);
+  const dp = new DatePicker({ value: today, min: '2020-01-01', max: '2030-12-31',
+    onChange: (_s, _e, v) => { o.textContent = `已选日期：${v}`; } });
+  dp.mount(sec);
+  new Button({ text: '设为今天', onClick: () => dp.setValue(today) }).mount(sec);
+}
+
+// ─── 10. FileUpload ───────────────────────────────────────────────────────
+{
+  const sec = makeSection('fileupload', '10. FileUpload');
+  const ul = document.createElement('ul'); ul.style.cssText = 'font-size:13px;color:#374151;margin:8px 0';
+  new Label({ text: '选择图片（支持多选）' }).mount(sec);
+  const fu = new FileUpload({ accept: 'image/*', multiple: true,
+    onChange: (_s, _e, files) => {
+      ul.innerHTML = '';
+      files.forEach(f => {
+        const li = document.createElement('li');
+        li.textContent = `${f.name}  (${(f.size / 1024).toFixed(1)} KB)`;
+        ul.appendChild(li);
+      });
+    },
+  });
+  fu.mount(sec);
+  sec.appendChild(ul);
+  const r = row(sec);
+  new Button({ text: '清空选择', onClick: () => { fu.clearFiles(); ul.innerHTML = ''; } }).mount(r);
+
+  new Label({ text: '上传文档（PDF / Word）' }).mount(sec);
+  new FileUpload({ accept: '.pdf,.doc,.docx',
+    onChange: (_s, _e, files) => alert(`已选：${files[0]?.name ?? '无'}`) }).mount(sec);
+}
+</script>
+</body>
+</html>
+
