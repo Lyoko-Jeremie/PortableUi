@@ -68,3 +68,18 @@ export interface LocaleStrings {
   };
 }
 
+/**
+ * 递归提取对象中叶子字符串路径（点分隔）。
+ * 例如："common.ok" | "components.button.submit"
+ */
+type LeafStringPaths<T> = {
+  [K in Extract<keyof T, string>]: T[K] extends string
+    ? K
+    : T[K] extends object
+      ? `${K}.${LeafStringPaths<T[K]>}`
+      : never;
+}[Extract<keyof T, string>];
+
+/** 所有可用的翻译 key（受 LocaleStrings 约束） */
+export type LocaleStringKey = LeafStringPaths<LocaleStrings>;
+

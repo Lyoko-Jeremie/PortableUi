@@ -10,6 +10,14 @@ export interface TranslationTable {
   [key: string]: string | TranslationTable;
 }
 
+/**
+ * 将嵌套翻译表映射为可通过点语法访问的类型。
+ * 例如：i18n.common.ok
+ */
+export type I18nAccessor<T> = {
+  readonly [K in keyof T]: T[K] extends string ? string : I18nAccessor<T[K]>;
+};
+
 /** 国际化配置 */
 export interface I18nConfig {
   /** 默认语言 */

@@ -2,8 +2,8 @@
  * 国际化管理器
  */
 
-import {Language, TranslationTable, I18nConfig, LanguageChangeListener, TranslationMissingListener} from './types';
-import {LocaleStrings} from './locales/types';
+import type {Language, I18nAccessor, I18nConfig, LanguageChangeListener, TranslationMissingListener} from './types';
+import type {LocaleStrings, LocaleStringKey} from './locales/types';
 import {enUS} from './locales/en';
 import {zhCN} from './locales/zh';
 
@@ -77,7 +77,7 @@ export class I18nManager {
    * @param key - 翻译键（支持点号分隔，如 'common.ok'）
    * @param replacements - 替换参数
    */
-  t(key: string, replacements?: Record<string, string | number>): string {
+  t(key: LocaleStringKey, replacements?: Record<string, string | number>): string {
     const translations = this.translations.get(this.currentLanguage);
 
     if (!translations) {
@@ -209,6 +209,70 @@ export class I18nManager {
   }
 }
 
+/**
+ * 创建支持 i18n.a.b.c 访问方式的类型安全代理。
+ * 叶子节点会在每次读取时调用 manager.t()，因此语言切换后值会自动更新。
+ */
+function createI18nAccessor<T extends object>(
+  manager: I18nManager,
+  schema: T,
+  path: string[] = []
+): I18nAccessor<T> {
+  const schemaRecord = schema as Record<string, unknown>;
+  const nestedProxyCache = new Map<string, unknown>();
+
+  return new Proxy({} as I18nAccessor<T>, {
+    get: (_target, prop: string | symbol): unknown => {
+      if (typeof prop !== 'string') {
+        return undefined;
+      }
+
+      if (!Object.prototype.hasOwnProperty.call(schemaRecord, prop)) {
+        return undefined;
+      }
+
+      const nextPath = [...path, prop];
+      const schemaValue = schemaRecord[prop];
+
+      if (typeof schemaValue === 'string') {
+        return manager.t(nextPath.join('.') as LocaleStringKey);
+      }
+
+      if (schemaValue && typeof schemaValue === 'object') {
+        const cachedProxy = nestedProxyCache.get(prop);
+        if (cachedProxy) {
+          return cachedProxy;
+        }
+
+        const nestedProxy = createI18nAccessor(
+          manager,
+          schemaValue as object,
+          nextPath
+        );
+        nestedProxyCache.set(prop, nestedProxy);
+        return nestedProxy;
+      }
+
+      return undefined;
+    },
+    ownKeys: () => Reflect.ownKeys(schemaRecord),
+    getOwnPropertyDescriptor: (_target, prop: string | symbol) => {
+      if (typeof prop !== 'string') {
+        return undefined;
+      }
+
+      if (!Object.prototype.hasOwnProperty.call(schemaRecord, prop)) {
+        return undefined;
+      }
+
+      return {
+        configurable: true,
+        enumerable: true,
+      };
+    },
+  });
+}
+
 // 导出全局 I18n 管理器单例
 export const i18nManager = new I18nManager({
   defaultLanguage: 'en',
@@ -216,3 +280,8 @@ export const i18nManager = new I18nManager({
   logMissingTranslations: true,
 });
 
+/**
+ * 类型安全的点语法国际化访问器。
+ * 用法：i18n.common.ok
+ */
+export const i18n: I18nAccessor<LocaleStrings> = createI18nAccessor(i18nManager, enUS);
