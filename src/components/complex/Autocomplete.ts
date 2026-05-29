@@ -78,6 +78,27 @@ export class Autocomplete extends BaseComponent {
     return root;
   }
 
+  protected override rerender(): void {
+    const currentRoot = this.element;
+    const currentInput = currentRoot?.querySelector('.portableui-autocomplete-input') as HTMLInputElement | null;
+    const shouldRestoreFocus = document.activeElement === currentInput;
+    const selectionStart = currentInput?.selectionStart ?? null;
+    const selectionEnd = currentInput?.selectionEnd ?? null;
+
+    super.rerender();
+
+    if (!shouldRestoreFocus) {
+      return;
+    }
+
+    const nextInput = this.element?.querySelector('.portableui-autocomplete-input') as HTMLInputElement | null;
+    nextInput?.focus();
+
+    if (nextInput && selectionStart !== null && selectionEnd !== null) {
+      nextInput.setSelectionRange(selectionStart, selectionEnd);
+    }
+  }
+
   getValue(): string {
     return String((this.props as AutocompleteProps).value ?? this.state.query ?? '');
   }

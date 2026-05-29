@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PortableUi - 复杂组件示例</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f3f4f6;
+      color: #1f2937;
+      padding: 24px;
+    }
+
+    h1 {
+      margin: 0 0 18px;
+      font-size: 28px;
+      color: #111827;
+    }
+
+    .demo-intro {
+      margin: 0 0 24px;
+      color: #4b5563;
+      line-height: 1.6;
+    }
+
+    #app {
+      max-width: 1080px;
+      margin: 0 auto;
+      display: grid;
+      gap: 16px;
+    }
+
+    .demo-card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+    }
+
+    .demo-title {
+      margin: 0 0 8px;
+      font-size: 18px;
+      color: #111827;
+    }
+
+    .demo-description {
+      margin: 0 0 12px;
+      color: #6b7280;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .demo-controls {
+      margin-top: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .demo-feedback {
+      margin: 10px 0 0;
+      color: #4b5563;
+      font-size: 14px;
+    }
+
+    .portableui-button {
+      padding: 7px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      background: #ffffff;
+      cursor: pointer;
+      color: #1f2937;
+    }
+
+    .portableui-button:hover:not(:disabled) {
+      background: #f9fafb;
+    }
+
+    .portableui-table {
+      overflow-x: auto;
+    }
+
+    .portableui-table-element {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .portableui-table-element th,
+    .portableui-table-element td {
+      border: 1px solid #e5e7eb;
+      padding: 8px 10px;
+      text-align: left;
+    }
+
+    .portableui-table-striped .portableui-table-element tbody tr:nth-child(even) {
+      background: #f9fafb;
+    }
+
+    .portableui-table-hoverable .portableui-table-element tbody tr:hover {
+      background: #eef2ff;
+      cursor: pointer;
+    }
+
+    .status {
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #ffffff;
+      display: inline-block;
+    }
+
+    .status-active {
+      background: #16a34a;
+    }
+
+    .status-pending {
+      background: #d97706;
+    }
+
+    .status-blocked {
+      background: #dc2626;
+    }
+
+    .portableui-treeview-list,
+    .portableui-treeview-children {
+      list-style: none;
+      padding-left: 18px;
+      margin: 0;
+    }
+
+    .portableui-treeview-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      margin: 4px 0;
+    }
+
+    .portableui-treeview-toggle {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      border: 1px solid #d1d5db;
+      background: #ffffff;
+      cursor: pointer;
+    }
+
+    .portableui-treeview-label {
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .portableui-treeview-label-selected {
+      background: #e0e7ff;
+      color: #3730a3;
+      font-weight: 600;
+    }
+
+    .portableui-tabs-header {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .portableui-tabs-button {
+      padding: 8px 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      background: #ffffff;
+      cursor: pointer;
+    }
+
+    .portableui-tabs-button-active {
+      border-color: #6366f1;
+      color: #4338ca;
+      background: #eef2ff;
+      font-weight: 600;
+    }
+
+    .portableui-tabs-body {
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      background: #fafafa;
+      padding: 12px;
+      min-height: 64px;
+    }
+
+    .portableui-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+    }
+
+    .portableui-modal-overlay {
+      justify-content: center;
+      align-items: center;
+      background: rgba(17, 24, 39, 0.45);
+    }
+
+    .portableui-modal-container {
+      width: min(520px, 90vw);
+      background: #ffffff;
+      border-radius: 10px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+      overflow: hidden;
+    }
+
+    .portableui-modal-header,
+    .portableui-modal-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 12px 14px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .portableui-modal-footer {
+      border-top: 1px solid #e5e7eb;
+      border-bottom: 0;
+      justify-content: flex-end;
+    }
+
+    .portableui-modal-title {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .portableui-modal-body {
+      padding: 14px;
+      color: #374151;
+    }
+
+    .portableui-modal-close,
+    .portableui-modal-cancel,
+    .portableui-modal-confirm {
+      border: 1px solid #d1d5db;
+      background: #ffffff;
+      border-radius: 6px;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
+
+    .portableui-modal-confirm {
+      background: #4f46e5;
+      border-color: #4f46e5;
+      color: #ffffff;
+    }
+
+    .portableui-toast {
+      margin-top: 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      padding: 10px 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 260px;
+    }
+
+    .portableui-toast-close {
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      color: currentColor;
+    }
+
+    .portableui-toast-info {
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+
+    .portableui-toast-success {
+      background: #ecfdf5;
+      color: #166534;
+    }
+
+    .portableui-toast-warning {
+      background: #fffbeb;
+      color: #92400e;
+    }
+
+    .portableui-toast-error {
+      background: #fef2f2;
+      color: #991b1b;
+    }
+
+    .portableui-progress-track {
+      width: 100%;
+      height: 14px;
+      background: #e5e7eb;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .portableui-progress-bar {
+      height: 100%;
+      transition: width 0.2s ease;
+      background: #2563eb;
+    }
+
+    .portableui-progress-label {
+      margin-top: 6px;
+      display: inline-block;
+      font-size: 13px;
+      color: #4b5563;
+    }
+
+    .portableui-autocomplete {
+      position: relative;
+      max-width: 340px;
+    }
+
+    .portableui-autocomplete-input,
+    .portableui-cascading-select-level {
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      padding: 8px 10px;
+      width: 100%;
+      font-size: 14px;
+      background: #ffffff;
+    }
+
+    .portableui-autocomplete-list {
+      list-style: none;
+      margin: 6px 0 0;
+      padding: 0;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      background: #ffffff;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+
+    .portableui-autocomplete-item {
+      padding: 8px 10px;
+      cursor: pointer;
+    }
+
+    .portableui-autocomplete-item:hover {
+      background: #eef2ff;
+    }
+
+    .portableui-cascading-select {
+      display: grid;
+      gap: 8px;
+      max-width: 340px;
+    }
+  </style>
+</head>
+<body>
+  <h1>PortableUi - Phase 5 复杂组件示例</h1>
+  <p class="demo-intro">
+    本页面展示 Phase 5 中实现的全部复杂组件，
+    包括组合组件：Autocomplete 自动完成与 CascadingSelect 级联选择。
+  </p>
+  <main id="app"></main>
+
+  <script type="module">
+    class BaseComponent {
+      constructor(props = {}) {
+        this.props = props;
+        this.element = null;
+        this.mounted = false;
+        this.state = {};
+      }
+
+      mount(container) {
+        if (this.mounted) return;
+        this.element = this.render();
+        if (this.element) {
+          container.appendChild(this.element);
+          this.mounted = true;
+        }
+      }
+
+      update(newProps) {
+        this.props = {...this.props, ...newProps};
+        this.rerender();
+      }
+
+      setState(nextState) {
+        this.state = {...this.state, ...nextState};
+        this.rerender();
+      }
+
+      rerender() {
+        if (!this.mounted || !this.element) return;
+        const next = this.render();
+        if (next && this.element.parentNode) {
+          this.element.parentNode.replaceChild(next, this.element);
+          this.element = next;
+        }
+      }
+
+      apply(el, defaultClass) {
+        const {id, className, style} = this.props;
+        if (id) el.id = id;
+        el.className = [defaultClass, className || ''].filter(Boolean).join(' ');
+        if (style) Object.assign(el.style, style);
+      }
+    }
+
+    class Button extends BaseComponent {
+      render() {
+        const {text = '', type = 'button', disabled = false, onClick} = this.props;
+        const el = document.createElement('button');
+        this.apply(el, 'portableui-button');
+        el.type = type;
+        el.disabled = disabled;
+        el.textContent = text;
+        el.addEventListener('click', (event) => onClick?.(this, event));
+        return el;
+      }
+    }
+
+    class Table extends BaseComponent {
+      render() {
+        const {columns = [], data = [], bordered = true, striped = false, hoverable = true, emptyText = '暂无数据', onRowClick} = this.props;
+        const root = document.createElement('div');
+        const table = document.createElement('table');
+        const thead = document.createElement('thead');
+        const tbody = document.createElement('tbody');
+
+        this.apply(root, 'portableui-table');
+        if (bordered) root.classList.add('portableui-table-bordered');
+        if (striped) root.classList.add('portableui-table-striped');
+        if (hoverable) root.classList.add('portableui-table-hoverable');
+
+        table.className = 'portableui-table-element';
+
+        const headerRow = document.createElement('tr');
+        columns.forEach((column) => {
+          const th = document.createElement('th');
+          th.textContent = column.title;
+          if (column.width !== undefined) {
+            th.style.width = typeof column.width === 'number' ? `${column.width}px` : column.width;
+          }
+          if (column.align) th.style.textAlign = column.align;
+          headerRow.appendChild(th);
+        });
+        thead.appendChild(headerRow);
+
+        if (!data.length) {
+          const tr = document.createElement('tr');
+          const td = document.createElement('td');
+          td.colSpan = Math.max(columns.length, 1);
+          td.textContent = emptyText;
+          tr.appendChild(td);
+          tbody.appendChild(tr);
+        } else {
+          data.forEach((row, rowIndex) => {
+            const tr = document.createElement('tr');
+            tr.addEventListener('click', (event) => onRowClick?.(this, event, row, rowIndex));
+
+            columns.forEach((column) => {
+              const td = document.createElement('td');
+              const value = row[String(column.key)];
+              if (column.align) td.style.textAlign = column.align;
+              if (column.render) {
+                const rendered = column.render(value, row, rowIndex);
+                if (rendered instanceof HTMLElement) td.appendChild(rendered);
+                else td.textContent = String(rendered ?? '');
+              } else {
+                td.textContent = String(value ?? '');
+              }
+              tr.appendChild(td);
+            });
+
+            tbody.appendChild(tr);
+          });
+        }
+
+        table.appendChild(thead);
+        table.appendChild(tbody);
+        root.appendChild(table);
+        return root;
+      }
+
+      getData() {
+        return [...(this.props.data || [])];
+      }
+
+      appendRow(row) {
+        this.update({data: [...(this.props.data || []), row]});
+      }
+
+      clearRows() {
+        this.update({data: []});
+      }
+    }
+
+    class TreeView extends BaseComponent {
+      render() {
+        const {nodes = [], selectedId, expandedIds = []} = this.props;
+        const root = document.createElement('div');
+        const list = document.createElement('ul');
+        this.apply(root, 'portableui-treeview');
+        list.className = 'portableui-treeview-list';
+        this.renderNodes(list, nodes, new Set(expandedIds), selectedId);
+        root.appendChild(list);
+        return root;
+      }
+
+      renderNodes(parent, nodes, expandedIds, selectedId) {
+        nodes.forEach((node) => {
+          const item = document.createElement('li');
+          const row = document.createElement('div');
+          row.className = 'portableui-treeview-row';
+
+          const hasChildren = Array.isArray(node.children) && node.children.length > 0;
+          const expanded = hasChildren && expandedIds.has(node.id);
+
+          if (hasChildren) {
+            const toggle = document.createElement('button');
+            toggle.type = 'button';
+            toggle.className = 'portableui-treeview-toggle';
+            toggle.textContent = expanded ? '-' : '+';
+            toggle.addEventListener('click', (event) => {
+              event.stopPropagation();
+              const nextExpanded = new Set(this.props.expandedIds || []);
+              if (nextExpanded.has(node.id)) nextExpanded.delete(node.id);
+              else nextExpanded.add(node.id);
+              this.update({expandedIds: [...nextExpanded]});
+              this.props.onToggle?.(this, event, node, !expanded);
+            });
+            row.appendChild(toggle);
+          }
+
+          const label = document.createElement('span');
+          label.className = 'portableui-treeview-label';
+          label.textContent = node.label;
+          if (selectedId === node.id) {
+            label.classList.add('portableui-treeview-label-selected');
+          }
+          label.addEventListener('click', (event) => {
+            this.update({selectedId: node.id});
+            this.props.onSelect?.(this, event, node);
+          });
+          row.appendChild(label);
+          item.appendChild(row);
+
+          if (hasChildren) {
+            const childList = document.createElement('ul');
+            childList.className = 'portableui-treeview-children';
+            childList.style.display = expanded ? 'block' : 'none';
+            this.renderNodes(childList, node.children, expandedIds, selectedId);
+            item.appendChild(childList);
+          }
+
+          parent.appendChild(item);
+        });
+      }
+
+      collectIds(nodes) {
+        return nodes.flatMap((node) => [node.id, ...(node.children ? this.collectIds(node.children) : [])]);
+      }
+
+      expandAll() {
+        this.update({expandedIds: this.collectIds(this.props.nodes || [])});
+      }
+
+      collapseAll() {
+        this.update({expandedIds: []});
+      }
+    }
+
+    class Tabs extends BaseComponent {
+      render() {
+        const {tabs = [], activeTabId, stretch = false, onTabChange} = this.props;
+        const root = document.createElement('div');
+        const header = document.createElement('div');
+        const body = document.createElement('div');
+        this.apply(root, 'portableui-tabs');
+        header.className = 'portableui-tabs-header';
+        body.className = 'portableui-tabs-body';
+
+        const currentId = this.resolveActiveTabId(tabs, activeTabId);
+
+        tabs.forEach((tab) => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'portableui-tabs-button';
+          button.textContent = tab.title;
+          button.disabled = !!tab.disabled;
+          if (stretch) button.style.flex = '1';
+          if (tab.id === currentId) button.classList.add('portableui-tabs-button-active');
+          button.addEventListener('click', (event) => {
+            if (tab.disabled) return;
+            this.update({activeTabId: tab.id});
+            onTabChange?.(this, event, tab);
+          });
+          header.appendChild(button);
+        });
+
+        const activeTab = tabs.find((tab) => tab.id === currentId);
+        if (activeTab) {
+          const content = typeof activeTab.content === 'function' ? activeTab.content() : activeTab.content;
+          if (content instanceof HTMLElement) body.appendChild(content);
+          else body.textContent = String(content ?? '');
+        }
+
+        root.appendChild(header);
+        root.appendChild(body);
+        return root;
+      }
+
+      resolveActiveTabId(tabs, activeTabId) {
+        const active = tabs.find((tab) => tab.id === activeTabId && !tab.disabled);
+        return active ? active.id : tabs.find((tab) => !tab.disabled)?.id;
+      }
+    }
+
+    class Modal extends BaseComponent {
+      render() {
+        const {
+          visible = false,
+          title = '',
+          content = '',
+          width,
+          confirmText = '确认',
+          cancelText = '取消',
+          showFooter = true,
+          showCloseButton = true,
+          closeOnOverlayClick = true,
+          onConfirm,
+          onCancel,
+        } = this.props;
+
+        const overlay = document.createElement('div');
+        const container = document.createElement('div');
+        const header = document.createElement('div');
+        const body = document.createElement('div');
+
+        this.apply(overlay, 'portableui-modal portableui-modal-overlay');
+        overlay.style.display = visible ? 'flex' : 'none';
+        container.className = 'portableui-modal-container';
+        header.className = 'portableui-modal-header';
+        body.className = 'portableui-modal-body';
+        if (width !== undefined) {
+          container.style.width = typeof width === 'number' ? `${width}px` : width;
+        }
+
+        const titleEl = document.createElement('h3');
+        titleEl.className = 'portableui-modal-title';
+        titleEl.textContent = title;
+        header.appendChild(titleEl);
+
+        if (showCloseButton) {
+          const closeButton = document.createElement('button');
+          closeButton.type = 'button';
+          closeButton.className = 'portableui-modal-close';
+          closeButton.textContent = '×';
+          closeButton.addEventListener('click', () => this.close());
+          header.appendChild(closeButton);
+        }
+
+        if (content instanceof HTMLElement) body.appendChild(content);
+        else body.textContent = String(content ?? '');
+
+        container.appendChild(header);
+        container.appendChild(body);
+
+        if (showFooter) {
+          const footer = document.createElement('div');
+          footer.className = 'portableui-modal-footer';
+
+          const cancelBtn = document.createElement('button');
+          cancelBtn.type = 'button';
+          cancelBtn.className = 'portableui-modal-cancel';
+          cancelBtn.textContent = cancelText;
+          cancelBtn.addEventListener('click', (event) => {
+            onCancel?.(this, event);
+            this.close();
+          });
+
+          const confirmBtn = document.createElement('button');
+          confirmBtn.type = 'button';
+          confirmBtn.className = 'portableui-modal-confirm';
+          confirmBtn.textContent = confirmText;
+          confirmBtn.addEventListener('click', (event) => onConfirm?.(this, event));
+
+          footer.appendChild(cancelBtn);
+          footer.appendChild(confirmBtn);
+          container.appendChild(footer);
+        }
+
+        overlay.addEventListener('click', (event) => {
+          if (closeOnOverlayClick && event.target === overlay) this.close();
+        });
+
+        overlay.appendChild(container);
+        return overlay;
+      }
+
+      open() {
+        const wasVisible = !!this.props.visible;
+        this.update({visible: true});
+        if (!wasVisible) this.props.onOpen?.(this);
+      }
+
+      close() {
+        const wasVisible = !!this.props.visible;
+        this.update({visible: false});
+        if (wasVisible) this.props.onClose?.(this);
+      }
+    }
+
+    class Toast extends BaseComponent {
+      constructor(props = {}) {
+        super(props);
+        this.autoCloseTimer = null;
+      }
+
+      render() {
+        const {message = '', visible = false, type = 'info', closable = true} = this.props;
+        const root = document.createElement('div');
+        this.apply(root, `portableui-toast portableui-toast-${type}`);
+        root.style.display = visible ? 'inline-flex' : 'none';
+
+        const messageEl = document.createElement('span');
+        messageEl.className = 'portableui-toast-message';
+        messageEl.textContent = message;
+        root.appendChild(messageEl);
+
+        if (closable) {
+          const closeButton = document.createElement('button');
+          closeButton.type = 'button';
+          closeButton.className = 'portableui-toast-close';
+          closeButton.textContent = '×';
+          closeButton.addEventListener('click', () => this.hide());
+          root.appendChild(closeButton);
+        }
+
+        if (visible) this.scheduleAutoClose();
+        else this.clearAutoClose();
+
+        return root;
+      }
+
+      show(message, type) {
+        const nextProps = {visible: true};
+        if (message !== undefined) nextProps.message = message;
+        if (type !== undefined) nextProps.type = type;
+        this.update(nextProps);
+        this.scheduleAutoClose();
+      }
+
+      hide() {
+        const wasVisible = !!this.props.visible;
+        this.clearAutoClose();
+        this.update({visible: false});
+        if (wasVisible) this.props.onClose?.(this);
+      }
+
+      scheduleAutoClose() {
+        this.clearAutoClose();
+        const duration = this.props.duration ?? 3000;
+        if (!(this.props.visible ?? false) || duration <= 0) return;
+        this.autoCloseTimer = window.setTimeout(() => this.hide(), duration);
+      }
+
+      clearAutoClose() {
+        if (this.autoCloseTimer !== null) {
+          window.clearTimeout(this.autoCloseTimer);
+          this.autoCloseTimer = null;
+        }
+      }
+    }
+
+    class Progress extends BaseComponent {
+      render() {
+        const {value = 0, min = 0, max = 100, showLabel = true, labelFormatter, color, height} = this.props;
+        const root = document.createElement('div');
+        const track = document.createElement('div');
+        const bar = document.createElement('div');
+        this.apply(root, 'portableui-progress');
+
+        const safeValue = Math.min(max, Math.max(min, value));
+        const ratio = max > min ? ((safeValue - min) / (max - min)) * 100 : 0;
+
+        track.className = 'portableui-progress-track';
+        bar.className = 'portableui-progress-bar';
+        bar.style.width = `${ratio}%`;
+        if (color) bar.style.backgroundColor = color;
+        if (height !== undefined) {
+          track.style.height = typeof height === 'number' ? `${height}px` : height;
+        }
+
+        track.appendChild(bar);
+        root.appendChild(track);
+
+        if (showLabel) {
+          const label = document.createElement('span');
+          label.className = 'portableui-progress-label';
+          label.textContent = labelFormatter ? labelFormatter(safeValue, min, max) : `${Math.round(ratio)}%`;
+          root.appendChild(label);
+        }
+
+        return root;
+      }
+
+      increment(step = 1) {
+        this.update({value: (this.props.value ?? 0) + step});
+      }
+
+      setValue(value) {
+        this.update({value});
+      }
+    }
+
+    class Autocomplete extends BaseComponent {
+      constructor(props = {}) {
+        super(props);
+        this.state = {query: props.value || '', open: false};
+      }
+
+      render() {
+        const {placeholder = '', options = [], minChars = 1, maxResults = 10, onInput, onSelect, filter} = this.props;
+        const root = document.createElement('div');
+        const input = document.createElement('input');
+        const list = document.createElement('ul');
+        this.apply(root, 'portableui-autocomplete');
+
+        input.type = 'text';
+        input.className = 'portableui-autocomplete-input';
+        input.placeholder = placeholder;
+        input.value = String(this.state.query || '');
+
+        const normalized = options.map((option) => typeof option === 'string' ? {label: option, value: option} : option);
+        const query = input.value.trim();
+        const matches = query.length < minChars
+          ? []
+          : normalized
+            .filter((option) => filter ? filter(query, option) : option.label.toLowerCase().includes(query.toLowerCase()))
+            .slice(0, maxResults);
+
+        input.addEventListener('input', (event) => {
+          const value = input.value;
+          this.setState({query: value, open: value.trim().length >= minChars});
+          onInput?.(this, event, value);
+        });
+
+        list.className = 'portableui-autocomplete-list';
+        list.style.display = this.state.open && matches.length > 0 ? 'block' : 'none';
+
+        matches.forEach((option) => {
+          const item = document.createElement('li');
+          item.className = 'portableui-autocomplete-item';
+          item.textContent = option.label;
+          item.addEventListener('click', (event) => {
+            this.update({value: option.value});
+            this.setState({query: option.value, open: false});
+            onSelect?.(this, event, option);
+          });
+          list.appendChild(item);
+        });
+
+        root.appendChild(input);
+        root.appendChild(list);
+        return root;
+      }
+
+      rerender() {
+        const currentRoot = this.element;
+        const currentInput = currentRoot?.querySelector('.portableui-autocomplete-input');
+        const shouldRestoreFocus = document.activeElement === currentInput;
+        const selectionStart = currentInput?.selectionStart ?? null;
+        const selectionEnd = currentInput?.selectionEnd ?? null;
+
+        super.rerender();
+
+        if (!shouldRestoreFocus) return;
+
+        const nextInput = this.element?.querySelector('.portableui-autocomplete-input');
+        nextInput?.focus();
+        if (nextInput && selectionStart !== null && selectionEnd !== null) {
+          nextInput.setSelectionRange(selectionStart, selectionEnd);
+        }
+      }
+    }
+
+    class CascadingSelect extends BaseComponent {
+      render() {
+        const {options = [], valuePath = [], placeholder = '请选择', onChange} = this.props;
+        const root = document.createElement('div');
+        this.apply(root, 'portableui-cascading-select');
+
+        let levelOptions = options;
+        let level = 0;
+
+        while (levelOptions.length > 0) {
+          const select = document.createElement('select');
+          select.className = 'portableui-cascading-select-level';
+          select.dataset.level = String(level);
+
+          const placeholderOption = document.createElement('option');
+          placeholderOption.value = '';
+          placeholderOption.textContent = placeholder;
+          select.appendChild(placeholderOption);
+
+          levelOptions.forEach((option) => {
+            const optionEl = document.createElement('option');
+            optionEl.value = option.value;
+            optionEl.textContent = option.label;
+            optionEl.selected = valuePath[level] === option.value;
+            select.appendChild(optionEl);
+          });
+
+          select.addEventListener('change', (event) => {
+            const currentLevel = Number(select.dataset.level || '0');
+            const nextValuePath = [...valuePath.slice(0, currentLevel)];
+            if (select.value) nextValuePath.push(select.value);
+            this.update({valuePath: nextValuePath});
+            onChange?.(this, event, nextValuePath);
+          });
+
+          root.appendChild(select);
+
+          const selectedValue = valuePath[level];
+          const selectedOption = levelOptions.find((option) => option.value === selectedValue);
+          if (!selectedOption) break;
+          levelOptions = selectedOption.children || [];
+          level += 1;
+        }
+
+        return root;
+      }
+    }
+
+    function createCard(title, description) {
+      const root = document.createElement('section');
+      root.className = 'demo-card';
+
+      const heading = document.createElement('h2');
+      heading.className = 'demo-title';
+      heading.textContent = title;
+
+      const desc = document.createElement('p');
+      desc.className = 'demo-description';
+      desc.textContent = description;
+
+      const mountPoint = document.createElement('div');
+      mountPoint.className = 'demo-mount';
+
+      root.appendChild(heading);
+      root.appendChild(desc);
+      root.appendChild(mountPoint);
+
+      return {root, mountPoint};
+    }
+
+    function tableExample() {
+      const {root, mountPoint} = createCard('1. Table 表格', '演示带自定义列渲染、斑马纹和行点击事件的数据表格。');
+      const feedback = document.createElement('p');
+      feedback.className = 'demo-feedback';
+      feedback.textContent = '点击任意行以查看用户信息。';
+
+      const statusMap = {Active: '启用', Pending: '待处理', Blocked: '已禁用'};
+      const columns = [
+        {key: 'id', title: '编号', width: 70, align: 'center'},
+        {key: 'name', title: '姓名', width: 170},
+        {key: 'email', title: '邮箱'},
+        {
+          key: 'status',
+          title: '状态',
+          width: 120,
+          align: 'center',
+          render: (value) => {
+            const badge = document.createElement('span');
+            const status = String(value || '');
+            badge.textContent = statusMap[status] || status;
+            badge.className = `status status-${status.toLowerCase()}`;
+            return badge;
+          },
+        },
+      ];
+
+      const table = new Table({
+        columns,
+        data: [
+          {id: 1, name: 'Alice', email: 'alice@demo.local', status: 'Active'},
+          {id: 2, name: 'Bob', email: 'bob@demo.local', status: 'Pending'},
+          {id: 3, name: 'Chris', email: 'chris@demo.local', status: 'Blocked'},
+        ],
+        striped: true,
+        hoverable: true,
+        onRowClick: (_self, _event, row) => {
+          feedback.textContent = `当前选择：#${row.id} ${row.name}（${statusMap[row.status] || row.status}）`;
+        },
+      });
+      table.mount(mountPoint);
+
+      const controls = document.createElement('div');
+      controls.className = 'demo-controls';
+      new Button({
+        text: '追加一行',
+        onClick: () => {
+          const nextId = table.getData().length + 1;
+          table.appendRow({
+            id: nextId,
+            name: `用户 ${nextId}`,
+            email: `user${nextId}@demo.local`,
+            status: nextId % 3 === 0 ? 'Blocked' : nextId % 2 === 0 ? 'Active' : 'Pending',
+          });
+        },
+      }).mount(controls);
+      new Button({text: '清空数据', onClick: () => table.clearRows()}).mount(controls);
+
+      root.appendChild(controls);
+      root.appendChild(feedback);
+      return root;
+    }
+
+    function treeViewExample() {
+      const {root, mountPoint} = createCard('2. TreeView 树形视图', '演示可展开、可折叠并支持节点选择的树结构。');
+      const feedback = document.createElement('p');
+      feedback.className = 'demo-feedback';
+      feedback.textContent = '请从树中选择一个节点。';
+
+      const tree = new TreeView({
+        nodes: [
+          {
+            id: 'project',
+            label: '项目',
+            children: [
+              {
+                id: 'src',
+                label: 'src',
+                children: [
+                  {id: 'components', label: 'components 组件'},
+                  {id: 'layout', label: 'layout 布局'},
+                  {id: 'styles', label: 'styles 样式'},
+                ],
+              },
+              {
+                id: 'test',
+                label: 'test',
+                children: [
+                  {id: 'unit', label: 'unit 单元测试'},
+                  {id: 'integration', label: 'integration 集成测试'},
+                ],
+              },
+            ],
+          },
+        ],
+        expandedIds: ['project', 'src'],
+        onSelect: (_self, _event, node) => {
+          feedback.textContent = `已选择节点：${node.label}（${node.id}）`;
+        },
+      });
+      tree.mount(mountPoint);
+
+      const controls = document.createElement('div');
+      controls.className = 'demo-controls';
+      new Button({text: '全部展开', onClick: () => tree.expandAll()}).mount(controls);
+      new Button({text: '全部折叠', onClick: () => tree.collapseAll()}).mount(controls);
+
+      root.appendChild(controls);
+      root.appendChild(feedback);
+      return root;
+    }
+
+    function tabsExample() {
+      const {root, mountPoint} = createCard('3. Tabs 标签页', '演示标签页切换，以及字符串内容和自定义元素内容的混合使用。');
+      const info = document.createElement('p');
+      info.className = 'demo-feedback';
+      info.textContent = '当前标签页：概览';
+
+      const tabs = new Tabs({
+        stretch: true,
+        tabs: [
+          {id: 'overview', title: '概览', content: 'PortableUi 提供适用于脚本环境和 Web 应用的可组合组件。'},
+          {
+            id: 'stats',
+            title: '统计',
+            content: () => {
+              const wrap = document.createElement('div');
+              wrap.innerHTML = '<strong>本周使用增长：</strong> +23%';
+              return wrap;
+            },
+          },
+          {id: 'settings', title: '设置', content: '可以在同一处统一调整行为、主题和国际化配置。'},
+        ],
+        onTabChange: (_self, _event, tab) => {
+          info.textContent = `当前标签页：${tab.title}`;
+        },
+      });
+
+      tabs.mount(mountPoint);
+      root.appendChild(info);
+      return root;
+    }
+
+    function modalAndToastExample() {
+      const {root, mountPoint} = createCard('4. Modal + Toast 模态框与消息提示', '演示带确认/取消逻辑的模态框，以及不同类型的 Toast 消息提示。');
+      const feedback = document.createElement('p');
+      feedback.className = 'demo-feedback';
+      feedback.textContent = '点击按钮打开模态框并触发相关事件。';
+
+      const toast = new Toast({visible: false, message: '已准备就绪', type: 'info', duration: 2000});
+      const modalBody = document.createElement('div');
+      modalBody.textContent = '是否保存当前配置？';
+
+      const modal = new Modal({
+        title: '保存变更',
+        content: modalBody,
+        visible: false,
+        confirmText: '确认',
+        cancelText: '取消',
+        onOpen: () => { feedback.textContent = '模态框已打开。'; },
+        onClose: () => { feedback.textContent = '模态框已关闭。'; },
+        onConfirm: () => {
+          toast.show('保存成功', 'success');
+          modal.close();
+        },
+        onCancel: () => {
+          toast.show('操作已取消', 'warning');
+        },
+      });
+
+      const controls = document.createElement('div');
+      controls.className = 'demo-controls';
+      new Button({text: '打开模态框', onClick: () => modal.open()}).mount(controls);
+      new Button({text: '信息提示', onClick: () => toast.show('后台同步已完成', 'info')}).mount(controls);
+      new Button({text: '错误提示', onClick: () => toast.show('网络请求失败', 'error')}).mount(controls);
+      controls.appendChild(feedback);
+
+      modal.mount(mountPoint);
+      toast.mount(mountPoint);
+      root.appendChild(controls);
+      return root;
+    }
+
+    function progressExample() {
+      const {root, mountPoint} = createCard('5. Progress 进度条', '演示可递增更新的确定型进度条。');
+      const progress = new Progress({value: 25, color: '#4f46e5', labelFormatter: (value, _min, max) => `${value}/${max}`});
+      progress.mount(mountPoint);
+
+      const controls = document.createElement('div');
+      controls.className = 'demo-controls';
+      new Button({text: '增加 10', onClick: () => progress.increment(10)}).mount(controls);
+      new Button({text: '重置', onClick: () => progress.setValue(0)}).mount(controls);
+      new Button({text: '完成', onClick: () => progress.setValue(100)}).mount(controls);
+
+      root.appendChild(controls);
+      return root;
+    }
+
+    function autocompleteExample() {
+      const {root, mountPoint} = createCard('6. Autocomplete 自动完成', '演示从预设选项中搜索并选择结果。');
+      const feedback = document.createElement('p');
+      feedback.className = 'demo-feedback';
+      feedback.textContent = '可以尝试输入：re、ta 或 tr。';
+
+      const autocomplete = new Autocomplete({
+        placeholder: '搜索命令...',
+        options: ['restart-service', 'reload-cache', 'trace-request', 'tail-logs', 'trigger-build', 'rollback-release'],
+        onSelect: (_self, _event, option) => {
+          feedback.textContent = `已选择：${option.value}`;
+        },
+      });
+
+      autocomplete.mount(mountPoint);
+      root.appendChild(feedback);
+      return root;
+    }
+
+    function cascadingSelectExample() {
+      const {root, mountPoint} = createCard('7. CascadingSelect 级联选择', '演示多级联动下拉框，每一级选项都依赖上一级选择。');
+      const feedback = document.createElement('p');
+      feedback.className = 'demo-feedback';
+      feedback.textContent = '当前路径：（未选择）';
+
+      const select = new CascadingSelect({
+        options: [
+          {
+            label: '亚洲',
+            value: 'asia',
+            children: [
+              {
+                label: '中国',
+                value: 'china',
+                children: [
+                  {label: '上海', value: 'shanghai'},
+                  {label: '深圳', value: 'shenzhen'},
+                ],
+              },
+              {
+                label: '日本',
+                value: 'japan',
+                children: [
+                  {label: '东京', value: 'tokyo'},
+                  {label: '大阪', value: 'osaka'},
+                ],
+              },
+            ],
+          },
+          {
+            label: '欧洲',
+            value: 'europe',
+            children: [
+              {
+                label: '德国',
+                value: 'germany',
+                children: [
+                  {label: '柏林', value: 'berlin'},
+                  {label: '慕尼黑', value: 'munich'},
+                ],
+              },
+            ],
+          },
+        ],
+        placeholder: '请选择',
+        onChange: (_self, _event, valuePath) => {
+          feedback.textContent = `当前路径：${valuePath.join(' / ') || '（未选择）'}`;
+        },
+      });
+
+      select.mount(mountPoint);
+      root.appendChild(feedback);
+      return root;
+    }
+
+    function mountAllComplexExamples(container) {
+      [
+        tableExample(),
+        treeViewExample(),
+        tabsExample(),
+        modalAndToastExample(),
+        progressExample(),
+        autocompleteExample(),
+        cascadingSelectExample(),
+      ].forEach((example) => container.appendChild(example));
+    }
+
+    const app = document.getElementById('app');
+    if (app) mountAllComplexExamples(app);
+  </script>
+</body>
+</html>
+
