@@ -100,9 +100,6 @@ export function gridLayoutExample(): HTMLElement {
 
   // 添加网格项目
   for (let i = 1; i <= 9; i++) {
-    const item = Grid.createItem({
-      columnSpan: i === 1 ? 2 : undefined, // 第一项跨 2 列
-    });
     const label = new Label({
       text: `Grid Item ${i}`,
       style: {
@@ -111,7 +108,14 @@ export function gridLayoutExample(): HTMLElement {
         textAlign: 'center',
       },
     });
-    item.addChild(label);
+
+    const item = Grid.createItem(i === 1 ? {
+      columnSpan: 2, // 第一项跨 2 列
+      children: [label],
+    } : {
+      children: [label],
+    });
+
     gridContainer.addChild(item);
   }
 

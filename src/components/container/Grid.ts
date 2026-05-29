@@ -30,11 +30,17 @@ export interface GridItemProps extends ComponentProps {
   columnSpan?: number;
   /** 行跨度 */
   rowSpan?: number;
+  /** 子元素 */
+  children?: (BaseComponent | HTMLElement)[];
 }
 
 export class GridItem extends BaseComponent {
+  /** 子组件集合 */
+  private children: (BaseComponent | HTMLElement)[] = [];
+
   constructor(props: GridItemProps = {}) {
     super(props);
+    this.children = props.children ?? [];
   }
 
   protected render(): ComponentElement {
@@ -61,7 +67,45 @@ export class GridItem extends BaseComponent {
       item.setAttribute('style', styleStr);
     }
 
+    this.renderChildren(item);
+
     return item;
+  }
+
+  /**
+   * 添加子元素
+   */
+  addChild(child: BaseComponent | HTMLElement): void {
+    this.children.push(child);
+    if (this.mounted && this.element) {
+      this.rerender();
+    }
+  }
+
+  /**
+   * 获取所有子元素
+   */
+  getChildrenList(): (BaseComponent | HTMLElement)[] {
+    return [...this.children];
+  }
+
+  private renderChildren(container: HTMLElement): void {
+    for (const child of this.children) {
+      if (child instanceof BaseComponent) {
+        const childElement = child.getElement();
+        if (childElement) {
+          container.appendChild(childElement);
+        } else {
+          const childContainer = document.createElement('div');
+          child.mount(childContainer);
+          if (childContainer.firstChild) {
+            container.appendChild(childContainer.firstChild);
+          }
+        }
+      } else if (child instanceof HTMLElement) {
+        container.appendChild(child);
+      }
+    }
   }
 }
 
@@ -160,8 +204,4 @@ export class Grid extends Container {
     return new GridItem(props);
   }
 }
-
-
-
-
 
