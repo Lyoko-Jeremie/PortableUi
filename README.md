@@ -32,3 +32,19 @@
 7. **灵活性**：库应该提供足够的灵活性，以满足不同用户的需求和使用场景。
 8. **轻量级**：库应该尽可能小，以减少加载时间和资源占用。
 
+## 示例构建（Webpack 多页面）
+
+项目现在支持将 `examples` 目录构建为多个独立 HTML 页面。
+
+- 输出目录：`dist/examples`
+- 输出页面：`basic.html`、`complex.html`、`layout.html`
+
+常用命令：
+
+```bash
+yarn build:examples
+yarn build:examples:prod
+yarn dev:examples
+```
+
+执行 `yarn dev:examples` 后，默认会启动开发服务器并打开 `basic.html`。

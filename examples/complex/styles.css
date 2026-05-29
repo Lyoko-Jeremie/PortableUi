@@ -1,0 +1,29 @@
+#app {
+  display: grid;
+  gap: 16px;
+}
+
+.demo-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.demo-title {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.demo-description,
+.demo-feedback {
+  color: #4b5563;
+}
+
+.demo-controls {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
