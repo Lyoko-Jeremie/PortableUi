@@ -17,6 +17,18 @@ const element = BaseComponent.queryElementById(container, 'my-id');
 
 // 在当前组件根元素中查找后代组件
 const child = parentComponent.findComponentById('child-id');
+
+// 查询当前组件的子组件（默认 deep = true）
+const descendants = parentComponent.findChildComponents();
+
+// 只查直接子组件
+const directChildren = parentComponent.findChildComponents(false);
+
+// 查询当前组件最近父组件
+const parent = childComponent.findParentComponent();
+
+// 从任意DOM节点向上查询最近父组件
+const owner = BaseComponent.queryParentComponent(domNode);
 ```
 
 ## 创建组件
@@ -89,6 +101,21 @@ container.querySelectorAll('[id]').forEach((el) => {
     comp.setDisabled(true);
   }
 });
+```
+
+### 场景5：父子组件联动
+```typescript
+const group = new Container({ id: 'group' });
+group.mount(document.body);
+
+const saveBtn = new Button({ id: 'save-btn', text: 'Save' });
+saveBtn.mount(group.getElement()!);
+
+// 子组件查父组件
+const parent = saveBtn.findParentComponent<Container>();
+
+// 父组件查子组件
+const children = group.findChildComponents<Button>(false);
 ```
 
 ## ID最佳实践

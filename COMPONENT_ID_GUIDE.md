@@ -83,6 +83,34 @@ const nameInput = form.findComponentById<Input>('name-input');
 nameInput?.focus();
 ```
 
+### 方式5：查询子组件（直接子组件 / 全部后代）
+
+```typescript
+const panel = new Container({ id: 'settings-panel' });
+panel.mount(appElement);
+
+// 默认 deep = true：查询所有后代组件
+const allDescendants = panel.findChildComponents();
+
+// deep = false：仅查询直接子组件
+const directChildren = panel.findChildComponents(false);
+```
+
+### 方式6：查询父组件（最近祖先）
+
+```typescript
+const form = new Container({ id: 'login-form' });
+const submit = new Button({ id: 'submit-btn', text: 'Submit' });
+
+form.mount(appElement);
+submit.mount(form.getElement()!);
+
+const parent = submit.findParentComponent<Container>();
+if (parent) {
+  console.log(parent.getId()); // login-form
+}
+```
+
 ## 在容器组件中使用
 
 ```typescript
@@ -170,6 +198,10 @@ const button = new Button({
 - `BaseComponent.queryElementById(container: ParentNode | null, id: string): HTMLElement | null` - 在容器作用域获取元素
 - `findComponentById(id: string): BaseComponent | null` - 在当前组件根元素范围查询组件
 - `findElementById(id: string): HTMLElement | null` - 在当前组件根元素范围查询元素
+- `findChildComponents(deep?: boolean): BaseComponent[]` - 在当前组件根元素范围查询子组件
+- `findParentComponent(): BaseComponent | null` - 查询当前组件最近父组件
+- `BaseComponent.queryChildComponents(container: ParentNode | null, deep?: boolean): BaseComponent[]` - 在任意容器范围查询子组件
+- `BaseComponent.queryParentComponent(element: Node | null): BaseComponent | null` - 从任意DOM节点向上查询最近父组件
 
 ## 注意事项
 

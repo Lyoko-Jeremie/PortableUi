@@ -218,6 +218,21 @@ export abstract class BaseComponent {
   }
 
   /**
+   * 在当前组件根元素范围内，查询子组件实例
+   * @param deep - 是否递归查询所有后代组件，false 时仅查询直接子组件
+   */
+  findChildComponents<T extends BaseComponent = BaseComponent>(deep: boolean = true): T[] {
+    return BaseComponent.queryChildComponents<T>(this.element, deep);
+  }
+
+  /**
+   * 查询当前组件的父组件实例（最近的祖先组件）
+   */
+  findParentComponent<T extends BaseComponent = BaseComponent>(): T | null {
+    return BaseComponent.queryParentComponent<T>(this.element);
+  }
+
+  /**
    * 在指定容器范围内，通过ID查询组件实例（不依赖全局静态存储）
    * @param container - 查询范围容器
    * @param id - 组件ID
@@ -246,6 +261,76 @@ export abstract class BaseComponent {
 
     const selectorId = id.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
     return container.querySelector(`[id="${selectorId}"]`);
+  }
+
+  /**
+   * 在指定容器范围内，查询子组件实例
+   * @param container - 查询范围容器
+   * @param deep - 是否递归查询所有后代组件，false 时仅查询直接子组件
+   */
+  static queryChildComponents<T extends BaseComponent = BaseComponent>(
+    container: ParentNode | null,
+    deep: boolean = true
+  ): T[] {
+    if (!container) {
+      return [];
+    }
+
+    const nodes: HTMLElement[] = [];
+
+    if (deep) {
+      if ('querySelectorAll' in container) {
+        const descendants = container.querySelectorAll('*');
+        for (const node of descendants) {
+          if (node instanceof HTMLElement) {
+            nodes.push(node);
+          }
+        }
+      }
+    } else {
+      const directChildren = container instanceof Element
+        ? Array.from(container.children)
+        : Array.from(container.childNodes);
+
+      for (const node of directChildren) {
+        if (node instanceof HTMLElement) {
+          nodes.push(node);
+        }
+      }
+    }
+
+    const components: T[] = [];
+    for (const node of nodes) {
+      const component = BaseComponent.readComponentFromElement<T>(node);
+      if (component) {
+        components.push(component);
+      }
+    }
+
+    return components;
+  }
+
+  /**
+   * 从指定元素向上查询最近的父组件实例
+   * @param element - 起始元素
+   */
+  static queryParentComponent<T extends BaseComponent = BaseComponent>(element: Node | null): T | null {
+    if (!element) {
+      return null;
+    }
+
+    let current: Node | null = element.parentNode;
+    while (current) {
+      if (current instanceof HTMLElement) {
+        const component = BaseComponent.readComponentFromElement<T>(current);
+        if (component) {
+          return component;
+        }
+      }
+      current = current.parentNode;
+    }
+
+    return null;
   }
 
   /**
