@@ -113,5 +113,22 @@ describe('CreatePortableUi', () => {
 
     expect(host.querySelector('#badge1')?.textContent).toBe('typed custom');
   });
+
+  it('throws when duplicate component ids are declared', () => {
+    expect(() => {
+      CreatePortableUi(host, {
+        children: {
+          first: {
+            type: 'Button',
+            props: {id: 'same-id', text: 'A'},
+          },
+          second: {
+            type: 'Button',
+            props: {id: 'same-id', text: 'B'},
+          },
+        },
+      });
+    }).toThrow('Duplicate component id: same-id');
+  });
 });
 
