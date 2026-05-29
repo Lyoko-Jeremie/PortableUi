@@ -2,8 +2,8 @@
  * 布局引擎
  */
 
-import { LayoutConfig, GridConfig, GridItemConfig, FlexConfig } from './LayoutTypes';
-import { CSS } from '../styles';
+import {LayoutConfig, GridConfig, GridItemConfig, FlexConfig} from './LayoutTypes';
+import {CSS} from '../styles';
 
 export class LayoutEngine {
   /**
@@ -136,7 +136,7 @@ export class LayoutEngine {
     let css = this.createLayoutWrapper(baseConfig);
 
     for (const [breakpoint, config] of Object.entries(breakpoints)) {
-      const mergedConfig = { ...baseConfig, ...config };
+      const mergedConfig = {...baseConfig, ...config};
       const breakpointCss = this.createLayoutWrapper(mergedConfig);
 
       // 简单的断点处理（实际应用中应该使用真实的媒体查询）

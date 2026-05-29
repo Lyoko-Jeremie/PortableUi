@@ -2,7 +2,7 @@
  * English translation table
  */
 
-import { LocaleStrings } from './types';
+import {LocaleStrings} from './types';
 
 export const enUS: LocaleStrings = {
   common: {

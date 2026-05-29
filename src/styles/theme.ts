@@ -2,7 +2,7 @@
  * 主题和设计令牌
  */
 
-import { Theme, ColorScheme } from './types';
+import {Theme, ColorScheme} from './types';
 
 /** 默认颜色方案 */
 export const defaultColors: ColorScheme = {

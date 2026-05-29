@@ -3,7 +3,7 @@
  * 提供全局事件发射、监听和管理功能
  */
 
-import { PortableEvent, EventListener, EventListenerOptions, EventEmitOptions } from '../types';
+import {PortableEvent, EventListener, EventListenerOptions, EventEmitOptions} from '../types';
 
 interface EventListenerEntry {
   listener: EventListener;
@@ -35,7 +35,7 @@ export class EventSystem {
       this.listeners.set(eventName, []);
     }
 
-    const entry: EventListenerEntry = { listener, options: options ?? undefined };
+    const entry: EventListenerEntry = {listener, options: options ?? undefined};
     this.listeners.get(eventName)!.push(entry);
 
     // 返回取消监听的函数
@@ -60,7 +60,7 @@ export class EventSystem {
       this.off(eventName, wrappedListener);
     };
 
-    return this.on(eventName, wrappedListener, { ...options, once: true });
+    return this.on(eventName, wrappedListener, {...options, once: true});
   }
 
   /**

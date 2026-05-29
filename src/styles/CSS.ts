@@ -2,7 +2,7 @@
  * CSS 生成和处理工具
  */
 
-import { StyleObject, CSSRule, MediaQuery } from './types';
+import {StyleObject, CSSRule, MediaQuery} from './types';
 
 export class CSS {
   /**
@@ -52,7 +52,7 @@ export class CSS {
    * @param styles - 样式对象数组
    */
   static merge(...styles: StyleObject[]): StyleObject {
-    return styles.reduce((merged, style) => ({ ...merged, ...style }), {});
+    return styles.reduce((merged, style) => ({...merged, ...style}), {});
   }
 
   /**

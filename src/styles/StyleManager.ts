@@ -3,9 +3,9 @@
  * 负责动态样式注入、主题管理等
  */
 
-import { Theme, StyleManagerOptions, StyleObject } from './types';
-import { getDefaultTheme } from './theme';
-import { CSS } from './CSS';
+import {Theme, StyleManagerOptions, StyleObject} from './types';
+import {getDefaultTheme} from './theme';
+import {CSS} from './CSS';
 
 export class StyleManager {
   /** 当前主题 */
@@ -152,8 +152,8 @@ export class StyleManager {
    * @param baseStyles - 基础样式
    */
   applyTheme(baseStyles: StyleObject): StyleObject {
-    const { colors, spacing, sizes } = this.currentTheme;
-    const applied = { ...baseStyles };
+    const {colors, spacing, sizes} = this.currentTheme;
+    const applied = {...baseStyles};
 
     // 替换颜色变量
     if (colors) {

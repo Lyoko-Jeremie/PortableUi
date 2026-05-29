@@ -2,10 +2,10 @@
  * 国际化管理器
  */
 
-import { Language, TranslationTable, I18nConfig, LanguageChangeListener, TranslationMissingListener } from './types';
-import { LocaleStrings } from './locales/types';
-import { enUS } from './locales/en';
-import { zhCN } from './locales/zh';
+import {Language, TranslationTable, I18nConfig, LanguageChangeListener, TranslationMissingListener} from './types';
+import {LocaleStrings} from './locales/types';
+import {enUS} from './locales/en';
+import {zhCN} from './locales/zh';
 
 export class I18nManager {
   /** 当前语言 */

@@ -3,7 +3,7 @@
  * 所有组件的基类，提供生命周期、事件、状态等基础功能
  */
 
-import { ComponentProps, ComponentState, ComponentElement, ComponentLifecycle } from '../types';
+import {ComponentProps, ComponentState, ComponentElement, ComponentLifecycle} from '../types';
 
 export abstract class BaseComponent {
   /** 组件 DOM 元素 */
@@ -70,7 +70,7 @@ export abstract class BaseComponent {
    * @param props - 新的属性
    */
   update(props: Partial<ComponentProps>): void {
-    this.props = { ...this.props, ...props };
+    this.props = {...this.props, ...props};
     if (this.mounted && this.element) {
       this.rerender();
       this.lifecycle.onUpdate?.();
@@ -82,7 +82,7 @@ export abstract class BaseComponent {
    * @param state - 新的状态
    */
   setState(state: Partial<ComponentState>): void {
-    this.state = { ...this.state, ...state };
+    this.state = {...this.state, ...state};
     if (this.mounted) {
       this.rerender();
     }
@@ -117,14 +117,14 @@ export abstract class BaseComponent {
    * 获取组件属性
    */
   getProps(): ComponentProps {
-    return { ...this.props };
+    return {...this.props};
   }
 
   /**
    * 获取组件状态
    */
   getState(): ComponentState {
-    return { ...this.state };
+    return {...this.state};
   }
 
   /**

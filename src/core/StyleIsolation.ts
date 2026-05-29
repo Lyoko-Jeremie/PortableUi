@@ -23,7 +23,7 @@ export class StyleIsolation {
     }
 
     // 创建 Shadow DOM
-    const shadowRoot = host.attachShadow({ mode: 'open' });
+    const shadowRoot = host.attachShadow({mode: 'open'});
 
     // 如果提供了样式，注入到 Shadow DOM 中
     if (styles) {

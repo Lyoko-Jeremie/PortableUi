@@ -3,7 +3,7 @@
  * 基于 alien-signals 的响应式状态管理
  */
 
-import { StateObserver, StateChangeEvent, ComputedOptions, ReactiveOptions, StateValidator } from '../types';
+import {StateObserver, StateChangeEvent, ComputedOptions, ReactiveOptions, StateValidator} from '../types';
 
 export class StateManager {
   /** 响应式状态对象 */
@@ -111,7 +111,8 @@ export class StateManager {
   observe<T = any>(key: string, observer: StateObserver<T>): () => void {
     if (!this.state.hasOwnProperty(key)) {
       console.warn(`State key "${key}" does not exist`);
-      return () => {};
+      return () => {
+      };
     }
 
     if (!this.observers.has(key)) {
@@ -166,7 +167,7 @@ export class StateManager {
    * 获取所有状态
    */
   getAll(): Record<string, any> {
-    return { ...this.state };
+    return {...this.state};
   }
 
   /**

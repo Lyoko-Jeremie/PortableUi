@@ -2,7 +2,7 @@
  * 辅助函数工具
  */
 
-import { isNil, isFunction } from './types';
+import {isNil, isFunction} from './types';
 
 /**
  * 防抖函数

@@ -2,7 +2,7 @@
  * 简体中文翻译表
  */
 
-import { LocaleStrings } from './types';
+import {LocaleStrings} from './types';
 
 export const zhCN: LocaleStrings = {
   common: {

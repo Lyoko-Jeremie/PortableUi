@@ -17,6 +17,7 @@ export interface Theme {
   spacing?: Record<string, string | number>;
   /** 字体定义 */
   fonts?: Record<string, string>;
+
   /** 其他自定义属性 */
   [key: string]: any;
 }
@@ -39,6 +40,7 @@ export interface ColorScheme {
   warning?: string;
   /** 错误色 */
   error?: string;
+
   /** 其他颜色 */
   [key: string]: string | undefined;
 }
