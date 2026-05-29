@@ -23,6 +23,9 @@ export abstract class BaseComponent {
   /** 是否已挂载 */
   protected mounted: boolean = false;
 
+  /** 全局组件注册表，用于通过id查询组件 */
+  private static componentRegistry: Map<string, BaseComponent> = new Map();
+
   /**
    * 构造函数
    * @param props - 组件属性
@@ -31,6 +34,27 @@ export abstract class BaseComponent {
   constructor(props: ComponentProps = {}, lifecycle: Partial<ComponentLifecycle> = {}) {
     this.props = props;
     this.lifecycle = lifecycle as ComponentLifecycle;
+    // 初始化组件id
+    this.initializeComponentId();
+  }
+
+  /**
+   * 初始化组件ID，如果未提供则自动生成
+   * 生成格式: {ComponentName}_{randomString}
+   */
+  private initializeComponentId(): void {
+    if (!this.props.id) {
+      const componentName = this.constructor.name;
+      const randomString = Math.random().toString(36).substr(2, 9);
+      this.props.id = `${componentName}_${randomString}`;
+    }
+  }
+
+  /**
+   * 获取组件ID
+   */
+  getId(): string {
+    return this.props.id || '';
   }
 
   /**
@@ -49,6 +73,8 @@ export abstract class BaseComponent {
         if (this.element) {
           container.appendChild(this.element);
           this.mounted = true;
+          // 注册组件到全局注册表
+          BaseComponent.registerComponent(this);
           this.lifecycle.onMount?.(this);
         }
       });
@@ -74,6 +100,8 @@ export abstract class BaseComponent {
         }
         this.element = null;
         this.mounted = false;
+        // 从全局注册表中移除组件
+        BaseComponent.unregisterComponent(this);
       });
     } catch (error) {
       this.lifecycle.onError?.(this, error as Error);
@@ -167,9 +195,65 @@ export abstract class BaseComponent {
    */
   destroy(): void {
     this.unmount();
+    BaseComponent.unregisterComponent(this);
     this.props = {};
     this.state = {};
     this.lifecycle = {};
+  }
+
+  // ============ 组件注册和查询 API ============
+
+  /**
+   * 注册组件到全局注册表
+   * @param component - 要注册的组件
+   */
+  private static registerComponent(component: BaseComponent): void {
+    const id = component.getId();
+    if (id) {
+      BaseComponent.componentRegistry.set(id, component);
+    }
+  }
+
+  /**
+   * 从全局注册表中移除组件
+   * @param component - 要移除的组件
+   */
+  private static unregisterComponent(component: BaseComponent): void {
+    const id = component.getId();
+    if (id) {
+      BaseComponent.componentRegistry.delete(id);
+    }
+  }
+
+  /**
+   * 通过ID查询组件
+   * @param id - 组件ID
+   */
+  static getComponentById(id: string): BaseComponent | undefined {
+    return BaseComponent.componentRegistry.get(id);
+  }
+
+  /**
+   * 通过ID查询组件的DOM元素
+   * @param id - 组件ID
+   */
+  static getElementById(id: string): HTMLElement | null {
+    const component = BaseComponent.componentRegistry.get(id);
+    return component ? component.getElement() : null;
+  }
+
+  /**
+   * 获取所有已注册的组件
+   */
+  static getAllComponents(): BaseComponent[] {
+    return Array.from(BaseComponent.componentRegistry.values());
+  }
+
+  /**
+   * 清空所有已注册的组件
+   */
+  static clearRegistry(): void {
+    BaseComponent.componentRegistry.clear();
   }
 
   // ============ DOM 访问和修改 API ============
