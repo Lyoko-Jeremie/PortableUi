@@ -29,6 +29,9 @@ export * from './layout';
 // 国际化系统
 export * from './i18n';
 
+// 声明式适配器
+export * from './adaptor';
+
 // 组件库
 export * from './components/basic';
 export * from './components/complex';
