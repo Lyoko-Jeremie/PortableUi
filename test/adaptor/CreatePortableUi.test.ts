@@ -35,7 +35,7 @@ describe('CreatePortableUi', () => {
     expect(host.getAttribute('data-portableui-id')).toBe('my-ui');
     expect(host.querySelector('#button1')?.textContent).toBe('Click Me');
     expect(host.querySelector('#input1')?.getAttribute('placeholder')).toBe('Type here');
-    expect(ui.getComponent<Button>('button1')).toBeInstanceOf(Button);
+    expect(ui.getComponent('button1')).toBeInstanceOf(Button);
   });
 
   it('mounts nested children into parent component element', () => {
@@ -54,7 +54,7 @@ describe('CreatePortableUi', () => {
       },
     });
 
-    const panel = ui.getComponent<Container>('panel');
+    const panel = ui.getComponent('panel');
     expect(panel).toBeInstanceOf(Container);
     expect(panel?.getElement()?.querySelector('#action')?.textContent).toBe('Run');
   });

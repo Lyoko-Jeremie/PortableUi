@@ -4,8 +4,8 @@ import {
   DeclarativeChildren,
   DeclarativeNodeUnion,
   DeclarativeRegistry,
+  InferTopLevelComponentMap,
   PortableUiAdapter,
-  PortableUiDeclarativeConfig,
 } from './types';
 import {
   Button,
@@ -128,20 +128,25 @@ function mountNode<TRegistry extends DeclarativeRegistry>(
   }
 }
 
+export function CreatePortableUi<
+  const TChildren,
+>(
+  container: HTMLElement,
+  config: {id?: string; children: TChildren}
+): PortableUiAdapter<InferTopLevelComponentMap<BuiltInDeclarativeRegistry, TChildren>>;
+export function CreatePortableUi<
+  TRegistry extends DeclarativeRegistry,
+  const TChildren,
+>(
+  container: HTMLElement,
+  config: {id?: string; children: TChildren},
+  registry: TRegistry
+): PortableUiAdapter<InferTopLevelComponentMap<TRegistry, TChildren>>;
 export function CreatePortableUi(
   container: HTMLElement,
-  config: PortableUiDeclarativeConfig<BuiltInDeclarativeRegistry>
-): PortableUiAdapter;
-export function CreatePortableUi<TRegistry extends DeclarativeRegistry>(
-  container: HTMLElement,
-  config: PortableUiDeclarativeConfig<TRegistry>,
-  registry: TRegistry
-): PortableUiAdapter;
-export function CreatePortableUi<TRegistry extends DeclarativeRegistry>(
-  container: HTMLElement,
-  config: PortableUiDeclarativeConfig<TRegistry>,
-  registry?: TRegistry
-): PortableUiAdapter {
+  config: {id?: string; children: unknown},
+  registry?: DeclarativeRegistry
+): PortableUiAdapter<Record<string, BaseComponent>> {
   if (!container) {
     throw new Error('CreatePortableUi requires a valid container element.');
   }
@@ -154,14 +159,14 @@ export function CreatePortableUi<TRegistry extends DeclarativeRegistry>(
 
   const effectiveRegistry = (registry ?? builtInComponentRegistry) as DeclarativeRegistry;
 
-  for (const [key, node] of toEntries(config.children)) {
+  for (const [key, node] of toEntries(config.children as DeclarativeChildren<DeclarativeRegistry>)) {
     mountNode(effectiveRegistry, key, node as DeclarativeNodeUnion<DeclarativeRegistry>, container, components);
   }
 
-  const adapter: PortableUiAdapter = {
+  const adapter: PortableUiAdapter<Record<string, BaseComponent>> = {
     root: container,
-    getComponent<T extends BaseComponent = BaseComponent>(id: string): T | null {
-      return (components.get(id) as T | undefined) ?? null;
+    getComponent<TKey extends string>(id: TKey): BaseComponent | null {
+      return components.get(id) ?? null;
     },
     getAllComponents(): BaseComponent[] {
       return Array.from(components.values());
@@ -186,7 +191,10 @@ export function CreatePortableUi<TRegistry extends DeclarativeRegistry>(
 }
 
 export function createPortableUiFactory<TRegistry extends DeclarativeRegistry>(registry: TRegistry) {
-  return (container: HTMLElement, config: PortableUiDeclarativeConfig<TRegistry>): PortableUiAdapter => {
+  return <const TChildren>(
+    container: HTMLElement,
+    config: {id?: string; children: TChildren}
+  ): PortableUiAdapter<InferTopLevelComponentMap<TRegistry, TChildren>> => {
     return CreatePortableUi(container, config, registry);
   };
 }

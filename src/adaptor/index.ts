@@ -6,6 +6,9 @@ export type {
   DeclarativeComponentNode,
   DeclarativeNodeUnion,
   DeclarativeRegistry,
+  InferDeclarativeChildrenMap,
+  InferDeclarativeComponentMap,
+  InferTopLevelComponentMap,
   PortableUiAdapter,
   PortableUiDeclarativeConfig,
 } from './types';

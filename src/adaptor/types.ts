@@ -40,10 +40,97 @@ export interface PortableUiDeclarativeConfig<TRegistry extends DeclarativeRegist
   children: DeclarativeChildren<TRegistry>;
 }
 
-export interface PortableUiAdapter {
+type ResolveId<TId, TFallback extends string> = TId extends string
+  ? string extends TId
+    ? TFallback
+    : TId
+  : TFallback;
+
+type NodeId<
+  TNode,
+  TFallback extends string,
+> = TNode extends {props?: infer TProps}
+  ? ResolveId<TProps extends {id?: infer TId} ? TId : never, TFallback>
+  : TFallback;
+
+type NodeInstance<
+  TRegistry extends DeclarativeRegistry,
+  TNode,
+> = TNode extends {type: infer TType}
+  ? TType extends keyof TRegistry
+    ? InstanceType<TRegistry[TType]>
+    : never
+  : never;
+
+type UnionToIntersection<TUnion> = (
+  TUnion extends any
+    ? (value: TUnion) => void
+    : never
+) extends (value: infer TIntersection) => void
+  ? TIntersection
+  : never;
+
+type MergeMappedNodes<
+  TMapped,
+> = UnionToIntersection<TMapped> extends infer TResult
+  ? {[K in keyof TResult]: TResult[K]}
+  : {};
+
+type ChildrenTypeMap<
+  TRegistry extends DeclarativeRegistry,
+  TChildren,
+> = TChildren extends readonly any[]
+  ? MergeMappedNodes<{
+      [K in Extract<keyof TChildren, `${number}`>]: NodeTypeMap<TRegistry, TChildren[K], K>;
+    }[Extract<keyof TChildren, `${number}`>]>
+  : TChildren extends Record<string, any>
+    ? MergeMappedNodes<{
+        [K in Extract<keyof TChildren, string>]: NodeTypeMap<TRegistry, TChildren[K], K>;
+      }[Extract<keyof TChildren, string>]>
+    : {};
+
+type NodeTypeMap<
+  TRegistry extends DeclarativeRegistry,
+  TNode,
+  TKey extends string,
+> = {
+  [K in NodeId<TNode, TKey>]: NodeInstance<TRegistry, TNode>;
+} & (TNode extends {children?: infer TChildren}
+  ? ChildrenTypeMap<TRegistry, TChildren>
+  : {});
+
+export type InferDeclarativeChildrenMap<
+  TRegistry extends DeclarativeRegistry,
+  TChildren,
+> = ChildrenTypeMap<TRegistry, TChildren>;
+
+type TopLevelNodeMap<
+  TRegistry extends DeclarativeRegistry,
+  TChildren,
+> = TChildren extends readonly any[]
+  ? {
+      [K in Extract<keyof TChildren, `${number}`>]: NodeInstance<TRegistry, TChildren[K]>;
+    }
+  : TChildren extends Record<string, any>
+    ? {
+        [K in Extract<keyof TChildren, string>]: NodeInstance<TRegistry, TChildren[K]>;
+      }
+    : Record<string, BaseComponent>;
+
+export type InferTopLevelComponentMap<
+  TRegistry extends DeclarativeRegistry,
+  TChildren,
+> = TopLevelNodeMap<TRegistry, TChildren>;
+
+export type InferDeclarativeComponentMap<
+  TRegistry extends DeclarativeRegistry,
+  TConfig extends PortableUiDeclarativeConfig<TRegistry>,
+> = InferDeclarativeChildrenMap<TRegistry, TConfig['children']>;
+
+export interface PortableUiAdapter<TComponentMap extends Record<string, BaseComponent> = Record<string, BaseComponent>> {
   id?: string;
   root: HTMLElement;
-  getComponent<T extends BaseComponent = BaseComponent>(id: string): T | null;
+  getComponent<TKey extends Extract<keyof TComponentMap, string>>(id: TKey): TComponentMap[TKey] | null;
   getAllComponents(): BaseComponent[];
   destroy(): void;
 }

@@ -1,4 +1,12 @@
-import {BaseComponent, createPortableUiFactory, type BuiltInDeclarativeRegistry, type PortableUiDeclarativeConfig} from '../../src';
+import {
+  BaseComponent,
+  Button,
+  CreatePortableUi,
+  Input,
+  createPortableUiFactory,
+  type BuiltInDeclarativeRegistry,
+  type PortableUiDeclarativeConfig,
+} from '../../src';
 
 describe('CreatePortableUi typing', () => {
   it('keeps declarative config strongly typed at compile time', () => {
@@ -43,6 +51,40 @@ describe('CreatePortableUi typing', () => {
     createUi(host, customConfig);
     expect(host.querySelector('#badge1')?.textContent).toBe('typed');
   });
+
+  it('infers instance type from getComponent(id) by config id', () => {
+    const host = document.createElement('div');
+    const config = {
+      children: {
+        button1: {
+          type: 'Button',
+          props: {text: 'Save'},
+        },
+        field: {
+          type: 'Input',
+          props: {id: 'emailField', placeholder: 'email'},
+        },
+      },
+    } as const satisfies PortableUiDeclarativeConfig<BuiltInDeclarativeRegistry>;
+
+    const ui = CreatePortableUi(host, config);
+
+    const button = ui.getComponent('button1');
+    const inputByKey = ui.getComponent('field');
+
+    const buttonTyped: Button | null = button;
+    const inputTyped: Input | null = inputByKey;
+    void buttonTyped;
+    void inputTyped;
+
+    // @ts-expect-error top-level key "field" resolves to Input, not Button.
+    const wrongByKey: Button | null = ui.getComponent('field');
+    void wrongByKey;
+
+    // @ts-expect-error "button1" resolves to Button, not Input.
+    const wrongByType: Input | null = ui.getComponent('button1');
+    void wrongByType;
+  });
 });
 
 const validBuiltInConfig: PortableUiDeclarativeConfig<BuiltInDeclarativeRegistry> = {
@@ -83,5 +125,4 @@ const invalidPropsConfig: PortableUiDeclarativeConfig<BuiltInDeclarativeRegistry
 };
 
 void invalidPropsConfig;
-
 
