@@ -3,11 +3,7 @@
  * 这个示例展示了如何使用组件ID来查询和操作组件
  */
 
-import {Button} from '../../src/components/basic/Button';
-import {Input} from '../../src/components/basic/Input';
-import {Container} from '../../src/components/container/Container';
-import {Label} from '../../src/components/basic/Label';
-import {BaseComponent} from '../../src/core/BaseComponent';
+import {Button, Input, Container, Label, BaseComponent} from '../../src';
 
 // ============ 示例1：自动ID生成 ============
 
