@@ -6,6 +6,7 @@
 ✅ **所有目录结构**已创建
 ✅ **核心基础设施**已实现
 ✅ **TypeScript 编译**无错误
+✅ **DOM 访问 API** 已完成 ⭐ 新增
 
 ## 已实现的模块
 
@@ -16,6 +17,16 @@
 - 提供生命周期管理（mount, update, unmount）
 - 属性和状态管理
 - DOM 元素管理
+- **新增: 完整的 DOM 访问和修改 API**
+
+#### DOMAccessor.ts ⭐ 新增
+- 灵活的 DOM 查询和操作
+- 40+ 个 DOM 操作方法（详见下方）
+- Shadow DOM 支持和查询
+- 事件监听和管理
+- 属性、样式、CSS 类管理
+- 数据属性管理
+- 元素克隆和遍历
 
 #### EventSystem.ts
 - 全局事件发射和监听
@@ -151,7 +162,7 @@
 ## 主入口 (`src/index.ts`)
 
 统一导出所有公共 API：
-- 核心系统（EventSystem, StateManager 等）
+- 核心系统（BaseComponent, EventSystem, StateManager, DOMAccessor 等）
 - 样式系统（StyleManager, CSS 工具等）
 - 工具函数（dom, 类型检查、helpers 等）
 - 布局系统（LayoutEngine 等）
@@ -176,10 +187,33 @@ i18nManager: I18nManager
 
 ## 技术特点
 
-### 1. 易用性
+### 1. ⭐ 外部 DOM 访问 (核心需求)
+- 完整的 DOM 访问 API（DOMAccessor）
+- 组件实例上的直观方法
+- Shadow DOM 内部元素查询支持
+- 无限制的外部 DOM 修改能力
+- 详见 DOM_ACCESS_GUIDE.md 和 DOM_ACCESS_REQUIREMENT.md
+
+#### DOMAccessor 方法分类
+| 类别 | 示例方法 | 数量 |
+|-----|--------|------|
+| 查询 | querySelector, querySelectorAll | 2 |
+| 内容 | setHTML, setText, getHTML, getText | 4 |
+| 属性 | setAttribute, getAttribute, setAttributes | 7 |
+| 样式 | setStyle, getStyle, setStyles | 3 |
+| CSS类 | addClass, removeClass, toggleClass, hasClass, getClasses | 5 |
+| 事件 | on, off, emit, addEventListener | 4 |
+| DOM操作 | appendChild, removeChild, insertBefore, replaceChild | 4 |
+| 位置 | getBounds, getSize, getPosition, isVisible | 4 |
+| Shadow DOM | getShadowRoot, queryShadow, queryShadowAll | 3 |
+| 数据 | setData, getData, getDataValue | 3 |
+| 其他 | clone, remove, clear, getElement | 4 |
+
+### 2. 易用性
 - 简洁的 API 设计
 - 明确的类型定义
 - 丰富的工具函数库
+- 直观的组件 DOM 操作
 
 ### 2. 国际化
 - 完全的 i18n 支持
@@ -261,6 +295,7 @@ src/
 ```typescript
 import {
   BaseComponent,
+  DOMAccessor,  // ⭐ 新增
   globalEventSystem,
   stateManager,
   styleManager,
@@ -271,6 +306,22 @@ import {
 
 // 初始化
 initialize();
+
+// ⭐ 使用 DOM 访问 API
+const button = new Button({ label: 'Click me' });
+button.mount(document.body);
+
+// 通过组件实例操作 DOM
+button.setText('Updated text');
+button.addClass('active');
+button.on('click', () => console.log('Clicked'));
+const size = button.getSize();
+const shadow = button.getShadowRoot();
+
+// 或通过 DOMAccessor 静态方法
+const el = document.getElementById('my-btn');
+DOMAccessor.setText(el, 'New text');
+DOMAccessor.setStyles(el, { color: 'red', fontSize: '18px' });
 
 // 使用状态管理
 stateManager.createReactive('count', 0);
