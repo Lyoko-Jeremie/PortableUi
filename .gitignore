@@ -610,4 +610,5 @@ FodyWeavers.xsd
 *.sln.iml
 
 .idea/.copilot*
+.idea/copilot*
 
