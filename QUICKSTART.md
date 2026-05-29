@@ -370,7 +370,7 @@ class MyButton extends BaseComponent {
     const btn = document.createElement('button');
     btn.textContent = this.props.text || 'Click me';
     btn.onclick = () => {
-      this.props.onClick?.();
+      this.props.onClick?.(this);
     };
     return btn;
   }
@@ -379,11 +379,13 @@ class MyButton extends BaseComponent {
 // 使用组件
 const button = new MyButton({
   text: 'Submit',
-  onClick: () => console.log('Clicked')
+  onClick: (self) => console.log('Clicked by:', self.getProps().id)
 });
 
 button.mount(document.body);
 ```
+
+> 回调约定：组件相关的 `on*` 回调都以 `self` 作为第一个参数，方便在回调中拿到触发组件实例。
 
 ## 常见场景
 
