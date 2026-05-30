@@ -2,6 +2,7 @@ import '../../src/css/theme1.scss';
 import '../styles/demo-shell.scss';
 import {App} from '../../src';
 import {ensurePortableUiRootScope} from '../utils/ensurePortableUiRoot';
+import {syncHeadStylesToShadowRoot} from '../utils/syncHeadStylesToShadowRoot';
 
 ensurePortableUiRootScope();
 
@@ -12,8 +13,12 @@ if (!host) {
 
 const app = new App(host, {
   id: 'imperative-demo',
-  styleIsolation: {mode: 'scoped'},
+  styleIsolation: {mode: 'shadow'},
 });
+
+if (app.shadowRoot) {
+  syncHeadStylesToShadowRoot(app.shadowRoot);
+}
 
 app.root.classList.add('imperative-root');
 
