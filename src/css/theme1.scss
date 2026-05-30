@@ -1,0 +1,1065 @@
+/**
+ * PortableUi Theme1 - Unified Design System
+ * A comprehensive theme consolidating all example styles into a cohesive design system
+ *
+ * Color Palette:
+ * - Primary: Indigo (#4f46e5)
+ * - Secondary: Gradient Purple (#667eea, #764ba2)
+ * - Backgrounds: Neutral grays
+ * - Accents: Status colors (green, orange, red)
+ */
+
+// ────────────────────────────────────────────────────────
+// 1. Design Tokens & Variables
+// ────────────────────────────────────────────────────────
+
+// Colors
+$color-primary: #4f46e5;
+$color-primary-light: #667eea;
+$color-primary-dark: #3730a3;
+$color-secondary: #764ba2;
+$color-accent: #2563eb;
+
+$color-text-primary: #111827;
+$color-text-secondary: #1f2937;
+$color-text-muted: #4b5563;
+$color-text-light: #6b7280;
+$color-text-lighter: #374151;
+
+$color-background-base: #f5f5f5;
+$color-background-alt: #f8f9fa;
+$color-background-light: #f3f4f6;
+$color-background-content: #ffffff;
+$color-background-idle: #fafafa;
+$color-background-hover: #f9fafb;
+$color-background-disabled: #f3f4f6;
+$color-background-focus: #eef2ff;
+
+$color-border: #d1d5db;
+$color-border-light: #e5e7eb;
+
+$color-status-active: #16a34a;
+$color-status-pending: #d97706;
+$color-status-blocked: #dc2626;
+$color-status-info: #1d4ed8;
+$color-status-success: #166534;
+$color-status-warning: #92400e;
+$color-status-error: #991b1b;
+
+$color-status-info-bg: #eff6ff;
+$color-status-success-bg: #ecfdf5;
+$color-status-warning-bg: #fffbeb;
+$color-status-error-bg: #fef2f2;
+
+// Typography
+$font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+$font-size-xs: 12px;
+$font-size-sm: 13px;
+$font-size-base: 14px;
+$font-size-lg: 16px;
+$font-size-xl: 18px;
+$font-size-2xl: 22px;
+$font-size-3xl: 28px;
+
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+
+$line-height-tight: 1.5;
+$line-height-normal: 1.6;
+
+// Spacing
+$spacing-xs: 2px;
+$spacing-sm: 4px;
+$spacing-md: 6px;
+$spacing-lg: 8px;
+$spacing-xl: 10px;
+$spacing-2xl: 12px;
+$spacing-3xl: 14px;
+$spacing-4xl: 16px;
+$spacing-5xl: 20px;
+$spacing-6xl: 24px;
+$spacing-7xl: 30px;
+$spacing-8xl: 40px;
+$spacing-9xl: 48px;
+$spacing-10xl: 64px;
+
+// Border Radius
+$radius-xs: 2px;
+$radius-sm: 4px;
+$radius-md: 5px;
+$radius-lg: 6px;
+$radius-xl: 8px;
+$radius-2xl: 10px;
+$radius-3xl: 12px;
+$radius-full: 999px;
+
+// Transitions
+$transition-fast: 0.15s ease;
+$transition-normal: 0.2s ease;
+$transition-slow: 0.3s ease;
+
+// Box Shadows
+$shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+$shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+$shadow-md: 0 1px 4px rgba(0, 0, 0, 0.06);
+$shadow-lg: 0 2px 8px rgba(0, 0, 0, 0.1);
+$shadow-xl: 0 10px 30px rgba(0, 0, 0, 0.18);
+
+// Z-index
+$z-modal: 30;
+$z-dropdown: 20;
+$z-sticky: 10;
+$z-base: 1;
+
+// ────────────────────────────────────────────────────────
+// 2. Global Base Styles
+// ────────────────────────────────────────────────────────
+
+* {
+  box-sizing: border-box;
+
+  &::before,
+  &::after {
+    box-sizing: border-box;
+  }
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: $font-family-base;
+  font-size: $font-size-base;
+  line-height: $line-height-normal;
+  color: $color-text-primary;
+  background: $color-background-light;
+}
+
+// ────────────────────────────────────────────────────────
+// 3. Typography
+// ────────────────────────────────────────────────────────
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  color: $color-text-primary;
+}
+
+h1 {
+  font-size: $font-size-3xl;
+  font-weight: $font-weight-bold;
+  margin-bottom: $spacing-4xl;
+}
+
+h2 {
+  font-size: $font-size-2xl;
+  font-weight: $font-weight-semibold;
+  margin-bottom: $spacing-3xl;
+}
+
+h2.portableui-label {
+  font-size: $font-size-sm;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $color-text-light;
+  margin: 0 0 $spacing-3xl;
+  font-weight: $font-weight-normal;
+}
+
+p {
+  margin: 0;
+  color: $color-text-muted;
+}
+
+// ────────────────────────────────────────────────────────
+// 4. Layout & Container Styles
+// ────────────────────────────────────────────────────────
+
+.page,
+#app,
+.imperative-root {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: $spacing-6xl $spacing-4xl $spacing-10xl;
+}
+
+body {
+  padding: $spacing-6xl;
+}
+
+section {
+  background: $color-background-content;
+  border: 1px solid $color-border-light;
+  border-radius: $radius-lg;
+  padding: $spacing-5xl $spacing-6xl;
+  margin-bottom: $spacing-5xl;
+  box-shadow: $shadow-sm;
+}
+
+.demo-section {
+  background: $color-background-content;
+  border-radius: $radius-lg;
+  margin-bottom: $spacing-7xl;
+  padding: 0;
+  box-shadow: $shadow-lg;
+  overflow: hidden;
+
+  .demo-title {
+    background: linear-gradient(135deg, $color-primary-light 0%, $color-secondary 100%);
+    color: $color-background-content;
+    padding: $spacing-3xl $spacing-5xl;
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+  }
+
+  .demo-content {
+    padding: $spacing-5xl;
+    min-height: 150px;
+  }
+}
+
+.demo-card {
+  background: $color-background-content;
+  border: 1px solid $color-border-light;
+  border-radius: $radius-3xl;
+  padding: $spacing-4xl;
+  box-shadow: $shadow-md;
+}
+
+.demo-title {
+  margin: 0 0 $spacing-lg;
+  font-size: $font-size-xl;
+  color: $color-text-primary;
+  font-weight: $font-weight-semibold;
+}
+
+.demo-description {
+  margin: 0 0 $spacing-3xl;
+  color: $color-text-light;
+  font-size: $font-size-base;
+  line-height: $line-height-normal;
+}
+
+.demo-intro {
+  margin: 0 0 $spacing-6xl;
+  color: $color-text-muted;
+  line-height: $line-height-normal;
+}
+
+.demo-controls {
+  margin-top: $spacing-3xl;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $spacing-lg;
+}
+
+.demo-feedback {
+  margin: $spacing-lg 0 0;
+  color: $color-text-muted;
+  font-size: $font-size-base;
+}
+
+.demo-hint {
+  display: inline-block;
+  margin-bottom: $spacing-lg;
+  color: $color-text-light;
+  font-size: $font-size-sm;
+}
+
+.row,
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-lg;
+  align-items: center;
+  margin-bottom: $spacing-lg;
+}
+
+.output {
+  font-size: $font-size-sm;
+  color: $color-text-light;
+  margin-top: $spacing-md;
+}
+
+// ────────────────────────────────────────────────────────
+// 5. Button Component
+// ────────────────────────────────────────────────────────
+
+button,
+.portableui-button {
+  padding: $spacing-md $spacing-4xl;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  background: $color-background-content;
+  color: $color-text-secondary;
+  cursor: pointer;
+  font-size: $font-size-base;
+  font-family: inherit;
+  font-weight: $font-weight-normal;
+  transition: background $transition-fast, box-shadow $transition-fast;
+
+  &:hover:not(:disabled) {
+    background: $color-background-hover;
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.demo-section button,
+.demo-section .portableui-button {
+  padding: $spacing-lg $spacing-4xl;
+  background: $color-primary-light;
+  border: 1px solid $color-primary-light;
+  color: $color-background-content;
+
+  &:hover:not(:disabled) {
+    background: $color-secondary;
+    border-color: $color-secondary;
+    box-shadow: 0 $spacing-lg $spacing-md rgba($color-primary-light, 0.4);
+  }
+}
+
+// ────────────────────────────────────────────────────────
+// 6. Form Controls
+// ────────────────────────────────────────────────────────
+
+input,
+textarea,
+select,
+.portableui-input,
+.portableui-textbox,
+.portableui-select,
+.portableui-date-picker,
+.portableui-file-upload {
+  width: 100%;
+  padding: $spacing-md $spacing-xl;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  font-size: $font-size-base;
+  font-family: inherit;
+  background: $color-background-content;
+  color: $color-text-secondary;
+  outline: none;
+  transition: border-color $transition-fast, box-shadow $transition-fast;
+
+  &:focus {
+    border-color: $color-primary;
+    box-shadow: 0 0 0 3px rgba($color-primary, 0.1);
+  }
+
+  &:disabled {
+    background: $color-background-disabled;
+    cursor: not-allowed;
+  }
+}
+
+textarea,
+.portableui-textbox {
+  resize: vertical;
+}
+
+.portableui-label,
+label {
+  display: block;
+  font-size: $font-size-base;
+  font-weight: $font-weight-medium;
+  margin-bottom: $spacing-lg;
+  color: $color-text-primary;
+}
+
+.portableui-checkbox,
+.portableui-radio {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-md;
+  font-size: $font-size-base;
+  cursor: pointer;
+  margin: $spacing-sm 0;
+
+  input {
+    width: auto;
+    margin: 0;
+  }
+}
+
+.portableui-slider {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-xl;
+}
+
+.portableui-slider input[type="range"] {
+  width: 200px;
+  accent-color: $color-primary;
+}
+
+.portableui-slider-value {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-primary;
+  min-width: 32px;
+}
+
+// ────────────────────────────────────────────────────────
+// 7. Complex Components
+// ────────────────────────────────────────────────────────
+
+// Table
+.portableui-table {
+  overflow-x: auto;
+}
+
+.portableui-table-element {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: $font-size-base;
+
+  th,
+  td {
+    border: 1px solid $color-border-light;
+    padding: $spacing-lg $spacing-xl;
+    text-align: left;
+  }
+
+  th {
+    background: $color-background-idle;
+    font-weight: $font-weight-semibold;
+    color: $color-text-primary;
+  }
+}
+
+.portableui-table-striped .portableui-table-element tbody tr:nth-child(even) {
+  background: $color-background-hover;
+}
+
+.portableui-table-hoverable .portableui-table-element tbody tr:hover {
+  background: $color-background-focus;
+  cursor: pointer;
+}
+
+// Status Badges
+.status {
+  padding: $spacing-xs $spacing-lg;
+  border-radius: $radius-full;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  color: $color-background-content;
+  display: inline-block;
+
+  &-active {
+    background: $color-status-active;
+  }
+
+  &-pending {
+    background: $color-status-pending;
+  }
+
+  &-blocked {
+    background: $color-status-blocked;
+  }
+}
+
+// TreeView
+.portableui-treeview-list,
+.portableui-treeview-children {
+  list-style: none;
+  padding-left: $spacing-4xl;
+  margin: 0;
+}
+
+.portableui-treeview-row {
+  display: flex;
+  gap: $spacing-md;
+  align-items: center;
+  margin: $spacing-sm 0;
+}
+
+.portableui-treeview-toggle {
+  width: 24px;
+  height: 24px;
+  border-radius: $radius-sm;
+  border: 1px solid $color-border;
+  background: $color-background-content;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: $font-weight-bold;
+  transition: background $transition-fast;
+
+  &:hover {
+    background: $color-background-hover;
+  }
+}
+
+.portableui-treeview-label {
+  cursor: pointer;
+  padding: $spacing-xs $spacing-md;
+  border-radius: $radius-sm;
+  transition: background $transition-fast, color $transition-fast;
+
+  &-selected {
+    background: $color-background-focus;
+    color: $color-primary-dark;
+    font-weight: $font-weight-semibold;
+  }
+}
+
+// Tabs
+.portableui-tabs-header {
+  display: flex;
+  gap: $spacing-lg;
+  margin-bottom: $spacing-2xl;
+}
+
+.portableui-tabs-button {
+  padding: $spacing-lg $spacing-xl;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  background: $color-background-content;
+  cursor: pointer;
+  font-size: $font-size-base;
+  transition: all $transition-fast;
+
+  &-active {
+    border-color: $color-primary;
+    color: $color-primary-dark;
+    background: $color-background-focus;
+    font-weight: $font-weight-semibold;
+  }
+
+  &:hover:not(.portableui-tabs-button-active) {
+    background: $color-background-hover;
+  }
+}
+
+.portableui-tabs-body {
+  border: 1px solid $color-border-light;
+  border-radius: $radius-xl;
+  background: $color-background-idle;
+  padding: $spacing-3xl;
+  min-height: 64px;
+}
+
+// Modal
+.portableui-modal {
+  position: fixed;
+  inset: 0;
+  z-index: $z-modal;
+}
+
+.portableui-modal-overlay {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba($color-text-primary, 0.45);
+  inset: 0;
+}
+
+.portableui-modal-container {
+  width: min(520px, 90vw);
+  background: $color-background-content;
+  border-radius: $radius-2xl;
+  border: 1px solid $color-border-light;
+  box-shadow: $shadow-xl;
+  overflow: hidden;
+}
+
+.portableui-modal-header,
+.portableui-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-lg;
+  padding: $spacing-3xl $spacing-3xl;
+  border-bottom: 1px solid $color-border-light;
+}
+
+.portableui-modal-footer {
+  border-top: 1px solid $color-border-light;
+  border-bottom: 0;
+  justify-content: flex-end;
+}
+
+.portableui-modal-title {
+  margin: 0;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.portableui-modal-body {
+  padding: $spacing-3xl;
+  color: $color-text-lighter;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.portableui-modal-close,
+.portableui-modal-cancel,
+.portableui-modal-confirm {
+  border: 1px solid $color-border;
+  background: $color-background-content;
+  border-radius: $radius-lg;
+  padding: $spacing-md $spacing-xl;
+  cursor: pointer;
+  font-size: $font-size-base;
+  transition: all $transition-fast;
+
+  &:hover:not(:disabled) {
+    background: $color-background-hover;
+  }
+}
+
+.portableui-modal-confirm {
+  background: $color-primary;
+  border-color: $color-primary;
+  color: $color-background-content;
+  font-weight: $font-weight-semibold;
+
+  &:hover:not(:disabled) {
+    background: $color-primary-dark;
+    border-color: $color-primary-dark;
+  }
+}
+
+.portableui-modal-close {
+  background: transparent;
+  border: none;
+  padding: 0 $spacing-lg;
+  font-size: $font-size-xl;
+  color: $color-text-light;
+
+  &:hover {
+    color: $color-text-primary;
+  }
+}
+
+// Toast
+.portableui-toast {
+  margin-top: $spacing-3xl;
+  border: 1px solid $color-border;
+  border-radius: $radius-xl;
+  padding: $spacing-xl $spacing-3xl;
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-xl;
+  min-width: 260px;
+  animation: slideIn 0.3s ease;
+}
+
+.portableui-toast-close {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  color: currentColor;
+  padding: 0;
+  font-size: $font-size-lg;
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+.portableui-toast-info {
+  background: $color-status-info-bg;
+  color: $color-status-info;
+  border-color: rgba($color-status-info, 0.2);
+}
+
+.portableui-toast-success {
+  background: $color-status-success-bg;
+  color: $color-status-success;
+  border-color: rgba($color-status-success, 0.2);
+}
+
+.portableui-toast-warning {
+  background: $color-status-warning-bg;
+  color: $color-status-warning;
+  border-color: rgba($color-status-warning, 0.2);
+}
+
+.portableui-toast-error {
+  background: $color-status-error-bg;
+  color: $color-status-error;
+  border-color: rgba($color-status-error, 0.2);
+}
+
+// Progress
+.portableui-progress-track {
+  width: 100%;
+  height: 14px;
+  background: $color-border-light;
+  border-radius: $radius-full;
+  overflow: hidden;
+}
+
+.portableui-progress-bar {
+  height: 100%;
+  transition: width $transition-normal ease;
+  background: $color-accent;
+}
+
+.portableui-progress-label {
+  margin-top: $spacing-md;
+  display: inline-block;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+  font-weight: $font-weight-medium;
+}
+
+// Autocomplete
+.portableui-autocomplete {
+  position: relative;
+  max-width: 340px;
+}
+
+.portableui-autocomplete-input,
+.portableui-cascading-select-level {
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  padding: $spacing-lg $spacing-xl;
+  width: 100%;
+  font-size: $font-size-base;
+  background: $color-background-content;
+  transition: border-color $transition-fast;
+
+  &:focus {
+    border-color: $color-primary;
+    outline: none;
+  }
+}
+
+.portableui-autocomplete-list {
+  list-style: none;
+  margin: $spacing-md 0 0;
+  padding: 0;
+  border: 1px solid $color-border;
+  border-radius: $radius-xl;
+  background: $color-background-content;
+  max-height: 180px;
+  overflow-y: auto;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: $z-dropdown;
+}
+
+.portableui-autocomplete-item {
+  padding: $spacing-lg $spacing-xl;
+  cursor: pointer;
+  transition: background $transition-fast;
+
+  &:hover {
+    background: $color-background-focus;
+  }
+}
+
+// Cascading Select
+.portableui-cascading-select {
+  display: grid;
+  gap: $spacing-lg;
+  max-width: 340px;
+}
+
+// ────────────────────────────────────────────────────────
+// 8. Layout Components
+// ────────────────────────────────────────────────────────
+
+.portableui-container,
+.portableui-flex,
+.portableui-grid,
+.portableui-group {
+  border: 1px dashed rgba($color-primary, 0.18);
+  border-radius: $radius-xl;
+  position: relative;
+}
+
+.portableui-group-title {
+  font-weight: $font-weight-bold !important;
+  color: $color-primary !important;
+  margin-bottom: $spacing-xl !important;
+}
+
+.portableui-container {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-lg;
+  padding: $spacing-3xl;
+  margin: $spacing-3xl 0 0;
+  background: $color-background-idle;
+}
+
+.portableui-flex {
+  display: flex;
+  gap: $spacing-4xl;
+}
+
+.portableui-grid {
+  display: grid;
+  gap: $spacing-4xl;
+}
+
+// ────────────────────────────────────────────────────────
+// 9. Media/Image Components
+// ────────────────────────────────────────────────────────
+
+.image-wrap {
+  border: 1px solid $color-border;
+  border-radius: $radius-xl;
+  overflow: hidden;
+  display: inline-block;
+  background: $color-background-hover;
+}
+
+.portableui-image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.portableui-canvas {
+  display: block;
+  width: 100%;
+  max-width: 640px;
+  border: 1px solid $color-border;
+  border-radius: $radius-xl;
+  background: $color-background-content;
+}
+
+// ────────────────────────────────────────────────────────
+// 10. Imperative API Styles
+// ────────────────────────────────────────────────────────
+
+.imperative-hero {
+  display: grid;
+  gap: $spacing-3xl;
+  background: $color-background-content;
+  border: 1px solid $color-border-light;
+  border-radius: $radius-3xl;
+  padding: $spacing-5xl;
+  box-shadow: $shadow-md;
+
+  h1 {
+    margin: 0 0 $spacing-lg;
+    font-size: 24px;
+    color: $color-text-primary;
+  }
+
+  p {
+    margin: 0;
+    color: $color-text-light;
+    line-height: $line-height-normal;
+  }
+}
+
+.imperative-hero-copy {
+  display: grid;
+  gap: $spacing-lg;
+}
+
+.imperative-hero-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-lg;
+}
+
+.imperative-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: $spacing-sm $spacing-xl;
+  border-radius: $radius-full;
+  border: 1px solid rgba($color-primary, 0.2);
+  background: $color-background-focus;
+  color: $color-primary-dark;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+}
+
+.imperative-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: $spacing-4xl;
+}
+
+.imperative-card {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-3xl;
+  min-height: 100%;
+  background: $color-background-content;
+  border: 1px solid $color-border-light;
+  border-radius: $radius-3xl;
+  padding: $spacing-4xl;
+  box-shadow: $shadow-md;
+}
+
+.imperative-card-title {
+  margin: 0;
+  font-size: $font-size-xl;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.imperative-card-description,
+.imperative-card-note {
+  margin: 0;
+  color: $color-text-light;
+  line-height: $line-height-normal;
+  font-size: $font-size-base;
+}
+
+.imperative-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xl;
+
+  .portableui-input,
+  .portableui-select {
+    width: 100%;
+  }
+
+  .portableui-label {
+    display: inline-block;
+    margin: 0 0 $spacing-md;
+    font-size: $font-size-base;
+    font-weight: $font-weight-medium;
+  }
+
+  .portableui-checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-lg;
+    margin: $spacing-sm 0 0;
+    font-size: $font-size-base;
+  }
+}
+
+.imperative-toolbar {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: $spacing-lg;
+
+  .demo-feedback {
+    flex-basis: 100%;
+  }
+}
+
+// ────────────────────────────────────────────────────────
+// 11. Animations
+// ────────────────────────────────────────────────────────
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// ────────────────────────────────────────────────────────
+// 12. Responsive Design
+// ────────────────────────────────────────────────────────
+
+@media (max-width: 768px) {
+  body {
+    padding: $spacing-4xl;
+  }
+
+  .page,
+  #app,
+  .imperative-root {
+    padding: $spacing-4xl $spacing-lg;
+  }
+
+  section {
+    padding: $spacing-4xl;
+  }
+
+  h1 {
+    font-size: $font-size-2xl;
+  }
+
+  .imperative-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .demo-section .demo-title {
+    padding: $spacing-3xl;
+  }
+
+  .demo-section .demo-content {
+    padding: $spacing-4xl;
+  }
+
+  .portableui-modal-container {
+    width: 95vw;
+  }
+
+  .row,
+  .controls,
+  .demo-controls {
+    gap: $spacing-md;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: $font-size-sm;
+  }
+
+  h1 {
+    font-size: $font-size-xl;
+    margin-bottom: $spacing-3xl;
+  }
+
+  h2 {
+    font-size: $font-size-lg;
+  }
+
+  button,
+  .portableui-button,
+  input,
+  textarea,
+  select {
+    padding: $spacing-md $spacing-lg;
+    font-size: $font-size-base;
+  }
+
+  .imperative-card {
+    padding: $spacing-3xl;
+  }
+}
+
