@@ -1,7 +1,21 @@
 {
   "name": "PortableUi",
   "packageManager": "yarn@4.9.2",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "yarn build",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "test:watch": "jest --watch",
