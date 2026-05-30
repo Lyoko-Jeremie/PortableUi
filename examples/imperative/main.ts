@@ -1,7 +1,4 @@
-import '../styles/demo-base.css';
-import '../basic/styles.css';
-import '../complex/styles.css';
-import './styles.css';
+import '../../src/css/theme1.scss';
 import {App} from '../../src';
 
 const host = document.getElementById('app');

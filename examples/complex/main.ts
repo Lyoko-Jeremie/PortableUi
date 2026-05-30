@@ -1,5 +1,4 @@
-import '../styles/demo-base.css';
-import './styles.css';
+import '../../src/css/theme1.scss';
 import {mountAllComplexExamples} from './complex-demo';
 
 const app = document.getElementById('app');
