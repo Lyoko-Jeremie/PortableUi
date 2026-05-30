@@ -1,3 +1,4 @@
+import '../../src/css/theme1.scss';
 import '../styles/demo-base.css';
 import './styles.css';
 import {mountCanvasDemo, mountImageDemo} from './media-demo';
