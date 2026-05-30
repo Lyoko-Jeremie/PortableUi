@@ -17,12 +17,15 @@ describe('App imperative adaptor', () => {
 
     const button = app.addButton({id: 'btn1', text: 'Click Me'});
     const input = app.addInput({id: 'input1', placeholder: 'Type here'});
+    const label = app.addLabel({id: 'label1', text: 'Hello'});
 
     expect(button).toBeInstanceOf(Button);
     expect(input).toBeInstanceOf(Input);
+    expect(label).toBeTruthy();
     expect(host.querySelector('#root')).toBeTruthy();
     expect(host.querySelector('#btn1')?.textContent).toBe('Click Me');
     expect(host.querySelector('#input1')?.getAttribute('placeholder')).toBe('Type here');
+    expect(host.querySelector('#label1')?.textContent).toBe('Hello');
     expect(app.getComponent('btn1')).toBe(button);
   });
 

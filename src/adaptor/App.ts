@@ -1,12 +1,75 @@
 import {BaseComponent} from '../core';
-import {Button, type ButtonProps, Input, type InputProps} from '../components/basic';
-import {Container, type ContainerProps} from '../components/container';
+import {
+  Autocomplete,
+  CascadingSelect,
+  Modal,
+  Progress,
+  Table,
+  Tabs,
+  Toast,
+  TreeView,
+} from '../components/complex';
+import {
+  Button,
+  Canvas,
+  Checkbox,
+  DatePicker,
+  FileUpload,
+  Image,
+  Input,
+  Label,
+  Radio,
+  Select,
+  Slider,
+  TextBox,
+} from '../components/basic';
+import {Container, Flex, Grid, GridItem, Group, type ContainerProps} from '../components/container';
+import type {DeclarativeRegistry} from './types';
 
-type ComponentPropsOf<TComponent extends BaseComponent> = ConstructorParameters<
-  new (props?: any) => TComponent
->[0] extends undefined
+type AnyComponentCtor = new (props?: any) => BaseComponent;
+
+type ComponentPropsOf<TCtor extends AnyComponentCtor> = ConstructorParameters<TCtor>[0] extends undefined
   ? Record<string, never>
-  : NonNullable<ConstructorParameters<new (props?: any) => TComponent>[0]>;
+  : NonNullable<ConstructorParameters<TCtor>[0]>;
+
+type AddMethodName<TKey extends string> = `add${TKey}`;
+
+type GeneratedAddMethods<TRegistry extends DeclarativeRegistry> = {
+  [K in Extract<keyof TRegistry, string> as AddMethodName<K>]: (
+    props: ComponentPropsOf<TRegistry[K]>
+  ) => InstanceType<TRegistry[K]>;
+};
+
+const builtInComponentRegistry = {
+  Autocomplete,
+  Button,
+  Canvas,
+  CascadingSelect,
+  Checkbox,
+  Container,
+  DatePicker,
+  FileUpload,
+  Flex,
+  Grid,
+  GridItem,
+  Group,
+  Image,
+  Input,
+  Label,
+  Modal,
+  Progress,
+  Radio,
+  Select,
+  Slider,
+  Table,
+  Tabs,
+  TextBox,
+  Toast,
+  TreeView,
+} satisfies DeclarativeRegistry;
+
+export type BuiltInDeclarativeRegistry = typeof builtInComponentRegistry;
+export type BuiltInAddMethods = GeneratedAddMethods<BuiltInDeclarativeRegistry>;
 
 export interface AppOptions {
   id?: string;
@@ -17,27 +80,22 @@ export interface AppTabOptions extends Omit<ContainerProps, 'children'> {
   id: string;
 }
 
-export class AppScope {
+class AppScopeBase<TRegistry extends DeclarativeRegistry = BuiltInDeclarativeRegistry> {
   constructor(
     protected mountPoint: HTMLElement,
     protected readonly components: Map<string, BaseComponent>,
-    protected readonly mountOrder: BaseComponent[]
-  ) {}
-
-  addButton(props: ButtonProps): Button {
-    return this.mountComponent(Button, props);
+    protected readonly mountOrder: BaseComponent[],
+    protected readonly registry: TRegistry
+  ) {
+    this.installGeneratedAddMethods();
   }
 
-  addInput(props: InputProps): Input {
-    return this.mountComponent(Input, props);
-  }
-
-  addTab(options: AppTabOptions): AppScope {
+  addTab(options: AppTabOptions): AppScope<TRegistry> {
     const className = options.className ? `${options.className} portableui-app-tab` : 'portableui-app-tab';
     const tab = this.mountComponent(Container, {
-      direction: 'vertical',
       ...options,
       className,
+      direction: 'vertical',
     });
 
     const tabElement = tab.getElement();
@@ -45,20 +103,10 @@ export class AppScope {
       throw new Error(`Failed to mount tab: ${options.id}`);
     }
 
-    return new AppScope(tabElement, this.components, this.mountOrder);
+    return new AppScopeBase(tabElement, this.components, this.mountOrder, this.registry) as AppScope<TRegistry>;
   }
 
-  addComponent<TComponent extends BaseComponent>(
-    ctor: new (props?: any) => TComponent,
-    props: ComponentPropsOf<TComponent>
-  ): TComponent {
-    return this.mountComponent(ctor, props);
-  }
-
-  protected mountComponent<TComponent extends BaseComponent>(
-    ctor: new (props?: any) => TComponent,
-    props: ComponentPropsOf<TComponent>
-  ): TComponent {
+  protected mountComponent<TCtor extends AnyComponentCtor>(ctor: TCtor, props: ComponentPropsOf<TCtor>): InstanceType<TCtor> {
     const instance = new ctor(props);
     const id = instance.getId();
 
@@ -73,11 +121,34 @@ export class AppScope {
     }
 
     this.mountOrder.push(instance);
-    return instance;
+    return instance as InstanceType<TCtor>;
+  }
+
+  private installGeneratedAddMethods(): void {
+    for (const [type, ctor] of Object.entries(this.registry) as Array<[
+      Extract<keyof TRegistry, string>,
+      TRegistry[Extract<keyof TRegistry, string>]
+    ]>) {
+      const methodName = `add${type}` as AddMethodName<Extract<keyof TRegistry, string>>;
+      if (Object.prototype.hasOwnProperty.call(this, methodName)) {
+        continue;
+      }
+
+      const componentCtor = ctor as AnyComponentCtor;
+      Object.defineProperty(this, methodName, {
+        configurable: true,
+        enumerable: false,
+        writable: true,
+        value: (props: ComponentPropsOf<typeof componentCtor>) => this.mountComponent(componentCtor, props),
+      });
+    }
   }
 }
 
-export class App extends AppScope {
+export type AppScope<TRegistry extends DeclarativeRegistry = BuiltInDeclarativeRegistry> =
+  AppScopeBase<TRegistry> & GeneratedAddMethods<TRegistry>;
+
+export class App extends AppScopeBase<BuiltInDeclarativeRegistry> {
   readonly root: HTMLElement;
   private readonly host: HTMLElement;
 
@@ -88,7 +159,7 @@ export class App extends AppScope {
 
     const components = new Map<string, BaseComponent>();
     const mountOrder: BaseComponent[] = [];
-    super(container, components, mountOrder);
+    super(container, components, mountOrder, builtInComponentRegistry);
 
     this.host = container;
 
@@ -144,10 +215,6 @@ export class App extends AppScope {
 
     this.mountOrder.length = 0;
   }
-
-  getHost(): HTMLElement {
-    return this.host;
-  }
 }
 
-
+export interface App extends BuiltInAddMethods {}

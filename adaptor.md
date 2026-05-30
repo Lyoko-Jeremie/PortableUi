@@ -197,5 +197,7 @@ tab1.addInput({
 - `getAllComponents()` - 获取当前所有组件实例
 - `destroy()` - 逆序卸载并清理全部已挂载组件
 
+`AppScope` 会根据组件注册表自动生成 `addButton()`、`addInput()` 这类方法；新增组件到列表后，会自动获得对应的 `add*()` 接口和类型提示。
+
 
 

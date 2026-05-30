@@ -1,8 +1,7 @@
-export {App, AppScope} from './App';
-export type {AppOptions, AppTabOptions} from './App';
+export {App} from './App';
+export type {AppOptions, AppScope, AppTabOptions, BuiltInAddMethods, BuiltInDeclarativeRegistry} from './App';
 
 export {CreatePortableUi, createPortableUiFactory, registerDeclarativeComponent} from './CreatePortableUi';
-export type {BuiltInDeclarativeRegistry} from './CreatePortableUi';
 export type {
   ComponentCtor,
   DeclarativeChildren,
