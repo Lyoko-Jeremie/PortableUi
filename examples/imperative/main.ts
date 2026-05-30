@@ -1,4 +1,5 @@
 import '../../src/css/theme1.scss';
+import '../styles/demo-shell.scss';
 import {App} from '../../src';
 
 const host = document.getElementById('app');

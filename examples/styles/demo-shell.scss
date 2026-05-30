@@ -1,0 +1,124 @@
+/* Demo-only shell styles. Keep these outside the distributable theme. */
+
+.demo-section {
+  background: #ffffff;
+  border-radius: 6px;
+  margin-bottom: 30px;
+  padding: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.demo-section .demo-title {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+  padding: 14px 20px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.demo-section .demo-content {
+  padding: 20px;
+  min-height: 150px;
+}
+
+.demo-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.demo-title {
+  margin: 0 0 8px;
+  font-size: 18px;
+  color: #111827;
+  font-weight: 600;
+}
+
+.demo-description {
+  margin: 0 0 14px;
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.demo-intro {
+  margin: 0 0 24px;
+  color: #4b5563;
+  line-height: 1.6;
+}
+
+.demo-controls {
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.demo-feedback {
+  margin: 8px 0 0;
+  color: #4b5563;
+  font-size: 14px;
+}
+
+.imperative-toolbar .demo-feedback {
+  flex-basis: 100%;
+}
+
+.demo-hint {
+  display: inline-block;
+  margin-bottom: 8px;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.row,
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.output {
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 6px;
+}
+
+.demo-section button,
+.demo-section .portableui-button {
+  padding: 8px 16px;
+  background: #667eea;
+  border: 1px solid #667eea;
+  color: #ffffff;
+}
+
+.demo-section button:hover:not(:disabled),
+.demo-section .portableui-button:hover:not(:disabled) {
+  background: #764ba2;
+  border-color: #764ba2;
+  box-shadow: 0 8px 6px rgba(102, 126, 234, 0.4);
+}
+
+@media (max-width: 768px) {
+  .demo-section .demo-title {
+    padding: 14px;
+  }
+
+  .demo-section .demo-content {
+    padding: 16px;
+  }
+
+  .row,
+  .controls,
+  .demo-controls {
+    gap: 6px;
+  }
+}
+
+

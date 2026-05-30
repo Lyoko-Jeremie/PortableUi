@@ -1,5 +1,5 @@
 import '../../src/css/theme1.scss';
-import '../styles/demo-base.css';
+import '../styles/demo-shell.scss';
 import './styles.css';
 import {Button} from '../../src/components/basic';
 import {Container} from '../../src/layout';

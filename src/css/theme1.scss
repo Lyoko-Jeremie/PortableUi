@@ -201,92 +201,6 @@ section {
   box-shadow: $shadow-sm;
 }
 
-.demo-section {
-  background: $color-background-content;
-  border-radius: $radius-lg;
-  margin-bottom: $spacing-7xl;
-  padding: 0;
-  box-shadow: $shadow-lg;
-  overflow: hidden;
-
-  .demo-title {
-    background: linear-gradient(135deg, $color-primary-light 0%, $color-secondary 100%);
-    color: $color-background-content;
-    padding: $spacing-3xl $spacing-5xl;
-    font-size: $font-size-xl;
-    font-weight: $font-weight-bold;
-  }
-
-  .demo-content {
-    padding: $spacing-5xl;
-    min-height: 150px;
-  }
-}
-
-.demo-card {
-  background: $color-background-content;
-  border: 1px solid $color-border-light;
-  border-radius: $radius-3xl;
-  padding: $spacing-4xl;
-  box-shadow: $shadow-md;
-}
-
-.demo-title {
-  margin: 0 0 $spacing-lg;
-  font-size: $font-size-xl;
-  color: $color-text-primary;
-  font-weight: $font-weight-semibold;
-}
-
-.demo-description {
-  margin: 0 0 $spacing-3xl;
-  color: $color-text-light;
-  font-size: $font-size-base;
-  line-height: $line-height-normal;
-}
-
-.demo-intro {
-  margin: 0 0 $spacing-6xl;
-  color: $color-text-muted;
-  line-height: $line-height-normal;
-}
-
-.demo-controls {
-  margin-top: $spacing-3xl;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: $spacing-lg;
-}
-
-.demo-feedback {
-  margin: $spacing-lg 0 0;
-  color: $color-text-muted;
-  font-size: $font-size-base;
-}
-
-.demo-hint {
-  display: inline-block;
-  margin-bottom: $spacing-lg;
-  color: $color-text-light;
-  font-size: $font-size-sm;
-}
-
-.row,
-.controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: $spacing-lg;
-  align-items: center;
-  margin-bottom: $spacing-lg;
-}
-
-.output {
-  font-size: $font-size-sm;
-  color: $color-text-light;
-  margin-top: $spacing-md;
-}
-
 // ────────────────────────────────────────────────────────
 // 5. Button Component
 // ────────────────────────────────────────────────────────
@@ -319,20 +233,6 @@ button,
 
   &:focus {
     outline: none;
-  }
-}
-
-.demo-section button,
-.demo-section .portableui-button {
-  padding: $spacing-lg $spacing-4xl;
-  background: $color-primary-light;
-  border: 1px solid $color-primary-light;
-  color: $color-background-content;
-
-  &:hover:not(:disabled) {
-    background: $color-secondary;
-    border-color: $color-secondary;
-    box-shadow: 0 $spacing-lg $spacing-md rgba($color-primary-light, 0.4);
   }
 }
 
@@ -959,10 +859,6 @@ label {
   align-items: flex-start;
   flex-wrap: wrap;
   gap: $spacing-lg;
-
-  .demo-feedback {
-    flex-basis: 100%;
-  }
 }
 
 // ────────────────────────────────────────────────────────
@@ -1016,23 +912,10 @@ label {
     grid-template-columns: 1fr;
   }
 
-  .demo-section .demo-title {
-    padding: $spacing-3xl;
-  }
-
-  .demo-section .demo-content {
-    padding: $spacing-4xl;
-  }
-
   .portableui-modal-container {
     width: 95vw;
   }
 
-  .row,
-  .controls,
-  .demo-controls {
-    gap: $spacing-md;
-  }
 }
 
 @media (max-width: 480px) {
