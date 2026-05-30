@@ -137,7 +137,14 @@ export type InferDeclarativeComponentMap<
 
 export interface PortableUiAdapter<TComponentMap extends Record<string, BaseComponent> = Record<string, BaseComponent>> {
   id?: string;
+  /** 组件实际挂载的根节点（Shadow 模式下为 Shadow 内的挂载 div，其他模式下为宿主容器本身） */
   root: HTMLElement;
+  /**
+   * Shadow 模式下的 ShadowRoot，方便使用者直接查询 Shadow 内的原生 DOM。
+   * scoped / none 模式下为 null。
+   * 示例：`adapter.shadowRoot?.querySelector('.portableui-button')`
+   */
+  shadowRoot: ShadowRoot | null;
   getComponent<TKey extends Extract<keyof TComponentMap, string>>(id: TKey): TComponentMap[TKey] | null;
   getAllComponents(): BaseComponent[];
   destroy(): void;

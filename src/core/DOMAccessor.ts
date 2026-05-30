@@ -349,14 +349,22 @@ export class DOMAccessor {
    * @param element - 元素
    * @param eventName - 事件名
    * @param detail - 事件详情
+   * @param options - 额外选项；composed 默认为 true，允许事件跨越 Shadow DOM 边界冒泡到宿主页面
    */
   static dispatchEvent(
     element: HTMLElement | null,
     eventName: string,
-    detail?: any
+    detail?: any,
+    options?: {bubbles?: boolean; cancelable?: boolean; composed?: boolean}
   ): boolean {
     if (!element) return false;
-    const event = new CustomEvent(eventName, {detail, bubbles: true, cancelable: true});
+    const event = new CustomEvent(eventName, {
+      detail,
+      bubbles: options?.bubbles ?? true,
+      cancelable: options?.cancelable ?? true,
+      // composed: true 让事件穿透 Shadow DOM 边界，到达宿主页面的监听器
+      composed: options?.composed ?? true,
+    });
     return element.dispatchEvent(event);
   }
 

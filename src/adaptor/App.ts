@@ -206,8 +206,7 @@ export class App extends AppScopeBase<BuiltInDeclarativeRegistry> {
   readonly root: HTMLElement;
   private readonly host: HTMLElement;
 
-  constructor(container: HTMLElement, options: AppOptions = {}) {
-    if (!container) {
+  constructor(container: HTMLElement, options: AppOptions = {}) {    if (!container) {
       throw new Error('App requires a valid container element.');
     }
 
@@ -252,6 +251,22 @@ export class App extends AppScopeBase<BuiltInDeclarativeRegistry> {
 
   getAllComponents(): BaseComponent[] {
     return Array.from(this.components.values());
+  }
+
+  /**
+   * 返回宿主元素的 ShadowRoot（Shadow 模式下有效，其他模式返回 null）。
+   * 可通过它直接查询 Shadow 内的原生 DOM：
+   *   `app.getShadowRoot()?.querySelector('.portableui-button')`
+   */
+  getShadowRoot(): ShadowRoot | null {
+    return this.host.shadowRoot ?? null;
+  }
+
+  /**
+   * Shadow 模式下的 ShadowRoot 快捷属性，与 getShadowRoot() 等价。
+   */
+  get shadowRoot(): ShadowRoot | null {
+    return this.getShadowRoot();
   }
 
   destroy(): void {

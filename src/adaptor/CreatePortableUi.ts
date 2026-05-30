@@ -227,6 +227,8 @@ export function CreatePortableUi(
 
   const adapter: PortableUiAdapter<Record<string, BaseComponent>> = {
     root: mountRoot,
+    // Shadow 模式下暴露 shadowRoot，方便使用者用原生 DOM API 查询 Shadow 内元素
+    shadowRoot: container.shadowRoot ?? null,
     getComponent<TKey extends string>(id: TKey): BaseComponent | null {
       return components.get(id) ?? null;
     },
