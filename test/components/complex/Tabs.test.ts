@@ -39,5 +39,23 @@ describe('Tabs', () => {
 
     expect(container.querySelector('.portableui-tabs-body')?.textContent).toContain('Content B');
   });
+
+  it('should apply stretch layout through the header class', () => {
+    const tabs = new Tabs({
+      stretch: true,
+      tabs: [
+        {id: 'a', title: 'Tab A', content: 'Content A'},
+        {id: 'b', title: 'Tab B', content: 'Content B'},
+      ],
+    });
+
+    tabs.mount(container);
+
+    const header = container.querySelector('.portableui-tabs-header');
+    const button = container.querySelector('.portableui-tabs-button') as HTMLButtonElement | null;
+
+    expect(header?.classList.contains('portableui-tabs-header-stretch')).toBe(true);
+    expect(button?.style.flex).toBe('');
+  });
 });
 

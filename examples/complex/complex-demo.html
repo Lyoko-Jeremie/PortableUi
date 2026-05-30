@@ -230,6 +230,7 @@
         const body = document.createElement('div');
         this.apply(root, 'portableui-tabs');
         header.className = 'portableui-tabs-header';
+        if (stretch) header.classList.add('portableui-tabs-header-stretch');
         body.className = 'portableui-tabs-body';
 
         const currentId = this.resolveActiveTabId(tabs, activeTabId);
@@ -240,7 +241,6 @@
           button.className = 'portableui-tabs-button';
           button.textContent = tab.title;
           button.disabled = !!tab.disabled;
-          if (stretch) button.style.flex = '1';
           if (tab.id === currentId) button.classList.add('portableui-tabs-button-active');
           button.addEventListener('click', (event) => {
             if (tab.disabled) return;

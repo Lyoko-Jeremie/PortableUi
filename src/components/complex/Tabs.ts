@@ -30,6 +30,9 @@ export class Tabs extends BaseComponent {
     applyCommonElementProps(root, props, 'portableui-tabs');
 
     header.className = 'portableui-tabs-header';
+    if (props.stretch) {
+      header.classList.add('portableui-tabs-header-stretch');
+    }
     body.className = 'portableui-tabs-body';
 
     const tabs = props.tabs ?? [];
@@ -41,9 +44,6 @@ export class Tabs extends BaseComponent {
       button.className = 'portableui-tabs-button';
       button.textContent = tab.title;
       button.disabled = tab.disabled ?? false;
-      if (props.stretch) {
-        button.style.flex = '1';
-      }
 
       if (tab.id === activeTabId) {
         button.classList.add('portableui-tabs-button-active');

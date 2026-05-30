@@ -362,8 +362,14 @@ h2.portableui-label {
 
 .portableui-tabs-header {
   display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
   gap: var(--spacing-lg);
   margin-bottom: var(--spacing-2xl);
+}
+
+.portableui-tabs-header-stretch > .portableui-tabs-button {
+  flex: 1 1 180px;
 }
 
 .portableui-tabs-button {
@@ -373,6 +379,11 @@ h2.portableui-label {
   background: var(--color-background-content);
   cursor: pointer;
   font-size: var(--font-size-base);
+  min-width: 0;
+  max-width: 100%;
+  text-align: center;
+  white-space: normal;
+  word-break: break-word;
   transition: all var(--transition-fast);
 }
 
