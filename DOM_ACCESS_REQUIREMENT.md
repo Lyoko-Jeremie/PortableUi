@@ -197,16 +197,16 @@ window.addEventListener('resize', () => {
 
 ## 在项目计划中的位置
 
-此功能横跨多个开发阶段：
+此功能已经落地到当前代码库，并且贯穿多个模块：
 
 ### Phase 1: 核心基础
-- ✅ 实现 DOMAccessor 类
-- ✅ 扩展 BaseComponent
-- ✅ 导出 API
+- ✅ 已实现 `DOMAccessor` 类
+- ✅ 已扩展 `BaseComponent`
+- ✅ 已导出相关 API
 
 ### Phase 2-7: 持续优化
-- 每个组件都自动支持 DOM 访问
-- 无需额外实现
+- 每个组件都可通过 `BaseComponent` 的实例方法访问 DOM
+- 现有组件无需额外适配即可使用这些 API
 
 ### 文档和示例
 - DOM_ACCESS_GUIDE.md - 完整使用指南
@@ -215,7 +215,7 @@ window.addEventListener('resize', () => {
 
 ## 总结
 
-这个 DOM 访问层是 PortableUi 设计的关键特性，它：
+这个 DOM 访问层是 PortableUi 现有实现中的关键特性，它：
 
 ✅ **赋予用户完全的灵活性** - 可以访问和修改任何 DOM 元素  
 ✅ **保持 API 简洁** - 直观的方法名和清晰的参数  
@@ -224,5 +224,5 @@ window.addEventListener('resize', () => {
 ✅ **支持样式隔离** - 在 Shadow DOM 隔离内仍可访问  
 ✅ **遵循 Web 标准** - 使用标准 DOM API 和事件系统
 
-项目已完全支持从库外部直接访问和修改 DOM！
+项目已支持从库外部直接访问和修改 DOM。
 
