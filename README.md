@@ -37,7 +37,7 @@
 项目现在支持将 `examples` 目录构建为多个独立 HTML 页面。
 
 - 输出目录：`dist/examples`
-- 输出页面：`basic.html`、`complex.html`、`layout.html`
+- 输出页面：`basic.html`、`complex.html`、`layout.html`、`media.html`
 
 常用命令：
 

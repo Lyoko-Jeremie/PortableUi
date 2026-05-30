@@ -10,6 +10,7 @@ module.exports = {
     basic: './examples/basic/main.ts',
     complex: './examples/complex/main.ts',
     layout: './examples/layout/main.ts',
+    media: './examples/media/main.ts',
   },
   output: {
     path: distDir,
@@ -55,6 +56,12 @@ module.exports = {
       filename: 'layout.html',
       template: './examples/layout/template.html',
       chunks: ['layout'],
+      inject: 'body',
+    }),
+    new HtmlWebpackPlugin({
+      filename: 'media.html',
+      template: './examples/media/template.html',
+      chunks: ['media'],
       inject: 'body',
     }),
   ],
