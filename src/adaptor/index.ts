@@ -1,3 +1,6 @@
+export {App, AppScope} from './App';
+export type {AppOptions, AppTabOptions} from './App';
+
 export {CreatePortableUi, createPortableUiFactory, registerDeclarativeComponent} from './CreatePortableUi';
 export type {BuiltInDeclarativeRegistry} from './CreatePortableUi';
 export type {
@@ -12,4 +15,3 @@ export type {
   PortableUiAdapter,
   PortableUiDeclarativeConfig,
 } from './types';
-

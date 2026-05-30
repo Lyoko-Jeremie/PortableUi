@@ -150,11 +150,15 @@ createUi(document.getElementById('app')!, config);
 
 ## 命令式接口
 
-一个命令式接口适配器：
+已实现命令式接口适配器：`App`。
 
 ```typescript
+import {App} from 'PortableUi';
 
 const el = document.getElementById('app');
+if (!el) {
+  throw new Error('Missing #app');
+}
 
 const root = new App(el, {id: 'root'});
 
@@ -186,6 +190,12 @@ tab1.addInput({
 
 
 ```
+
+`App` 额外提供：
+
+- `getComponent(id)` - 按 id 获取组件
+- `getAllComponents()` - 获取当前所有组件实例
+- `destroy()` - 逆序卸载并清理全部已挂载组件
 
 
 
