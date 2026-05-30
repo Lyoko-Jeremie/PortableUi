@@ -20,6 +20,128 @@
 输出代码时优先给最小可运行示例，且显式包含容器与销毁逻辑。
 ```
 
+## LLM JSON Index
+
+```json
+{
+  "library": "PortableUi",
+  "version": "0.1.0",
+  "entry": {
+    "main": "src/index.ts",
+    "exports": [
+      "core",
+      "types",
+      "styles",
+      "utils",
+      "layout",
+      "i18n",
+      "adaptor",
+      "components/basic",
+      "components/complex",
+      "components/container"
+    ]
+  },
+  "primary_apis": {
+    "declarative": {
+      "name": "CreatePortableUi",
+      "signature": "CreatePortableUi(container, config, registry?) => PortableUiAdapter",
+      "default_style_isolation": "shadow",
+      "config_keys": ["id", "children", "styleIsolation.mode", "styleIsolation.styles"],
+      "adapter_methods": ["getComponent", "getAllComponents", "destroy"],
+      "adapter_fields": ["id", "root", "shadowRoot"]
+    },
+    "imperative": {
+      "name": "App",
+      "signature": "new App(container, options)",
+      "features": [
+        "auto generated addXxx methods",
+        "addTab returns AppScope",
+        "getComponent/getAllComponents/destroy",
+        "shadowRoot access"
+      ]
+    }
+  },
+  "singletons": [
+    "stateManager",
+    "globalEventSystem",
+    "styleManager",
+    "i18nManager",
+    "extensibilityManager",
+    "styleIsolation"
+  ],
+  "core": {
+    "BaseComponent": [
+      "mount",
+      "update",
+      "unmount",
+      "destroy",
+      "getElement",
+      "getProps",
+      "getState",
+      "setState"
+    ],
+    "helpers": ["defineComponent", "DOMAccessor"],
+    "systems": ["EventSystem", "StateManager", "StyleIsolation", "ExtensibilityManager"]
+  },
+  "components": {
+    "basic": [
+      "Button",
+      "Input",
+      "Label",
+      "TextBox",
+      "Select",
+      "Checkbox",
+      "Radio",
+      "Slider",
+      "DatePicker",
+      "FileUpload",
+      "Image",
+      "Canvas"
+    ],
+    "complex": [
+      "Table",
+      "TreeView",
+      "Tabs",
+      "Modal",
+      "Toast",
+      "Progress",
+      "Autocomplete",
+      "CascadingSelect"
+    ],
+    "container": ["Container", "Flex", "Grid", "GridItem", "Group"]
+  },
+  "styles": {
+    "manager": "StyleManager",
+    "css_builder": "CSS",
+    "themes": ["lightTheme", "darkTheme", "getDefaultTheme"],
+    "tokens": ["colors", "sizes", "spacing"]
+  },
+  "layout": {
+    "engine": "LayoutEngine",
+    "apis": [
+      "createHorizontalLayout",
+      "createVerticalLayout",
+      "createGridLayout",
+      "createGridItemLayout",
+      "createFlexItemLayout",
+      "createLayoutWrapper",
+      "createResponsiveLayout"
+    ]
+  },
+  "i18n": {
+    "apis": ["I18nManager", "i18nManager", "i18n"],
+    "languages": ["en", "zh"],
+    "built_in_locales": ["enUS", "zhCN"]
+  },
+  "constraints": [
+    "component ids must be unique in CreatePortableUi/App",
+    "default style isolation mode is shadow",
+    "component callbacks usually use (self, event, ...)",
+    "BaseComponent.update usually triggers rerender"
+  ]
+}
+```
+
 ## 0. 快速结论（给 LLM 的最小可执行知识）
 
 - 主入口：`src/index.ts`，直接导出核心、类型、样式、布局、i18n、适配器、全部组件。
@@ -552,3 +674,5 @@ modal.open();
 - 目标：**插件扩展和生命周期拦截**
   - 看：`extensibilityManager`（`middleware`、`hooks`、`plugins`）
   - 声明式扩展：`registerDeclarativeComponent`
+
+
