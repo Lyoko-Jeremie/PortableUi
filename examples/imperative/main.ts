@@ -1,4 +1,6 @@
 import '../styles/demo-base.css';
+import '../basic/styles.css';
+import '../complex/styles.css';
 import './styles.css';
 import {App} from '../../src';
 
@@ -8,6 +10,64 @@ if (!host) {
 }
 
 const app = new App(host, {id: 'imperative-demo'});
+
+app.root.classList.add('imperative-root');
+
+const createCard = (title: string, description: string): {card: HTMLElement; body: HTMLElement} => {
+  const card = document.createElement('section');
+  card.className = 'demo-card imperative-card';
+
+  const heading = document.createElement('div');
+  heading.className = 'imperative-card-title';
+  heading.textContent = title;
+
+  const desc = document.createElement('p');
+  desc.className = 'imperative-card-description';
+  desc.textContent = description;
+
+  const body = document.createElement('div');
+  body.className = 'imperative-card-body';
+
+  card.append(heading, desc, body);
+  return {card, body};
+};
+
+const appendById = (id: string, target: HTMLElement): void => {
+  const component = app.getComponent(id);
+  const element = component?.getElement();
+  if (element) {
+    target.appendChild(element);
+  }
+};
+
+const hero = document.createElement('section');
+hero.className = 'imperative-hero';
+hero.innerHTML = `
+  <div class="imperative-hero-copy">
+    <h1>命令式接口示例</h1>
+    <p>
+      这个页面展示了 ` + "`App`" + ` 的自动生成 add* 方法、嵌套 tab 作用域，以及如何把组件重新组织成更清晰的页面结构。
+    </p>
+  </div>
+  <div class="imperative-hero-badges">
+    <span class="imperative-badge">addButton</span>
+    <span class="imperative-badge">addInput</span>
+    <span class="imperative-badge">addSelect</span>
+    <span class="imperative-badge">addCheckbox</span>
+    <span class="imperative-badge">addToast</span>
+    <span class="imperative-badge">addTab</span>
+  </div>
+`;
+
+const layout = document.createElement('div');
+layout.className = 'imperative-grid';
+
+const formCard = createCard('表单控件', '把按钮、选择器和复选框整理成一列，适合做设置面板。');
+const actionCard = createCard('动作与反馈', '把操作按钮和 Toast 放在一起，形成明确的反馈区。');
+const tabCard = createCard('嵌套区域', '展示 `addTab()` 创建的子作用域以及它内部的组件。');
+
+layout.append(formCard.card, actionCard.card, tabCard.card);
+app.root.append(hero, layout);
 
 const title = app.addLabel({id: 'title', text: '命令式接口示例'});
 const theme = app.addSelect({
@@ -48,8 +108,31 @@ const hint = document.createElement('p');
 hint.className = 'demo-feedback';
 hint.textContent = '这个页面使用 `App` 命令式 API 创建。';
 
-controls.appendChild(hint);
-host.appendChild(controls);
+const formInfo = document.createElement('p');
+formInfo.className = 'imperative-card-note';
+formInfo.textContent = '这些组件都由同一个 `App` 实例管理。';
+formCard.body.append(formInfo);
+
+const actionToolbar = document.createElement('div');
+actionToolbar.className = 'demo-controls imperative-toolbar';
+actionToolbar.append(hint);
+actionCard.body.append(actionToolbar);
+
+const tabMount = document.createElement('div');
+tabMount.className = 'imperative-tab-shell';
+tabCard.body.append(tabMount);
+
+appendById('title', formCard.body);
+appendById('theme', formCard.body);
+appendById('agree', formCard.body);
+
+appendById('show-toast', actionToolbar);
+appendById('show-agree', actionToolbar);
+appendById('toast', actionCard.body);
+
+appendById('settings-tab', tabMount);
+appendById('tab-btn', tabMount);
+appendById('tab-input', tabMount);
 
 void title;
 

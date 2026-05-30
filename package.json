@@ -6,6 +6,7 @@
     "test:coverage": "jest --coverage",
     "test:watch": "jest --watch",
     "build:examples": "webpack --config webpack.examples.config.js",
+    "build:examples:w": "webpack -w --config webpack.examples.config.js",
     "build:examples:prod": "webpack --mode production --config webpack.examples.config.js",
     "dev:examples": "webpack serve --config webpack.examples.config.js"
   },
