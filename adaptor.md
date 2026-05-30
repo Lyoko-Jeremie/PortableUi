@@ -1,5 +1,7 @@
 # 易用性适配器
 
+---
+
 ## 声明式接口
 
 已实现声明式适配器入口：`CreatePortableUi`。
@@ -143,3 +145,47 @@ createUi(document.getElementById('app')!, config);
 - 嵌套 children 的挂载
 - 数组 children 与 `destroy()` 清理
 - 未知组件类型报错
+
+---
+
+## 命令式接口
+
+一个命令式接口适配器：
+
+```typescript
+
+const el = document.getElementById('app');
+
+const root = new App(el, {id: 'root'});
+
+root.addButton({
+  id: 'btn1',
+  text: 'Click Me',
+  onClick: () => alert('Button clicked!'),
+});
+
+root.addInput({
+  id: 'input1',
+  placeholder: 'Type here',
+});
+
+const tab1 = root.addTab({
+  id: 'tab1',
+});
+
+tab1.addButton({
+  id: 'tabBtn1',
+  text: 'Tab Button',
+  onClick: () => alert('Tab button clicked!'),
+});
+
+tab1.addInput({
+  id: 'tabInput1',
+  placeholder: 'Tab input',
+});
+
+
+```
+
+
+
