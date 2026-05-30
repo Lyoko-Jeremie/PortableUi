@@ -109,7 +109,7 @@ const config: PortableUiDeclarativeConfig<BuiltInDeclarativeRegistry> = {
 CreatePortableUi(document.getElementById('app')!, config);
 ```
 
-如果你有自定义组件，使用 `createPortableUiFactory` 能获得同样严格的类型推导：
+如果你有自定义组件，使用 `createPortableUiFactory` 能获得同样严格的类型推导；`type`、`props` 和注册表会保持联动：
 
 ```typescript
 import {BaseComponent, createPortableUiFactory, type PortableUiDeclarativeConfig} from 'PortableUi';
@@ -134,7 +134,11 @@ const config: PortableUiDeclarativeConfig<typeof registry> = {
   },
 };
 
-createUi(document.getElementById('app')!, config);
+const ui = createUi(document.getElementById('app')!, config);
+
+const badge = ui.getComponent('badge1');
+// badge 的类型会推导为 Badge | null
+console.log(badge?.getId());
 ```
 
 ### 测试
@@ -198,6 +202,46 @@ tab1.addInput({
 - `destroy()` - 逆序卸载并清理全部已挂载组件
 
 `AppScope` 会根据组件注册表自动生成 `addButton()`、`addInput()` 这类方法；新增组件到列表后，会自动获得对应的 `add*()` 接口和类型提示。
+
+除了 `addButton()` / `addInput()` 之外，你还可以直接使用 `addLabel()`、`addCheckbox()`、`addSelect()`、`addToast()`、`addTab()` 等快捷方法：
+
+```typescript
+import {App} from 'PortableUi';
+
+const host = document.getElementById('app');
+if (!host) {
+  throw new Error('Missing #app');
+}
+
+const app = new App(host, {id: 'imperative-demo'});
+
+const title = app.addLabel({id: 'title', text: '命令式接口示例'});
+const agree = app.addCheckbox({id: 'agree', label: '我已阅读并同意'});
+const theme = app.addSelect({
+  id: 'theme',
+  placeholder: '选择主题',
+  options: [
+    {label: '浅色', value: 'light'},
+    {label: '深色', value: 'dark'},
+  ],
+});
+const toast = app.addToast({id: 'toast', visible: false, message: '准备就绪'});
+
+app.addButton({
+  id: 'show-toast',
+  text: '显示提示',
+  onClick: () => {
+    toast.show(`已选择主题：${String(theme.getValue())}`, 'success');
+  },
+});
+
+const tab = app.addTab({id: 'settings-tab'});
+tab.addButton({id: 'tab-btn', text: 'Tab 内按钮'});
+tab.addInput({id: 'tab-input', placeholder: 'Tab 内输入框'});
+
+void title;
+void agree;
+```
 
 
 

@@ -11,6 +11,7 @@ module.exports = {
     complex: './examples/complex/main.ts',
     layout: './examples/layout/main.ts',
     media: './examples/media/main.ts',
+    imperative: './examples/imperative/main.ts',
   },
   output: {
     path: distDir,
@@ -62,6 +63,12 @@ module.exports = {
       filename: 'media.html',
       template: './examples/media/template.html',
       chunks: ['media'],
+      inject: 'body',
+    }),
+    new HtmlWebpackPlugin({
+      filename: 'imperative.html',
+      template: './examples/imperative/template.html',
+      chunks: ['imperative'],
       inject: 'body',
     }),
   ],

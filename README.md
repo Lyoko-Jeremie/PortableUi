@@ -37,7 +37,7 @@
 项目现在支持将 `examples` 目录构建为多个独立 HTML 页面。
 
 - 输出目录：`dist/examples`
-- 输出页面：`basic.html`、`complex.html`、`layout.html`、`media.html`
+- 输出页面：`basic.html`、`complex.html`、`layout.html`、`media.html`、`imperative.html`
 
 常用命令：
 
@@ -48,6 +48,8 @@ yarn dev:examples
 ```
 
 执行 `yarn dev:examples` 后，默认会启动开发服务器并打开 `basic.html`。
+
+如果你想直接查看命令式接口示例，可以打开 `imperative.html`。
 
 ## 使用文档
 
