@@ -10,6 +10,11 @@
       "default": "./dist/index.js"
     }
   },
+  "typesVersions": {
+    "*": {
+      "*": ["dist/*"]
+    }
+  },
   "files": [
     "dist"
   ],
