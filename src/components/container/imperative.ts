@@ -34,12 +34,14 @@ export type ComponentPropsOf<TCtor extends AnyComponentCtor> = ConstructorParame
   ? Record<string, never>
   : NonNullable<ConstructorParameters<TCtor>[0]>;
 
-type AddMethodName<TKey extends string> = `add${TKey}`;
-
 export type GeneratedAddMethods<TRegistry extends Record<string, AnyComponentCtor>> = {
-  [K in Extract<keyof TRegistry, string> as AddMethodName<K>]: (
+  [K in Extract<keyof TRegistry, string>]: (
     props: ComponentPropsOf<TRegistry[K]>
   ) => InstanceType<TRegistry[K]>;
+};
+
+export type GeneratedAddNamespace<TRegistry extends Record<string, AnyComponentCtor>> = {
+  add: GeneratedAddMethods<TRegistry>;
 };
 
 export const builtInContainerChildRegistry = {
@@ -77,7 +79,7 @@ export type ContainerComponentCtors = {
 };
 
 export type BuiltInContainerWithNestedRegistry = BuiltInContainerChildRegistry & ContainerComponentCtors;
-export type BuiltInContainerWithNestedAddMethods = GeneratedAddMethods<BuiltInContainerWithNestedRegistry>;
+export type BuiltInContainerWithNestedAddMethods = GeneratedAddNamespace<BuiltInContainerWithNestedRegistry>;
 
 let registeredContainerComponentCtors: Partial<ContainerComponentCtors> = {};
 
@@ -119,22 +121,38 @@ export function installGeneratedAddMethods<TRegistry extends Record<string, AnyC
   registry: TRegistry,
   mountComponent: <TCtor extends AnyComponentCtor>(ctor: TCtor, props: ComponentPropsOf<TCtor>) => InstanceType<TCtor>
 ): void {
+  const addNamespace = ensureAddNamespace(target);
+
   for (const [type, ctor] of Object.entries(registry) as Array<[
     Extract<keyof TRegistry, string>,
     TRegistry[Extract<keyof TRegistry, string>]
   ]>) {
-    const methodName = `add${type}` as AddMethodName<Extract<keyof TRegistry, string>>;
-    if (Object.prototype.hasOwnProperty.call(target, methodName)) {
+    if (Object.prototype.hasOwnProperty.call(addNamespace, type)) {
       continue;
     }
 
     const componentCtor = ctor as AnyComponentCtor;
-    Object.defineProperty(target, methodName, {
+    Object.defineProperty(addNamespace, type, {
       configurable: true,
       enumerable: false,
       writable: true,
       value: (props: ComponentPropsOf<typeof componentCtor>) => mountComponent(componentCtor, props),
     });
   }
+}
+
+function ensureAddNamespace(target: object): Record<string, unknown> {
+  const host = target as {add?: Record<string, unknown>};
+
+  if (!host.add || typeof host.add !== 'object') {
+    Object.defineProperty(target, 'add', {
+      configurable: true,
+      enumerable: true,
+      writable: true,
+      value: {},
+    });
+  }
+
+  return host.add as Record<string, unknown>;
 }
 

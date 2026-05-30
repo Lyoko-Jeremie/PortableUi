@@ -55,16 +55,16 @@ hero.innerHTML = `
   <div class="imperative-hero-copy">
     <h1>命令式接口示例</h1>
     <p>
-      这个页面展示了 ` + "`App`" + ` 的自动生成 add* 方法、嵌套 tab 作用域，以及如何把组件重新组织成更清晰的页面结构。
+      这个页面展示了 ` + "`App`" + ` 的自动生成 add.* 方法、嵌套 tab 作用域，以及如何把组件重新组织成更清晰的页面结构。
     </p>
   </div>
   <div class="imperative-hero-badges">
-    <span class="imperative-badge">addButton</span>
-    <span class="imperative-badge">addInput</span>
-    <span class="imperative-badge">addSelect</span>
-    <span class="imperative-badge">addCheckbox</span>
-    <span class="imperative-badge">addToast</span>
-    <span class="imperative-badge">addTab</span>
+    <span class="imperative-badge">add.Button</span>
+    <span class="imperative-badge">add.Input</span>
+    <span class="imperative-badge">add.Select</span>
+    <span class="imperative-badge">add.Checkbox</span>
+    <span class="imperative-badge">add.Toast</span>
+    <span class="imperative-badge">add.tab</span>
   </div>
 `;
 
@@ -73,13 +73,13 @@ layout.className = 'imperative-grid';
 
 const formCard = createCard('表单控件', '把按钮、选择器和复选框整理成一列，适合做设置面板。');
 const actionCard = createCard('动作与反馈', '把操作按钮和 Toast 放在一起，形成明确的反馈区。');
-const tabCard = createCard('嵌套区域', '展示 `addTab()` 创建的子作用域以及它内部的组件。');
+const tabCard = createCard('嵌套区域', '展示 `add.tab()` 创建的子作用域以及它内部的组件。');
 
 layout.append(formCard.card, actionCard.card, tabCard.card);
 app.root.append(hero, layout);
 
-const title = app.addLabel({id: 'title', text: '命令式接口示例'});
-const theme = app.addSelect({
+const title = app.add.Label({id: 'title', text: '命令式接口示例'});
+const theme = app.add.Select({
   id: 'theme',
   placeholder: '选择主题',
   options: [
@@ -87,13 +87,13 @@ const theme = app.addSelect({
     {label: '深色', value: 'dark'},
   ],
 });
-const agree = app.addCheckbox({id: 'agree', label: '我已阅读并同意'});
-const toast = app.addToast({id: 'toast', visible: false, message: '准备就绪'});
+const agree = app.add.Checkbox({id: 'agree', label: '我已阅读并同意'});
+const toast = app.add.Toast({id: 'toast', visible: false, message: '准备就绪'});
 
 const controls = document.createElement('div');
 controls.className = 'demo-controls';
 
-app.addButton({
+app.add.Button({
   id: 'show-toast',
   text: '显示提示',
   onClick: () => {
@@ -101,7 +101,7 @@ app.addButton({
   },
 });
 
-app.addButton({
+app.add.Button({
   id: 'show-agree',
   text: '查看勾选状态',
   onClick: () => {
@@ -109,9 +109,9 @@ app.addButton({
   },
 });
 
-const tab = app.addTab({id: 'settings-tab'});
-tab.addButton({id: 'tab-btn', text: 'Tab 内按钮'});
-tab.addInput({id: 'tab-input', placeholder: 'Tab 内输入框'});
+const tab = app.add.tab({id: 'settings-tab'});
+tab.add.Button({id: 'tab-btn', text: 'Tab 内按钮'});
+tab.add.Input({id: 'tab-input', placeholder: 'Tab 内输入框'});
 
 const hint = document.createElement('p');
 hint.className = 'demo-feedback';

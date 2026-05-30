@@ -140,7 +140,7 @@ describe('Group', () => {
     const group = new Group({id: 'group-shortcut', title: 'Shortcut Group'});
     group.mount(container);
 
-    const button = group.addButton({id: 'group-btn', text: 'Group shortcut'});
+    const button = group.add.Button({id: 'group-btn', text: 'Group shortcut'});
 
     expect(button).toBeInstanceOf(Button);
     expect(group.getContainerChildren()).toContain(button);
@@ -223,8 +223,8 @@ describe('Group', () => {
     const group = new Group({id: 'group-shortcut', title: 'Outer Group'});
     group.mount(container);
 
-    const innerGroup = group.addGroup({id: 'group-nested', title: 'Inner Group'}) as Group;
-    const button = innerGroup.addButton({id: 'group-nested-btn', text: 'Nested'});
+    const innerGroup = group.add.Group({id: 'group-nested', title: 'Inner Group'}) as Group;
+    const button = innerGroup.add.Button({id: 'group-nested-btn', text: 'Nested'});
 
     expect(innerGroup).toBeTruthy();
     expect(button).toBeInstanceOf(Button);
@@ -235,7 +235,7 @@ describe('Group', () => {
     const group = new Group({id: 'group-parent', title: 'Group'});
     group.mount(container);
 
-    const containerChild = group.addContainer({id: 'container-child'});
+    const containerChild = group.add.Container({id: 'container-child'});
 
     expect(containerChild).toBeTruthy();
     expect(group.getContainerChildren()).toContain(containerChild);
@@ -245,7 +245,7 @@ describe('Group', () => {
     const group = new Group({id: 'group-parent', title: 'Group'});
     group.mount(container);
 
-    const flex = group.addFlex({id: 'flex-child', direction: 'vertical'});
+    const flex = group.add.Flex({id: 'flex-child', direction: 'vertical'});
 
     expect(flex).toBeTruthy();
     expect(group.getContainerChildren()).toContain(flex);
@@ -255,7 +255,7 @@ describe('Group', () => {
     const group = new Group({id: 'group-parent', title: 'Group'});
     group.mount(container);
 
-    const grid = group.addGrid({id: 'grid-child', columns: 2});
+    const grid = group.add.Grid({id: 'grid-child', columns: 2});
 
     expect(grid).toBeTruthy();
     expect(group.getContainerChildren()).toContain(grid);

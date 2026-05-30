@@ -1,25 +1,25 @@
 import {BaseComponent, Button, Container, Flex, Grid, GridItem} from '../../../src';
 
 describe('Container typing', () => {
-  it('preserves concrete return types for generated add* methods', () => {
+  it('preserves concrete return types for generated add.* methods', () => {
     const container = new Container();
     const flex = new Flex();
     const grid = new Grid();
 
-    const childFlex = container.addFlex({});
-    const childGrid = container.addGrid({});
-    const childGridItem = container.addGridItem({});
+    const childFlex = container.add.Flex({});
+    const childGrid = container.add.Grid({});
+    const childGridItem = container.add.GridItem({});
 
-    const nestedFlex = flex.addFlex({});
-    const nestedGrid = grid.addGrid({});
-    const nestedGridItem = grid.addGridItem({});
+    const nestedFlex = flex.add.Flex({});
+    const nestedGrid = grid.add.Grid({});
+    const nestedGridItem = grid.add.GridItem({});
 
-    const flexButton = childFlex.addButton({text: 'flex button'});
-    const gridButton = childGrid.addButton({text: 'grid button'});
-    const gridItemButton = childGridItem.addButton({text: 'grid item button'});
-    const nestedFlexButton = nestedFlex.addButton({text: 'nested flex button'});
-    const nestedGridItemButton = nestedGrid.addGridItem({}).addButton({text: 'nested grid item button'});
-    const nestedGridButton = nestedGridItem.addButton({text: 'nested grid item button'});
+    const flexButton = childFlex.add.Button({text: 'flex button'});
+    const gridButton = childGrid.add.Button({text: 'grid button'});
+    const gridItemButton = childGridItem.add.Button({text: 'grid item button'});
+    const nestedFlexButton = nestedFlex.add.Button({text: 'nested flex button'});
+    const nestedGridItemButton = nestedGrid.add.GridItem({}).add.Button({text: 'nested grid item button'});
+    const nestedGridButton = nestedGridItem.add.Button({text: 'nested grid item button'});
 
     const typedContainer: Container = childFlex;
     const typedFlex: Flex = nestedFlex;

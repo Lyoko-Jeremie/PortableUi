@@ -36,12 +36,14 @@ type ComponentPropsOf<TCtor extends AnyComponentCtor> = ConstructorParameters<TC
   ? Record<string, never>
   : NonNullable<ConstructorParameters<TCtor>[0]>;
 
-type AddMethodName<TKey extends string> = `add${TKey}`;
-
 type GeneratedAddMethods<TRegistry extends DeclarativeRegistry> = {
-  [K in Extract<keyof TRegistry, string> as AddMethodName<K>]: (
+  [K in Extract<keyof TRegistry, string>]: (
     props: ComponentPropsOf<TRegistry[K]>
   ) => InstanceType<TRegistry[K]>;
+};
+
+type AppScopeAddMethods<TRegistry extends DeclarativeRegistry> = GeneratedAddMethods<TRegistry> & {
+  tab: (options: AppTabOptions) => AppScope<TRegistry>;
 };
 
 const builtInComponentRegistry = {
@@ -73,7 +75,9 @@ const builtInComponentRegistry = {
 } satisfies DeclarativeRegistry;
 
 export type BuiltInDeclarativeRegistry = typeof builtInComponentRegistry;
-export type BuiltInAddMethods = GeneratedAddMethods<BuiltInDeclarativeRegistry>;
+export type BuiltInAddMethods = {
+  add: AppScopeAddMethods<BuiltInDeclarativeRegistry>;
+};
 
 export interface AppOptions {
   id?: string;
@@ -135,16 +139,19 @@ function resolveMountRoot(container: HTMLElement, styleIsolation?: StyleIsolatio
 }
 
 class AppScopeBase<TRegistry extends DeclarativeRegistry = BuiltInDeclarativeRegistry> {
+  readonly add: AppScopeAddMethods<TRegistry>;
+
   constructor(
     protected mountPoint: HTMLElement,
     protected readonly components: Map<string, BaseComponent>,
     protected readonly mountOrder: BaseComponent[],
     protected readonly registry: TRegistry
   ) {
+    this.add = {} as AppScopeAddMethods<TRegistry>;
     this.installGeneratedAddMethods();
   }
 
-  addTab(options: AppTabOptions): AppScope<TRegistry> {
+  protected createTabScope(options: AppTabOptions): AppScope<TRegistry> {
     const className = options.className ? `${options.className} portableui-app-tab` : 'portableui-app-tab';
     const tab = this.mountComponent(Container, {
       ...options,
@@ -179,17 +186,25 @@ class AppScopeBase<TRegistry extends DeclarativeRegistry = BuiltInDeclarativeReg
   }
 
   private installGeneratedAddMethods(): void {
+    if (!Object.prototype.hasOwnProperty.call(this.add, 'tab')) {
+      Object.defineProperty(this.add, 'tab', {
+        configurable: true,
+        enumerable: false,
+        writable: true,
+        value: (options: AppTabOptions) => this.createTabScope(options),
+      });
+    }
+
     for (const [type, ctor] of Object.entries(this.registry) as Array<[
       Extract<keyof TRegistry, string>,
       TRegistry[Extract<keyof TRegistry, string>]
     ]>) {
-      const methodName = `add${type}` as AddMethodName<Extract<keyof TRegistry, string>>;
-      if (Object.prototype.hasOwnProperty.call(this, methodName)) {
+      if (Object.prototype.hasOwnProperty.call(this.add, type)) {
         continue;
       }
 
       const componentCtor = ctor as AnyComponentCtor;
-      Object.defineProperty(this, methodName, {
+      Object.defineProperty(this.add, type, {
         configurable: true,
         enumerable: false,
         writable: true,
@@ -200,13 +215,14 @@ class AppScopeBase<TRegistry extends DeclarativeRegistry = BuiltInDeclarativeReg
 }
 
 export type AppScope<TRegistry extends DeclarativeRegistry = BuiltInDeclarativeRegistry> =
-  AppScopeBase<TRegistry> & GeneratedAddMethods<TRegistry>;
+  AppScopeBase<TRegistry> & {add: AppScopeAddMethods<TRegistry>};
 
 export class App extends AppScopeBase<BuiltInDeclarativeRegistry> {
   readonly root: HTMLElement;
   private readonly host: HTMLElement;
 
-  constructor(container: HTMLElement, options: AppOptions = {}) {    if (!container) {
+  constructor(container: HTMLElement, options: AppOptions = {}) {
+    if (!container) {
       throw new Error('App requires a valid container element.');
     }
 
@@ -287,4 +303,3 @@ export class App extends AppScopeBase<BuiltInDeclarativeRegistry> {
   }
 }
 
-export interface App extends BuiltInAddMethods {}

@@ -109,7 +109,7 @@ describe('Grid', () => {
     const grid = new Grid({id: 'grid-shortcut', columns: 2});
     grid.mount(container);
 
-    const button = grid.addButton({id: 'grid-btn', text: 'Grid shortcut'});
+    const button = grid.add.Button({id: 'grid-btn', text: 'Grid shortcut'});
 
     expect(button).toBeInstanceOf(Button);
     expect(grid.getContainerChildren()).toContain(button);
@@ -120,7 +120,7 @@ describe('Grid', () => {
     const grid = new Grid({id: 'grid-shortcut', columns: 2});
     grid.mount(container);
 
-    const innerGrid = grid.addGrid({id: 'grid-nested', columns: 1});
+    const innerGrid = grid.add.Grid({id: 'grid-nested', columns: 1});
 
     expect(innerGrid).toBeTruthy();
     expect(grid.getContainerChildren()).toContain(innerGrid);
@@ -130,7 +130,7 @@ describe('Grid', () => {
     const grid = new Grid({id: 'grid-parent', columns: 2});
     grid.mount(container);
 
-    const container_child = grid.addContainer({id: 'container-child'});
+    const container_child = grid.add.Container({id: 'container-child'});
 
     expect(container_child).toBeTruthy();
     expect(grid.getContainerChildren()).toContain(container_child);
@@ -140,7 +140,7 @@ describe('Grid', () => {
     const grid = new Grid({id: 'grid-parent', columns: 2});
     grid.mount(container);
 
-    const flex = grid.addFlex({id: 'flex-child', direction: 'vertical'});
+    const flex = grid.add.Flex({id: 'flex-child', direction: 'vertical'});
 
     expect(flex).toBeTruthy();
     expect(grid.getContainerChildren()).toContain(flex);
@@ -150,7 +150,7 @@ describe('Grid', () => {
     const grid = new Grid({id: 'grid-parent', columns: 2});
     grid.mount(container);
 
-    const group = grid.addGroup({id: 'group-child', title: 'Group'});
+    const group = grid.add.Group({id: 'group-child', title: 'Group'});
 
     expect(group).toBeTruthy();
     expect(grid.getContainerChildren()).toContain(group);
@@ -235,7 +235,7 @@ describe('GridItem', () => {
     const item = new GridItem({id: 'grid-item-shortcut'});
     item.mount(container);
 
-    const button = item.addButton({id: 'grid-item-btn', text: 'GridItem shortcut'});
+    const button = item.add.Button({id: 'grid-item-btn', text: 'GridItem shortcut'});
 
     expect(button).toBeInstanceOf(Button);
     expect(item.getChildrenList()).toContain(button);

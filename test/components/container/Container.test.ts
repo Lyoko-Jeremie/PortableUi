@@ -163,7 +163,7 @@ describe('Container', () => {
     const comp = new Container({id: 'imperative-parent'});
     comp.mount(container);
 
-    const button = comp.addButton({id: 'child-btn', text: 'Add by shortcut'});
+    const button = comp.add.Button({id: 'child-btn', text: 'Add by shortcut'});
 
     expect(button).toBeInstanceOf(Button);
     expect(comp.getContainerChildren()).toContain(button);
@@ -174,8 +174,8 @@ describe('Container', () => {
     const outer = new Container({id: 'outer'});
     outer.mount(container);
 
-    const inner = outer.addContainer({id: 'inner', className: 'inner-class'}) as Container;
-    const button = inner.addButton({id: 'btn-in-nested', text: 'Nested'});
+    const inner = outer.add.Container({id: 'inner', className: 'inner-class'}) as Container;
+    const button = inner.add.Button({id: 'btn-in-nested', text: 'Nested'});
 
     expect(inner).toBeInstanceOf(Container);
     expect(button).toBeInstanceOf(Button);
@@ -189,7 +189,7 @@ describe('Container', () => {
     const comp = new Container({id: 'parent'});
     comp.mount(container);
 
-    const flex = comp.addFlex({id: 'flex-child', direction: 'vertical'});
+    const flex = comp.add.Flex({id: 'flex-child', direction: 'vertical'});
 
     expect(flex).toBeTruthy();
     expect(comp.getContainerChildren()).toContain(flex);
@@ -199,7 +199,7 @@ describe('Container', () => {
     const comp = new Container({id: 'parent'});
     comp.mount(container);
 
-    const grid = comp.addGrid({id: 'grid-child', columns: 3});
+    const grid = comp.add.Grid({id: 'grid-child', columns: 3});
 
     expect(grid).toBeTruthy();
     expect(comp.getContainerChildren()).toContain(grid);
@@ -209,7 +209,7 @@ describe('Container', () => {
     const comp = new Container({id: 'parent'});
     comp.mount(container);
 
-    const group = comp.addGroup({id: 'group-child', title: 'Group'});
+    const group = comp.add.Group({id: 'group-child', title: 'Group'});
 
     expect(group).toBeTruthy();
     expect(comp.getContainerChildren()).toContain(group);

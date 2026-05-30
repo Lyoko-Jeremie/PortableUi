@@ -20,9 +20,9 @@ describe('App imperative adaptor', () => {
   it('creates a root scope and mounts basic components', () => {
     const app = new App(host, {id: 'root'});
 
-    const button = app.addButton({id: 'btn1', text: 'Click Me'});
-    const input = app.addInput({id: 'input1', placeholder: 'Type here'});
-    const label = app.addLabel({id: 'label1', text: 'Hello'});
+    const button = app.add.Button({id: 'btn1', text: 'Click Me'});
+    const input = app.add.Input({id: 'input1', placeholder: 'Type here'});
+    const label = app.add.Label({id: 'label1', text: 'Hello'});
 
     expect(button).toBeInstanceOf(Button);
     expect(input).toBeInstanceOf(Input);
@@ -37,9 +37,9 @@ describe('App imperative adaptor', () => {
   it('supports nested tab scopes', () => {
     const app = new App(host, {id: 'root'});
 
-    const tab = app.addTab({id: 'tab1'});
-    tab.addButton({id: 'tabBtn1', text: 'Tab Button'});
-    tab.addInput({id: 'tabInput1', placeholder: 'Tab input'});
+    const tab = app.add.tab({id: 'tab1'});
+    tab.add.Button({id: 'tabBtn1', text: 'Tab Button'});
+    tab.add.Input({id: 'tabInput1', placeholder: 'Tab input'});
 
     const tabElement = shadowQ(host, '#tab1');
     expect(tabElement).toBeTruthy();
@@ -49,17 +49,17 @@ describe('App imperative adaptor', () => {
 
   it('throws on duplicate ids', () => {
     const app = new App(host, {id: 'root'});
-    app.addButton({id: 'same-id', text: 'A'});
+    app.add.Button({id: 'same-id', text: 'A'});
 
-    expect(() => app.addInput({id: 'same-id'})).toThrow('Duplicate component id: same-id');
+    expect(() => app.add.Input({id: 'same-id'})).toThrow('Duplicate component id: same-id');
   });
 
   it('destroys all mounted components in reverse order', () => {
     const app = new App(host, {id: 'root'});
 
-    app.addButton({id: 'btn1', text: 'A'});
-    const tab = app.addTab({id: 'tab1'});
-    tab.addInput({id: 'tabInput'});
+    app.add.Button({id: 'btn1', text: 'A'});
+    const tab = app.add.tab({id: 'tab1'});
+    tab.add.Input({id: 'tabInput'});
 
     expect(app.getAllComponents().length).toBeGreaterThan(1);
 

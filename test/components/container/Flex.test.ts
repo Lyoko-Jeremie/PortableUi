@@ -92,7 +92,7 @@ describe('Flex', () => {
     const flex = new Flex({id: 'flex-shortcut'});
     flex.mount(container);
 
-    const button = flex.addButton({id: 'flex-btn', text: 'Flex shortcut'});
+    const button = flex.add.Button({id: 'flex-btn', text: 'Flex shortcut'});
 
     expect(button).toBeInstanceOf(Button);
     expect(flex.getContainerChildren()).toContain(button);
@@ -133,8 +133,8 @@ describe('Flex', () => {
     const flex = new Flex({id: 'flex-shortcut'});
     flex.mount(container);
 
-    const innerFlex = flex.addFlex({id: 'flex-nested', direction: 'vertical'}) as Flex;
-    const button = innerFlex.addButton({id: 'flex-nested-btn', text: 'Nested flex'});
+    const innerFlex = flex.add.Flex({id: 'flex-nested', direction: 'vertical'}) as Flex;
+    const button = innerFlex.add.Button({id: 'flex-nested-btn', text: 'Nested flex'});
 
     expect(innerFlex).toBeTruthy();
     expect(button).toBeInstanceOf(Button);
@@ -145,7 +145,7 @@ describe('Flex', () => {
     const flex = new Flex({id: 'flex-parent'});
     flex.mount(container);
 
-    const containerChild = flex.addContainer({id: 'container-child'});
+    const containerChild = flex.add.Container({id: 'container-child'});
 
     expect(containerChild).toBeTruthy();
     expect(flex.getContainerChildren()).toContain(containerChild);
@@ -155,7 +155,7 @@ describe('Flex', () => {
     const flex = new Flex({id: 'flex-parent'});
     flex.mount(container);
 
-    const grid = flex.addGrid({id: 'grid-child', columns: 2});
+    const grid = flex.add.Grid({id: 'grid-child', columns: 2});
 
     expect(grid).toBeTruthy();
     expect(flex.getContainerChildren()).toContain(grid);
@@ -165,7 +165,7 @@ describe('Flex', () => {
     const flex = new Flex({id: 'flex-parent'});
     flex.mount(container);
 
-    const group = flex.addGroup({id: 'group-child', title: 'Group'});
+    const group = flex.add.Group({id: 'group-child', title: 'Group'});
 
     expect(group).toBeTruthy();
     expect(flex.getContainerChildren()).toContain(group);
