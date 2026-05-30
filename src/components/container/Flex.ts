@@ -9,6 +9,7 @@ import {FlexConfig} from '../../layout';
 import {LayoutEngine} from '../../layout/LayoutEngine';
 import {applyCommonElementProps} from '../basic/internal';
 import {BaseComponent} from '../../core';
+import {registerContainerComponentCtors} from './imperative';
 
 export interface FlexProps extends ContainerProps {
   /** 弹性伸展系数 */
@@ -119,6 +120,8 @@ export class Flex extends Container {
     }
   }
 }
+
+registerContainerComponentCtors({Flex});
 
 
 

@@ -14,7 +14,9 @@ import {
   BuiltInContainerWithNestedRegistry,
   ComponentPropsOf,
   AnyComponentCtor,
+  getContainerComponentCtors,
   installGeneratedAddMethods,
+  registerContainerComponentCtors,
 } from './imperative';
 
 export interface ContainerProps extends ComponentProps {
@@ -56,11 +58,10 @@ export class Container extends BaseComponent {
    * 获取完整的容器注册表（包含容器组件本身和所有子组件）
    */
   private getFullRegistry(): BuiltInContainerWithNestedRegistry {
-    // 延迟导入以避免循环依赖
-    const {Flex, Grid, GridItem, Group} = require('./index');
+    const {Container, Flex, Grid, GridItem, Group} = getContainerComponentCtors();
     return {
       ...builtInContainerChildRegistry,
-      Container: Container,
+      Container,
       Flex,
       Grid,
       GridItem,
@@ -214,5 +215,7 @@ export class Container extends BaseComponent {
     }
   }
 }
+
+registerContainerComponentCtors({Container});
 
 export interface Container extends BuiltInContainerWithNestedAddMethods {}

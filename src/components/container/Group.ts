@@ -9,6 +9,7 @@ import {LayoutConfig} from '../../layout';
 import {LayoutEngine} from '../../layout/LayoutEngine';
 import {applyCommonElementProps} from '../basic/internal';
 import {BaseComponent} from '../../core';
+import {registerContainerComponentCtors} from './imperative';
 
 export interface GroupProps extends ContainerProps {
   /** 分组标题 */
@@ -167,6 +168,8 @@ export class Group extends Container {
     }
   }
 }
+
+registerContainerComponentCtors({Group});
 
 
 

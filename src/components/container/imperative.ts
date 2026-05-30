@@ -75,6 +75,36 @@ export type ContainerComponentCtors = {
 export type BuiltInContainerWithNestedRegistry = BuiltInContainerChildRegistry & ContainerComponentCtors;
 export type BuiltInContainerWithNestedAddMethods = GeneratedAddMethods<BuiltInContainerWithNestedRegistry>;
 
+let registeredContainerComponentCtors: Partial<ContainerComponentCtors> = {};
+
+/**
+ * 注册容器组件构造器，避免在运行时使用 require()/import()。
+ */
+export function registerContainerComponentCtors(ctors: Partial<ContainerComponentCtors>): void {
+  registeredContainerComponentCtors = {
+    ...registeredContainerComponentCtors,
+    ...ctors,
+  };
+}
+
+/**
+ * 获取已注册的容器组件构造器。
+ */
+export function getContainerComponentCtors(): ContainerComponentCtors {
+  const containerCtor = registeredContainerComponentCtors.Container;
+  if (!containerCtor) {
+    throw new Error('Container constructor is not registered.');
+  }
+
+  return {
+    Container: containerCtor,
+    Flex: registeredContainerComponentCtors.Flex ?? containerCtor,
+    Grid: registeredContainerComponentCtors.Grid ?? containerCtor,
+    GridItem: registeredContainerComponentCtors.GridItem ?? containerCtor,
+    Group: registeredContainerComponentCtors.Group ?? containerCtor,
+  };
+}
+
 export function installGeneratedAddMethods<TRegistry extends Record<string, AnyComponentCtor>>(
   target: object,
   registry: TRegistry,

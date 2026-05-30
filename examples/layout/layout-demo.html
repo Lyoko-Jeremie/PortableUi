@@ -99,6 +99,7 @@
       complexNestedLayoutExample,
       responsiveLayoutExample,
     } from './layout-demo.ts';
+    import {Container, Button} from '../../src/layout';
 
     // Mount examples
     document.getElementById('basic-container-demo')?.appendChild(basicContainerExample());
@@ -109,7 +110,6 @@
     document.getElementById('responsive-layout-demo')?.appendChild(responsiveLayoutExample());
 
     // Add vertical container demo
-    const {Container, Button} = require('../../src/layout');
     const verticalContainer = new Container({
       direction: 'vertical',
       gap: 10,
