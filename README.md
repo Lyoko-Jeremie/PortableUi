@@ -2,7 +2,9 @@
 
 这是一个便携式UI库，用于在Web环境中快速创建一个用户界面。
 
-设计用于 Greasemonkey/Tampermonkey 脚本，也用于游戏Mod等场景。
+设计用于 Greasemonkey/Tampermonkey 脚本，也用于游戏Mod等注入场景。
+
+这个库在使用时通常是以Greasemonkey或Mod的形式注入到已有的环境中，需要保证环境的样式不影响当前库的元素，当前库的样式也不影响环境。
 
 ## 设计计划
 
