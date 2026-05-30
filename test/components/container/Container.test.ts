@@ -158,6 +158,60 @@ describe('Container', () => {
     comp.unmount();
     expect(comp.isMounted()).toBe(false);
   });
+
+  test('should support imperative add* shortcuts', () => {
+    const comp = new Container({id: 'imperative-parent'});
+    comp.mount(container);
+
+    const button = comp.addButton({id: 'child-btn', text: 'Add by shortcut'});
+
+    expect(button).toBeInstanceOf(Button);
+    expect(comp.getContainerChildren()).toContain(button);
+    expect(comp.getElement()?.querySelector('#child-btn')?.textContent).toBe('Add by shortcut');
+  });
+
+  test('should support nested containers with add* shortcuts', () => {
+    const outer = new Container({id: 'outer'});
+    outer.mount(container);
+
+    const inner = outer.addContainer({id: 'inner', className: 'inner-class'}) as Container;
+    const button = inner.addButton({id: 'btn-in-nested', text: 'Nested'});
+
+    expect(inner).toBeInstanceOf(Container);
+    expect(button).toBeInstanceOf(Button);
+    expect(outer.getContainerChildren()).toContain(inner);
+    expect(inner.getContainerChildren()).toContain(button);
+    expect(outer.getElement()?.querySelector('#inner')).toBeTruthy();
+    expect(outer.getElement()?.querySelector('#btn-in-nested')?.textContent).toBe('Nested');
+  });
+
+  test('should support adding Flex to Container', () => {
+    const comp = new Container({id: 'parent'});
+    comp.mount(container);
+
+    const flex = comp.addFlex({id: 'flex-child', direction: 'vertical'});
+
+    expect(flex).toBeTruthy();
+    expect(comp.getContainerChildren()).toContain(flex);
+  });
+
+  test('should support adding Grid to Container', () => {
+    const comp = new Container({id: 'parent'});
+    comp.mount(container);
+
+    const grid = comp.addGrid({id: 'grid-child', columns: 3});
+
+    expect(grid).toBeTruthy();
+    expect(comp.getContainerChildren()).toContain(grid);
+  });
+
+  test('should support adding Group to Container', () => {
+    const comp = new Container({id: 'parent'});
+    comp.mount(container);
+
+    const group = comp.addGroup({id: 'group-child', title: 'Group'});
+
+    expect(group).toBeTruthy();
+    expect(comp.getContainerChildren()).toContain(group);
+  });
 });
-
-

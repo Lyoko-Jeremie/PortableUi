@@ -105,6 +105,57 @@ describe('Grid', () => {
     expect(children.length).toBe(1);
   });
 
+  test('should support imperative add* shortcuts', () => {
+    const grid = new Grid({id: 'grid-shortcut', columns: 2});
+    grid.mount(container);
+
+    const button = grid.addButton({id: 'grid-btn', text: 'Grid shortcut'});
+
+    expect(button).toBeInstanceOf(Button);
+    expect(grid.getContainerChildren()).toContain(button);
+    expect(grid.getElement()?.querySelector('#grid-btn')?.textContent).toBe('Grid shortcut');
+  });
+
+  test('should support nested containers with add* shortcuts', () => {
+    const grid = new Grid({id: 'grid-shortcut', columns: 2});
+    grid.mount(container);
+
+    const innerGrid = grid.addGrid({id: 'grid-nested', columns: 1});
+
+    expect(innerGrid).toBeTruthy();
+    expect(grid.getContainerChildren()).toContain(innerGrid);
+  });
+
+  test('should support adding Container to Grid', () => {
+    const grid = new Grid({id: 'grid-parent', columns: 2});
+    grid.mount(container);
+
+    const container_child = grid.addContainer({id: 'container-child'});
+
+    expect(container_child).toBeTruthy();
+    expect(grid.getContainerChildren()).toContain(container_child);
+  });
+
+  test('should support adding Flex to Grid', () => {
+    const grid = new Grid({id: 'grid-parent', columns: 2});
+    grid.mount(container);
+
+    const flex = grid.addFlex({id: 'flex-child', direction: 'vertical'});
+
+    expect(flex).toBeTruthy();
+    expect(grid.getContainerChildren()).toContain(flex);
+  });
+
+  test('should support adding Group to Grid', () => {
+    const grid = new Grid({id: 'grid-parent', columns: 2});
+    grid.mount(container);
+
+    const group = grid.addGroup({id: 'group-child', title: 'Group'});
+
+    expect(group).toBeTruthy();
+    expect(grid.getContainerChildren()).toContain(group);
+  });
+
   test('should apply justifyContent and alignItems', () => {
     const grid = new Grid({
       columns: 2,
@@ -179,6 +230,15 @@ describe('GridItem', () => {
     expect(styles).toContain('grid-column: auto');
     expect(styles).toContain('grid-row: auto');
   });
+
+  test('should support imperative add* shortcuts', () => {
+    const item = new GridItem({id: 'grid-item-shortcut'});
+    item.mount(container);
+
+    const button = item.addButton({id: 'grid-item-btn', text: 'GridItem shortcut'});
+
+    expect(button).toBeInstanceOf(Button);
+    expect(item.getChildrenList()).toContain(button);
+    expect(item.getElement()?.querySelector('#grid-item-btn')?.textContent).toBe('GridItem shortcut');
+  });
 });
-
-

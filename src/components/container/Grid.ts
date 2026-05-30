@@ -9,6 +9,14 @@ import {GridConfig, GridItemConfig} from '../../layout';
 import {LayoutEngine} from '../../layout/LayoutEngine';
 import {applyCommonElementProps} from '../basic/internal';
 import {BaseComponent} from '../../core';
+import {
+  builtInContainerChildRegistry,
+  BuiltInContainerWithNestedAddMethods,
+  BuiltInContainerWithNestedRegistry,
+  ComponentPropsOf,
+  AnyComponentCtor,
+  installGeneratedAddMethods,
+} from './imperative';
 
 export interface GridProps extends ContainerProps {
   /** 列数 */
@@ -41,6 +49,7 @@ export class GridItem extends BaseComponent {
   constructor(props: GridItemProps = {}) {
     super(props);
     this.children = props.children ?? [];
+    this.installGeneratedAddMethods();
   }
 
   protected render(): ComponentElement {
@@ -107,7 +116,45 @@ export class GridItem extends BaseComponent {
       }
     }
   }
+
+   /**
+    * 安装 add* 命令式快捷方法
+    */
+  private installGeneratedAddMethods(): void {
+    const registry = this.getFullRegistry();
+    installGeneratedAddMethods(this, registry, (ctor, props) => this.createAndAddChild(ctor, props));
+  }
+
+  /**
+   * 获取完整的容器注册表（包含容器组件本身和所有子组件）
+   */
+  private getFullRegistry(): BuiltInContainerWithNestedRegistry {
+    // 延迟导入以避免循环依赖
+    const {Container, Flex, Grid, Group} = require('./index');
+    return {
+      ...builtInContainerChildRegistry,
+      Container,
+      Flex,
+      Grid,
+      GridItem: GridItem,
+      Group,
+    } as BuiltInContainerWithNestedRegistry;
+  }
+
+  /**
+   * 创建并追加子组件，供 add* 快捷方法复用
+   */
+  protected createAndAddChild<TCtor extends AnyComponentCtor>(
+    ctor: TCtor,
+    props: ComponentPropsOf<TCtor>
+  ): InstanceType<TCtor> {
+    const instance = new ctor(props);
+    this.addChild(instance);
+    return instance as InstanceType<TCtor>;
+  }
 }
+
+export interface GridItem extends BuiltInContainerWithNestedAddMethods {}
 
 export class Grid extends Container {
   constructor(props: GridProps = {}) {
@@ -204,4 +251,3 @@ export class Grid extends Container {
     return new GridItem(props);
   }
 }
-

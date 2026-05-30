@@ -136,6 +136,17 @@ describe('Group', () => {
     expect(children.length).toBe(1);
   });
 
+  test('should support imperative add* shortcuts', () => {
+    const group = new Group({id: 'group-shortcut', title: 'Shortcut Group'});
+    group.mount(container);
+
+    const button = group.addButton({id: 'group-btn', text: 'Group shortcut'});
+
+    expect(button).toBeInstanceOf(Button);
+    expect(group.getContainerChildren()).toContain(button);
+    expect(group.getElement()?.querySelector('#group-btn')?.textContent).toBe('Group shortcut');
+  });
+
   test('should apply title position top by default', () => {
     const group = new Group({title: 'Title'});
     group.mount(container);
@@ -207,6 +218,46 @@ describe('Group', () => {
     const titleElement = element?.querySelector('.portableui-group-title');
     expect(titleElement?.textContent).toBe('Updated');
   });
+
+  test('should support nested containers with add* shortcuts', () => {
+    const group = new Group({id: 'group-shortcut', title: 'Outer Group'});
+    group.mount(container);
+
+    const innerGroup = group.addGroup({id: 'group-nested', title: 'Inner Group'}) as Group;
+    const button = innerGroup.addButton({id: 'group-nested-btn', text: 'Nested'});
+
+    expect(innerGroup).toBeTruthy();
+    expect(button).toBeInstanceOf(Button);
+    expect(group.getContainerChildren()).toContain(innerGroup);
+  });
+
+  test('should support adding Container to Group', () => {
+    const group = new Group({id: 'group-parent', title: 'Group'});
+    group.mount(container);
+
+    const containerChild = group.addContainer({id: 'container-child'});
+
+    expect(containerChild).toBeTruthy();
+    expect(group.getContainerChildren()).toContain(containerChild);
+  });
+
+  test('should support adding Flex to Group', () => {
+    const group = new Group({id: 'group-parent', title: 'Group'});
+    group.mount(container);
+
+    const flex = group.addFlex({id: 'flex-child', direction: 'vertical'});
+
+    expect(flex).toBeTruthy();
+    expect(group.getContainerChildren()).toContain(flex);
+  });
+
+  test('should support adding Grid to Group', () => {
+    const group = new Group({id: 'group-parent', title: 'Group'});
+    group.mount(container);
+
+    const grid = group.addGrid({id: 'grid-child', columns: 2});
+
+    expect(grid).toBeTruthy();
+    expect(group.getContainerChildren()).toContain(grid);
+  });
 });
-
-

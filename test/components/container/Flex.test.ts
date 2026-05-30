@@ -88,6 +88,17 @@ describe('Flex', () => {
     expect(children.length).toBe(1);
   });
 
+  test('should support imperative add* shortcuts', () => {
+    const flex = new Flex({id: 'flex-shortcut'});
+    flex.mount(container);
+
+    const button = flex.addButton({id: 'flex-btn', text: 'Flex shortcut'});
+
+    expect(button).toBeInstanceOf(Button);
+    expect(flex.getContainerChildren()).toContain(button);
+    expect(flex.getElement()?.querySelector('#flex-btn')?.textContent).toBe('Flex shortcut');
+  });
+
   test('should apply default flex values', () => {
     const flex = new Flex();
     flex.mount(container);
@@ -117,6 +128,46 @@ describe('Flex', () => {
     const styles = element?.getAttribute('style') || '';
     expect(styles).toContain('gap: 20px');
   });
+
+  test('should support nested containers with add* shortcuts', () => {
+    const flex = new Flex({id: 'flex-shortcut'});
+    flex.mount(container);
+
+    const innerFlex = flex.addFlex({id: 'flex-nested', direction: 'vertical'}) as Flex;
+    const button = innerFlex.addButton({id: 'flex-nested-btn', text: 'Nested flex'});
+
+    expect(innerFlex).toBeTruthy();
+    expect(button).toBeInstanceOf(Button);
+    expect(flex.getContainerChildren()).toContain(innerFlex);
+  });
+
+  test('should support adding Container to Flex', () => {
+    const flex = new Flex({id: 'flex-parent'});
+    flex.mount(container);
+
+    const containerChild = flex.addContainer({id: 'container-child'});
+
+    expect(containerChild).toBeTruthy();
+    expect(flex.getContainerChildren()).toContain(containerChild);
+  });
+
+  test('should support adding Grid to Flex', () => {
+    const flex = new Flex({id: 'flex-parent'});
+    flex.mount(container);
+
+    const grid = flex.addGrid({id: 'grid-child', columns: 2});
+
+    expect(grid).toBeTruthy();
+    expect(flex.getContainerChildren()).toContain(grid);
+  });
+
+  test('should support adding Group to Flex', () => {
+    const flex = new Flex({id: 'flex-parent'});
+    flex.mount(container);
+
+    const group = flex.addGroup({id: 'group-child', title: 'Group'});
+
+    expect(group).toBeTruthy();
+    expect(flex.getContainerChildren()).toContain(group);
+  });
 });
-
-

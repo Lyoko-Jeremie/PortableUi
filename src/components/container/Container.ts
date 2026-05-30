@@ -8,6 +8,14 @@ import {ComponentElement, ComponentProps} from '../../types';
 import {LayoutConfig} from '../../layout';
 import {LayoutEngine} from '../../layout/LayoutEngine';
 import {applyCommonElementProps} from '../basic/internal';
+import {
+  builtInContainerChildRegistry,
+  BuiltInContainerWithNestedAddMethods,
+  BuiltInContainerWithNestedRegistry,
+  ComponentPropsOf,
+  AnyComponentCtor,
+  installGeneratedAddMethods,
+} from './imperative';
 
 export interface ContainerProps extends ComponentProps {
   /** 容器方向 */
@@ -41,6 +49,43 @@ export class Container extends BaseComponent {
   constructor(props: ContainerProps = {}) {
     super(props);
     this.children = props.children || [];
+    this.installGeneratedAddMethods();
+  }
+
+  /**
+   * 获取完整的容器注册表（包含容器组件本身和所有子组件）
+   */
+  private getFullRegistry(): BuiltInContainerWithNestedRegistry {
+    // 延迟导入以避免循环依赖
+    const {Flex, Grid, GridItem, Group} = require('./index');
+    return {
+      ...builtInContainerChildRegistry,
+      Container: Container,
+      Flex,
+      Grid,
+      GridItem,
+      Group,
+    } as BuiltInContainerWithNestedRegistry;
+  }
+
+  /**
+   * 安装 add* 命令式快捷方法
+   */
+  private installGeneratedAddMethods(): void {
+    const registry = this.getFullRegistry();
+    installGeneratedAddMethods(this, registry, (ctor, props) => this.createAndAddChild(ctor, props));
+  }
+
+  /**
+   * 创建并追加子组件，供 add* 快捷方法复用
+   */
+  protected createAndAddChild<TCtor extends AnyComponentCtor>(
+    ctor: TCtor,
+    props: ComponentPropsOf<TCtor>
+  ): InstanceType<TCtor> {
+    const instance = new ctor(props);
+    this.addChild(instance);
+    return instance as InstanceType<TCtor>;
   }
 
   protected render(): ComponentElement {
@@ -170,6 +215,4 @@ export class Container extends BaseComponent {
   }
 }
 
-
-
-
+export interface Container extends BuiltInContainerWithNestedAddMethods {}
