@@ -2,6 +2,24 @@
 
 > 目标：让调用方的 LLM 在最短上下文内，准确理解 `src/` 里的可用 API、调用方式和关键约束。
 
+## LLM Ultra-Short Prompt (Copy/Paste)
+
+```text
+你是 PortableUi 调用助手。优先使用以下路径：
+1) 声明式渲染：CreatePortableUi(container, config[, registry])
+2) 命令式渲染：new App(container, options) + addXxx(props)
+
+关键规则：
+- 默认样式隔离是 shadow；可选 none/scoped/shadow。
+- 组件 id 不能重复（CreatePortableUi/App 会抛错）。
+- 所有组件继承 BaseComponent，支持 mount/update/unmount/getElement。
+- 组件回调签名通常是 (self, event, ...)。
+- i18n 语言类型目前仅 'en' | 'zh'。
+
+常用单例：stateManager, globalEventSystem, styleManager, i18nManager, extensibilityManager。
+输出代码时优先给最小可运行示例，且显式包含容器与销毁逻辑。
+```
+
 ## 0. 快速结论（给 LLM 的最小可执行知识）
 
 - 主入口：`src/index.ts`，直接导出核心、类型、样式、布局、i18n、适配器、全部组件。
@@ -497,3 +515,40 @@ modal.open();
 - 国际化：`src/i18n/*`
 - 工具：`src/utils/*`
 
+## 13. 场景检索索引（先看这里）
+
+- 目标：**快速创建一组 UI（最短路径）**
+  - 首选：`CreatePortableUi`（见「4.1 声明式」）
+  - 关注：`PortableUiAdapter.getComponent/getAllComponents/destroy`
+- 目标：**逐步拼装页面、边写边加组件**
+  - 首选：`App`（见「4.2 命令式」）
+  - 关注：`addXxx` 自动方法、`addTab`、`getComponent`
+- 目标：**写自定义组件**
+  - 首选：继承 `BaseComponent` 或 `defineComponent`
+  - 关注：`mount/update/unmount`、`render()`、回调签名 `(self, event, ...)`
+- 目标：**表单输入与交互**
+  - 看：`Input`、`TextBox`、`Select`、`Checkbox`、`Radio`、`DatePicker`、`FileUpload`
+  - 可配：`stateManager`（状态）、`globalEventSystem`（跨组件事件）
+- 目标：**数据展示**
+  - 表格：`Table<T>`
+  - 层级数据：`TreeView`
+  - 分步选择：`CascadingSelect`
+  - 搜索建议：`Autocomplete`
+- 目标：**弹层与反馈**
+  - 模态框：`Modal`（`open/close/toggle`）
+  - 轻提示：`Toast`（`show/hide`、自动关闭）
+  - 进度：`Progress`
+- 目标：**布局排版**
+  - 直接组件：`Container` / `Flex` / `Grid` / `Group`
+  - 底层样式生成：`LayoutEngine`
+- 目标：**样式主题和 CSS 生成**
+  - 全局注入与主题：`styleManager`
+  - 规则拼装：`CSS.rule/rules/media/keyframes`
+  - 设计令牌：`colors/sizes/spacing`
+- 目标：**i18n 多语言**
+  - 管理器：`i18nManager.setLanguage/t`
+  - 点语法：`i18n.xxx.yyy`
+  - 内置语言：`enUS`、`zhCN`
+- 目标：**插件扩展和生命周期拦截**
+  - 看：`extensibilityManager`（`middleware`、`hooks`、`plugins`）
+  - 声明式扩展：`registerDeclarativeComponent`
