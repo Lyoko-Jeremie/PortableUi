@@ -46,6 +46,7 @@ git submodule add <repo-url> submodules/PortableUi
 - `baseUrl`: 设置为项目根目录
 - `paths` - 第一条：主包导入 → 指向 `src` 目录（而非 `dist`）
 - `paths` - 第二条：子路径导入 → 也指向 `src` 目录
+- 不需要为 PortableUi 额外修改你项目自己的 `exclude`，只要 `paths` 不指向 submodule 根目录即可
 
 #### 3. 在代码中导入
 
@@ -222,8 +223,9 @@ import { Button, Input } from 'PortableUi';
 ```json
 {
   "paths": {
-    // 错误：指向了项目根目录
-    "PortableUi": ["./submodules/PortableUi"]  // ❌
+    // 错误：指向了项目根目录（会把 test/examples 也纳入解析范围）
+    "PortableUi": ["./submodules/PortableUi"],
+    "PortableUi/*": ["./submodules/PortableUi/*"]
   }
 }
 ```
