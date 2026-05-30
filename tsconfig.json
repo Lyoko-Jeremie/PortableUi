@@ -44,9 +44,10 @@
     "verbatimModuleSyntax": false,
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
+    "allowArbitraryExtensions": true,
     "moduleDetection": "force",
     "skipLibCheck": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "examples/**/*", "test/**/*"],
   "exclude": ["dist", "node_modules", "examples", "test"]
 }
