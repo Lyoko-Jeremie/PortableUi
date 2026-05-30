@@ -48,8 +48,8 @@ describe('CreatePortableUi typing', () => {
     };
 
     const host = document.createElement('div');
-    createUi(host, customConfig);
-    expect(host.querySelector('#badge1')?.textContent).toBe('typed');
+    const ui = createUi(host, customConfig);
+    expect(ui.root.querySelector('#badge1')?.textContent).toBe('typed');
   });
 
   it('infers instance type from getComponent(id) by config id', () => {

@@ -117,7 +117,8 @@ $z-base: 1;
 // 2. Global Base Styles
 // ────────────────────────────────────────────────────────
 
-* {
+[data-portableui-root],
+[data-portableui-root] * {
   box-sizing: border-box;
 
   &::before,
@@ -126,7 +127,7 @@ $z-base: 1;
   }
 }
 
-body {
+[data-portableui-root] {
   margin: 0;
   padding: 0;
   font-family: $font-family-base;
@@ -140,23 +141,23 @@ body {
 // 3. Typography
 // ────────────────────────────────────────────────────────
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
+[data-portableui-root] h1,
+[data-portableui-root] h2,
+[data-portableui-root] h3,
+[data-portableui-root] h4,
+[data-portableui-root] h5,
+[data-portableui-root] h6 {
   margin: 0;
   color: $color-text-primary;
 }
 
-h1 {
+[data-portableui-root] h1 {
   font-size: $font-size-3xl;
   font-weight: $font-weight-bold;
   margin-bottom: $spacing-4xl;
 }
 
-h2 {
+[data-portableui-root] h2 {
   font-size: $font-size-2xl;
   font-weight: $font-weight-semibold;
   margin-bottom: $spacing-3xl;
@@ -171,7 +172,7 @@ h2.portableui-label {
   font-weight: $font-weight-normal;
 }
 
-p {
+[data-portableui-root] p {
   margin: 0;
   color: $color-text-muted;
 }
@@ -180,19 +181,20 @@ p {
 // 4. Layout & Container Styles
 // ────────────────────────────────────────────────────────
 
-.page,
-#app,
-.imperative-root {
+[data-portableui-root],
+[data-portableui-root] .page,
+[data-portableui-root] #app,
+[data-portableui-root] .imperative-root {
   max-width: 1080px;
   margin: 0 auto;
   padding: $spacing-6xl $spacing-4xl $spacing-10xl;
 }
 
-body {
+[data-portableui-root] {
   padding: $spacing-6xl;
 }
 
-section {
+[data-portableui-root] section {
   background: $color-background-content;
   border: 1px solid $color-border-light;
   border-radius: $radius-lg;
@@ -205,8 +207,7 @@ section {
 // 5. Button Component
 // ────────────────────────────────────────────────────────
 
-button,
-.portableui-button {
+[data-portableui-root] .portableui-button {
   padding: $spacing-md $spacing-4xl;
   border: 1px solid $color-border;
   border-radius: $radius-md;
@@ -240,14 +241,11 @@ button,
 // 6. Form Controls
 // ────────────────────────────────────────────────────────
 
-input,
-textarea,
-select,
-.portableui-input,
-.portableui-textbox,
-.portableui-select,
-.portableui-date-picker,
-.portableui-file-upload {
+[data-portableui-root] .portableui-input,
+[data-portableui-root] .portableui-textbox,
+[data-portableui-root] .portableui-select,
+[data-portableui-root] .portableui-date-picker,
+[data-portableui-root] .portableui-file-upload {
   width: 100%;
   padding: $spacing-md $spacing-xl;
   border: 1px solid $color-border;
@@ -270,13 +268,11 @@ select,
   }
 }
 
-textarea,
-.portableui-textbox {
+[data-portableui-root] .portableui-textbox {
   resize: vertical;
 }
 
-.portableui-label,
-label {
+[data-portableui-root] .portableui-label {
   display: block;
   font-size: $font-size-base;
   font-weight: $font-weight-medium;
@@ -355,7 +351,7 @@ label {
 }
 
 // Status Badges
-.status {
+[data-portableui-root] .status {
   padding: $spacing-xs $spacing-lg;
   border-radius: $radius-full;
   font-size: $font-size-xs;
@@ -722,7 +718,7 @@ label {
 // 9. Media/Image Components
 // ────────────────────────────────────────────────────────
 
-.image-wrap {
+[data-portableui-root] .image-wrap {
   border: 1px solid $color-border;
   border-radius: $radius-xl;
   overflow: hidden;
@@ -749,7 +745,7 @@ label {
 // 10. Imperative API Styles
 // ────────────────────────────────────────────────────────
 
-.imperative-hero {
+[data-portableui-root] .imperative-hero {
   display: grid;
   gap: $spacing-3xl;
   background: $color-background-content;
@@ -771,18 +767,18 @@ label {
   }
 }
 
-.imperative-hero-copy {
+[data-portableui-root] .imperative-hero-copy {
   display: grid;
   gap: $spacing-lg;
 }
 
-.imperative-hero-badges {
+[data-portableui-root] .imperative-hero-badges {
   display: flex;
   flex-wrap: wrap;
   gap: $spacing-lg;
 }
 
-.imperative-badge {
+[data-portableui-root] .imperative-badge {
   display: inline-flex;
   align-items: center;
   padding: $spacing-sm $spacing-xl;
@@ -794,13 +790,13 @@ label {
   font-weight: $font-weight-semibold;
 }
 
-.imperative-grid {
+[data-portableui-root] .imperative-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: $spacing-4xl;
 }
 
-.imperative-card {
+[data-portableui-root] .imperative-card {
   display: flex;
   flex-direction: column;
   gap: $spacing-3xl;
@@ -812,22 +808,22 @@ label {
   box-shadow: $shadow-md;
 }
 
-.imperative-card-title {
+[data-portableui-root] .imperative-card-title {
   margin: 0;
   font-size: $font-size-xl;
   font-weight: $font-weight-semibold;
   color: $color-text-primary;
 }
 
-.imperative-card-description,
-.imperative-card-note {
+[data-portableui-root] .imperative-card-description,
+[data-portableui-root] .imperative-card-note {
   margin: 0;
   color: $color-text-light;
   line-height: $line-height-normal;
   font-size: $font-size-base;
 }
 
-.imperative-card-body {
+[data-portableui-root] .imperative-card-body {
   display: flex;
   flex-direction: column;
   gap: $spacing-xl;
@@ -853,7 +849,7 @@ label {
   }
 }
 
-.imperative-toolbar {
+[data-portableui-root] .imperative-toolbar {
   width: 100%;
   display: flex;
   align-items: flex-start;
@@ -890,25 +886,25 @@ label {
 // ────────────────────────────────────────────────────────
 
 @media (max-width: 768px) {
-  body {
+  [data-portableui-root] {
     padding: $spacing-4xl;
   }
 
-  .page,
-  #app,
-  .imperative-root {
+  [data-portableui-root] .page,
+  [data-portableui-root] #app,
+  [data-portableui-root] .imperative-root {
     padding: $spacing-4xl $spacing-lg;
   }
 
-  section {
+  [data-portableui-root] section {
     padding: $spacing-4xl;
   }
 
-  h1 {
+  [data-portableui-root] h1 {
     font-size: $font-size-2xl;
   }
 
-  .imperative-grid {
+  [data-portableui-root] .imperative-grid {
     grid-template-columns: 1fr;
   }
 
@@ -919,29 +915,30 @@ label {
 }
 
 @media (max-width: 480px) {
-  body {
+  [data-portableui-root] {
     font-size: $font-size-sm;
   }
 
-  h1 {
+  [data-portableui-root] h1 {
     font-size: $font-size-xl;
     margin-bottom: $spacing-3xl;
   }
 
-  h2 {
+  [data-portableui-root] h2 {
     font-size: $font-size-lg;
   }
 
-  button,
-  .portableui-button,
-  input,
-  textarea,
-  select {
+  [data-portableui-root] .portableui-button,
+  [data-portableui-root] .portableui-input,
+  [data-portableui-root] .portableui-textbox,
+  [data-portableui-root] .portableui-select,
+  [data-portableui-root] .portableui-date-picker,
+  [data-portableui-root] .portableui-file-upload {
     padding: $spacing-md $spacing-lg;
     font-size: $font-size-base;
   }
 
-  .imperative-card {
+  [data-portableui-root] .imperative-card {
     padding: $spacing-3xl;
   }
 }

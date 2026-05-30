@@ -6,6 +6,7 @@ import {
   DeclarativeRegistry,
   InferTopLevelComponentMap,
   PortableUiAdapter,
+  StyleIsolationConfig,
 } from './types';
 import {
   Button,
@@ -32,6 +33,16 @@ import {
   TreeView,
 } from '../components/complex';
 import {Container, Flex, Grid, GridItem, Group} from '../components/container';
+
+interface PortableUiCreateConfig<TChildren> {
+  id?: string;
+  children: TChildren;
+  styleIsolation?: StyleIsolationConfig;
+}
+
+const PORTABLEUI_SCOPE_ATTR = 'data-portableui-root';
+const PORTABLEUI_MOUNT_ATTR = 'data-portableui-mount-root';
+const PORTABLEUI_STYLE_ATTR = 'data-portableui-style';
 
 const builtInComponentRegistry = {
   Autocomplete,
@@ -128,23 +139,72 @@ function mountNode<TRegistry extends DeclarativeRegistry>(
   }
 }
 
+function injectStyleOnce(target: ParentNode, styleText?: string): void {
+  if (!styleText || !styleText.trim()) {
+    return;
+  }
+
+  const existing = target.querySelector(`style[${PORTABLEUI_STYLE_ATTR}="true"]`);
+  if (existing) {
+    return;
+  }
+
+  const style = document.createElement('style');
+  style.setAttribute(PORTABLEUI_STYLE_ATTR, 'true');
+  style.textContent = styleText;
+  target.appendChild(style);
+}
+
+function resolveMountRoot(container: HTMLElement, styleIsolation?: StyleIsolationConfig): HTMLElement {
+  const mode = styleIsolation?.mode ?? 'shadow';
+
+  if (mode === 'none') {
+    return container;
+  }
+
+  if (mode === 'scoped') {
+    container.setAttribute(PORTABLEUI_SCOPE_ATTR, 'scoped');
+    injectStyleOnce(container, styleIsolation?.styles);
+    return container;
+  }
+
+  container.setAttribute(PORTABLEUI_SCOPE_ATTR, 'shadow-host');
+
+  const shadowRoot = container.shadowRoot ?? container.attachShadow({mode: 'open'});
+  injectStyleOnce(shadowRoot, styleIsolation?.styles);
+
+  const existingMountRoot = Array.from(shadowRoot.children).find(
+    (child): child is HTMLElement => child instanceof HTMLElement && child.getAttribute(PORTABLEUI_MOUNT_ATTR) === 'true'
+  );
+
+  if (existingMountRoot) {
+    return existingMountRoot;
+  }
+
+  const mountRoot = document.createElement('div');
+  mountRoot.setAttribute(PORTABLEUI_MOUNT_ATTR, 'true');
+  mountRoot.setAttribute(PORTABLEUI_SCOPE_ATTR, 'shadow');
+  shadowRoot.appendChild(mountRoot);
+  return mountRoot;
+}
+
 export function CreatePortableUi<
   const TChildren,
 >(
   container: HTMLElement,
-  config: {id?: string; children: TChildren}
+  config: PortableUiCreateConfig<TChildren>
 ): PortableUiAdapter<InferTopLevelComponentMap<BuiltInDeclarativeRegistry, TChildren>>;
 export function CreatePortableUi<
   TRegistry extends DeclarativeRegistry,
   const TChildren,
 >(
   container: HTMLElement,
-  config: {id?: string; children: TChildren},
+  config: PortableUiCreateConfig<TChildren>,
   registry: TRegistry
 ): PortableUiAdapter<InferTopLevelComponentMap<TRegistry, TChildren>>;
 export function CreatePortableUi(
   container: HTMLElement,
-  config: {id?: string; children: unknown},
+  config: PortableUiCreateConfig<unknown>,
   registry?: DeclarativeRegistry
 ): PortableUiAdapter<Record<string, BaseComponent>> {
   if (!container) {
@@ -157,14 +217,16 @@ export function CreatePortableUi(
     container.setAttribute('data-portableui-id', config.id);
   }
 
+  const mountRoot = resolveMountRoot(container, config.styleIsolation);
+
   const effectiveRegistry = (registry ?? builtInComponentRegistry) as DeclarativeRegistry;
 
   for (const [key, node] of toEntries(config.children as DeclarativeChildren<DeclarativeRegistry>)) {
-    mountNode(effectiveRegistry, key, node as DeclarativeNodeUnion<DeclarativeRegistry>, container, components);
+    mountNode(effectiveRegistry, key, node as DeclarativeNodeUnion<DeclarativeRegistry>, mountRoot, components);
   }
 
   const adapter: PortableUiAdapter<Record<string, BaseComponent>> = {
-    root: container,
+    root: mountRoot,
     getComponent<TKey extends string>(id: TKey): BaseComponent | null {
       return components.get(id) ?? null;
     },
@@ -193,7 +255,7 @@ export function CreatePortableUi(
 export function createPortableUiFactory<TRegistry extends DeclarativeRegistry>(registry: TRegistry) {
   return <const TChildren>(
     container: HTMLElement,
-    config: {id?: string; children: TChildren}
+    config: PortableUiCreateConfig<TChildren>
   ): PortableUiAdapter<InferTopLevelComponentMap<TRegistry, TChildren>> => {
     return CreatePortableUi(container, config, registry);
   };

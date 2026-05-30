@@ -13,4 +13,6 @@ export type {
   InferTopLevelComponentMap,
   PortableUiAdapter,
   PortableUiDeclarativeConfig,
+  StyleIsolationConfig,
+  StyleIsolationMode,
 } from './types';

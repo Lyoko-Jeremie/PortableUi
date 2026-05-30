@@ -35,9 +35,17 @@ export type DeclarativeChildren<TRegistry extends DeclarativeRegistry> =
   | Record<string, DeclarativeNodeUnion<TRegistry>>
   | DeclarativeNodeUnion<TRegistry>[];
 
+export type StyleIsolationMode = 'none' | 'scoped' | 'shadow';
+
+export interface StyleIsolationConfig {
+  mode?: StyleIsolationMode;
+  styles?: string;
+}
+
 export interface PortableUiDeclarativeConfig<TRegistry extends DeclarativeRegistry> {
   id?: string;
   children: DeclarativeChildren<TRegistry>;
+  styleIsolation?: StyleIsolationConfig;
 }
 
 type ResolveId<TId, TFallback extends string> = TId extends string

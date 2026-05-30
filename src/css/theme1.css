@@ -3,7 +3,7 @@
  * A comprehensive theme consolidating all example styles into a cohesive design system
  */
 
-:root {
+[data-portableui-root] {
   --color-primary: #4f46e5;
   --color-primary-light: #667eea;
   --color-primary-dark: #3730a3;
@@ -85,16 +85,19 @@
   --z-base: 1;
 }
 
-* {
+[data-portableui-root],
+[data-portableui-root] * {
   box-sizing: border-box;
 }
 
-*::before,
-*::after {
+[data-portableui-root]::before,
+[data-portableui-root]::after,
+[data-portableui-root] *::before,
+[data-portableui-root] *::after {
   box-sizing: border-box;
 }
 
-body {
+[data-portableui-root] {
   margin: 0;
   padding: var(--spacing-6xl);
   font-family: var(--font-family-base);
@@ -104,18 +107,23 @@ body {
   background: var(--color-background-light);
 }
 
-h1, h2, h3, h4, h5, h6 {
+[data-portableui-root] h1,
+[data-portableui-root] h2,
+[data-portableui-root] h3,
+[data-portableui-root] h4,
+[data-portableui-root] h5,
+[data-portableui-root] h6 {
   margin: 0;
   color: var(--color-text-primary);
 }
 
-h1 {
+[data-portableui-root] h1 {
   font-size: var(--font-size-3xl);
   font-weight: var(--font-weight-bold);
   margin-bottom: var(--spacing-4xl);
 }
 
-h2 {
+[data-portableui-root] h2 {
   font-size: var(--font-size-2xl);
   font-weight: var(--font-weight-semibold);
   margin-bottom: var(--spacing-3xl);
@@ -130,20 +138,21 @@ h2.portableui-label {
   font-weight: var(--font-weight-normal);
 }
 
-p {
+[data-portableui-root] p {
   margin: 0;
   color: var(--color-text-muted);
 }
 
-.page,
-#app,
-.imperative-root {
+[data-portableui-root],
+[data-portableui-root] .page,
+[data-portableui-root] #app,
+[data-portableui-root] .imperative-root {
   max-width: 1080px;
   margin: 0 auto;
   padding: var(--spacing-6xl) var(--spacing-4xl) var(--spacing-10xl);
 }
 
-section {
+[data-portableui-root] section {
   background: var(--color-background-content);
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-lg);
@@ -152,8 +161,7 @@ section {
   box-shadow: var(--shadow-sm);
 }
 
-button,
-.portableui-button {
+[data-portableui-root] .portableui-button {
   padding: var(--spacing-md) var(--spacing-4xl);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -166,35 +174,28 @@ button,
   transition: background var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-button:hover:not(:disabled),
-.portableui-button:hover:not(:disabled) {
+[data-portableui-root] .portableui-button:hover:not(:disabled) {
   background: var(--color-background-hover);
 }
 
-button:active:not(:disabled),
-.portableui-button:active:not(:disabled) {
+[data-portableui-root] .portableui-button:active:not(:disabled) {
   transform: scale(0.98);
 }
 
-button:disabled,
-.portableui-button:disabled {
+[data-portableui-root] .portableui-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-button:focus,
-.portableui-button:focus {
+[data-portableui-root] .portableui-button:focus {
   outline: none;
 }
 
-input,
-textarea,
-select,
-.portableui-input,
-.portableui-textbox,
-.portableui-select,
-.portableui-date-picker,
-.portableui-file-upload {
+[data-portableui-root] .portableui-input,
+[data-portableui-root] .portableui-textbox,
+[data-portableui-root] .portableui-select,
+[data-portableui-root] .portableui-date-picker,
+[data-portableui-root] .portableui-file-upload {
   width: 100%;
   padding: var(--spacing-md) var(--spacing-xl);
   border: 1px solid var(--color-border);
@@ -207,35 +208,27 @@ select,
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-input:focus,
-textarea:focus,
-select:focus,
-.portableui-input:focus,
-.portableui-textbox:focus,
-.portableui-select:focus,
-.portableui-date-picker:focus {
+[data-portableui-root] .portableui-input:focus,
+[data-portableui-root] .portableui-textbox:focus,
+[data-portableui-root] .portableui-select:focus,
+[data-portableui-root] .portableui-date-picker:focus {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
 
-input:disabled,
-textarea:disabled,
-select:disabled,
-.portableui-input:disabled,
-.portableui-textbox:disabled,
-.portableui-select:disabled,
-.portableui-date-picker:disabled {
+[data-portableui-root] .portableui-input:disabled,
+[data-portableui-root] .portableui-textbox:disabled,
+[data-portableui-root] .portableui-select:disabled,
+[data-portableui-root] .portableui-date-picker:disabled {
   background: var(--color-background-disabled);
   cursor: not-allowed;
 }
 
-textarea,
-.portableui-textbox {
+[data-portableui-root] .portableui-textbox {
   resize: vertical;
 }
 
-.portableui-label,
-label {
+[data-portableui-root] .portableui-label {
   display: block;
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-medium);
@@ -309,7 +302,7 @@ label {
   cursor: pointer;
 }
 
-.status {
+[data-portableui-root] .status {
   padding: var(--spacing-xs) var(--spacing-lg);
   border-radius: var(--radius-full);
   font-size: var(--font-size-xs);
@@ -318,9 +311,9 @@ label {
   display: inline-block;
 }
 
-.status-active { background: var(--color-status-active); }
-.status-pending { background: var(--color-status-pending); }
-.status-blocked { background: var(--color-status-blocked); }
+[data-portableui-root] .status-active { background: var(--color-status-active); }
+[data-portableui-root] .status-pending { background: var(--color-status-pending); }
+[data-portableui-root] .status-blocked { background: var(--color-status-blocked); }
 
 .portableui-treeview-list,
 .portableui-treeview-children {
@@ -656,7 +649,7 @@ label {
   gap: var(--spacing-4xl);
 }
 
-.image-wrap {
+[data-portableui-root] .image-wrap {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
   overflow: hidden;
@@ -679,7 +672,7 @@ label {
   background: var(--color-background-content);
 }
 
-.imperative-hero {
+[data-portableui-root] .imperative-hero {
   display: grid;
   gap: var(--spacing-3xl);
   background: var(--color-background-content);
@@ -689,30 +682,30 @@ label {
   box-shadow: var(--shadow-md);
 }
 
-.imperative-hero h1 {
+[data-portableui-root] .imperative-hero h1 {
   margin: 0 0 var(--spacing-lg);
   font-size: 24px;
   color: var(--color-text-primary);
 }
 
-.imperative-hero p {
+[data-portableui-root] .imperative-hero p {
   margin: 0;
   color: var(--color-text-light);
   line-height: var(--line-height-normal);
 }
 
-.imperative-hero-copy {
+[data-portableui-root] .imperative-hero-copy {
   display: grid;
   gap: var(--spacing-lg);
 }
 
-.imperative-hero-badges {
+[data-portableui-root] .imperative-hero-badges {
   display: flex;
   flex-wrap: wrap;
   gap: var(--spacing-lg);
 }
 
-.imperative-badge {
+[data-portableui-root] .imperative-badge {
   display: inline-flex;
   align-items: center;
   padding: var(--spacing-sm) var(--spacing-xl);
@@ -724,13 +717,13 @@ label {
   font-weight: var(--font-weight-semibold);
 }
 
-.imperative-grid {
+[data-portableui-root] .imperative-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: var(--spacing-4xl);
 }
 
-.imperative-card {
+[data-portableui-root] .imperative-card {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-3xl);
@@ -742,40 +735,40 @@ label {
   box-shadow: var(--shadow-md);
 }
 
-.imperative-card-title {
+[data-portableui-root] .imperative-card-title {
   margin: 0;
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
 }
 
-.imperative-card-description,
-.imperative-card-note {
+[data-portableui-root] .imperative-card-description,
+[data-portableui-root] .imperative-card-note {
   margin: 0;
   color: var(--color-text-light);
   line-height: var(--line-height-normal);
   font-size: var(--font-size-base);
 }
 
-.imperative-card-body {
+[data-portableui-root] .imperative-card-body {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xl);
 }
 
-.imperative-card-body .portableui-input,
-.imperative-card-body .portableui-select {
+[data-portableui-root] .imperative-card-body .portableui-input,
+[data-portableui-root] .imperative-card-body .portableui-select {
   width: 100%;
 }
 
-.imperative-card-body .portableui-label {
+[data-portableui-root] .imperative-card-body .portableui-label {
   display: inline-block;
   margin: 0 0 var(--spacing-md);
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-medium);
 }
 
-.imperative-card-body .portableui-checkbox {
+[data-portableui-root] .imperative-card-body .portableui-checkbox {
   display: inline-flex;
   align-items: center;
   gap: var(--spacing-lg);
@@ -783,7 +776,7 @@ label {
   font-size: var(--font-size-base);
 }
 
-.imperative-toolbar {
+[data-portableui-root] .imperative-toolbar {
   width: 100%;
   display: flex;
   align-items: flex-start;
@@ -808,22 +801,29 @@ label {
 }
 
 @media (max-width: 768px) {
-  body { padding: var(--spacing-4xl); }
-  .page, #app, .imperative-root { padding: var(--spacing-4xl) var(--spacing-lg); }
-  section { padding: var(--spacing-4xl); }
-  h1 { font-size: var(--font-size-2xl); }
-  .imperative-grid { grid-template-columns: 1fr; }
+  [data-portableui-root] { padding: var(--spacing-4xl); }
+  [data-portableui-root] .page,
+  [data-portableui-root] #app,
+  [data-portableui-root] .imperative-root { padding: var(--spacing-4xl) var(--spacing-lg); }
+  [data-portableui-root] section { padding: var(--spacing-4xl); }
+  [data-portableui-root] h1 { font-size: var(--font-size-2xl); }
+  [data-portableui-root] .imperative-grid { grid-template-columns: 1fr; }
   .portableui-modal-container { width: 95vw; }
 }
 
 @media (max-width: 480px) {
-  body { font-size: var(--font-size-sm); }
-  h1 { font-size: var(--font-size-xl); margin-bottom: var(--spacing-3xl); }
-  h2 { font-size: var(--font-size-lg); }
-  button, .portableui-button, input, textarea, select {
+  [data-portableui-root] { font-size: var(--font-size-sm); }
+  [data-portableui-root] h1 { font-size: var(--font-size-xl); margin-bottom: var(--spacing-3xl); }
+  [data-portableui-root] h2 { font-size: var(--font-size-lg); }
+  [data-portableui-root] .portableui-button,
+  [data-portableui-root] .portableui-input,
+  [data-portableui-root] .portableui-textbox,
+  [data-portableui-root] .portableui-select,
+  [data-portableui-root] .portableui-date-picker,
+  [data-portableui-root] .portableui-file-upload {
     padding: var(--spacing-md) var(--spacing-lg);
     font-size: var(--font-size-base);
   }
-  .imperative-card { padding: var(--spacing-3xl); }
+  [data-portableui-root] .imperative-card { padding: var(--spacing-3xl); }
 }
 

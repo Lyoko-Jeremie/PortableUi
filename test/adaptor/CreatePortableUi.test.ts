@@ -33,8 +33,9 @@ describe('CreatePortableUi', () => {
     });
 
     expect(host.getAttribute('data-portableui-id')).toBe('my-ui');
-    expect(host.querySelector('#button1')?.textContent).toBe('Click Me');
-    expect(host.querySelector('#input1')?.getAttribute('placeholder')).toBe('Type here');
+    // Components live inside the shadow root; query via ui.root (the mount node inside shadow)
+    expect(ui.root.querySelector('#button1')?.textContent).toBe('Click Me');
+    expect(ui.root.querySelector('#input1')?.getAttribute('placeholder')).toBe('Type here');
     expect(ui.getComponent('button1')).toBeInstanceOf(Button);
   });
 
@@ -71,8 +72,9 @@ describe('CreatePortableUi', () => {
 
     ui.destroy();
 
-    expect(host.querySelector('#first')).toBeNull();
-    expect(host.querySelector('#second')).toBeNull();
+    // After destroy, elements are removed from the shadow mount root
+    expect(ui.root.querySelector('#first')).toBeNull();
+    expect(ui.root.querySelector('#second')).toBeNull();
     expect(ui.getAllComponents()).toHaveLength(0);
   });
 
@@ -109,9 +111,9 @@ describe('CreatePortableUi', () => {
       },
     };
 
-    createUi(host, config);
+    const ui = createUi(host, config);
 
-    expect(host.querySelector('#badge1')?.textContent).toBe('typed custom');
+    expect(ui.root.querySelector('#badge1')?.textContent).toBe('typed custom');
   });
 
   it('throws when duplicate component ids are declared', () => {

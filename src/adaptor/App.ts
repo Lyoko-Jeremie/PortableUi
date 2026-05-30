@@ -24,7 +24,11 @@ import {
   TextBox,
 } from '../components/basic';
 import {Container, Flex, Grid, GridItem, Group, type ContainerProps} from '../components/container';
-import type {DeclarativeRegistry} from './types';
+import type {DeclarativeRegistry, StyleIsolationConfig} from './types';
+
+const PORTABLEUI_SCOPE_ATTR = 'data-portableui-root';
+const PORTABLEUI_MOUNT_ATTR = 'data-portableui-mount-root';
+const PORTABLEUI_STYLE_ATTR = 'data-portableui-style';
 
 type AnyComponentCtor = new (props?: any) => BaseComponent;
 
@@ -74,10 +78,60 @@ export type BuiltInAddMethods = GeneratedAddMethods<BuiltInDeclarativeRegistry>;
 export interface AppOptions {
   id?: string;
   rootProps?: Omit<ContainerProps, 'id'>;
+  styleIsolation?: StyleIsolationConfig;
 }
 
 export interface AppTabOptions extends Omit<ContainerProps, 'children'> {
   id: string;
+}
+
+function injectStyleOnce(target: ParentNode, styleText?: string): void {
+  if (!styleText || !styleText.trim()) {
+    return;
+  }
+
+  const existing = target.querySelector(`style[${PORTABLEUI_STYLE_ATTR}="true"]`);
+  if (existing) {
+    return;
+  }
+
+  const style = document.createElement('style');
+  style.setAttribute(PORTABLEUI_STYLE_ATTR, 'true');
+  style.textContent = styleText;
+  target.appendChild(style);
+}
+
+function resolveMountRoot(container: HTMLElement, styleIsolation?: StyleIsolationConfig): HTMLElement {
+  const mode = styleIsolation?.mode ?? 'shadow';
+
+  if (mode === 'none') {
+    return container;
+  }
+
+  if (mode === 'scoped') {
+    container.setAttribute(PORTABLEUI_SCOPE_ATTR, 'scoped');
+    injectStyleOnce(container, styleIsolation?.styles);
+    return container;
+  }
+
+  container.setAttribute(PORTABLEUI_SCOPE_ATTR, 'shadow-host');
+
+  const shadowRoot = container.shadowRoot ?? container.attachShadow({mode: 'open'});
+  injectStyleOnce(shadowRoot, styleIsolation?.styles);
+
+  const existingMountRoot = Array.from(shadowRoot.children).find(
+    (child): child is HTMLElement => child instanceof HTMLElement && child.getAttribute(PORTABLEUI_MOUNT_ATTR) === 'true'
+  );
+
+  if (existingMountRoot) {
+    return existingMountRoot;
+  }
+
+  const mountRoot = document.createElement('div');
+  mountRoot.setAttribute(PORTABLEUI_MOUNT_ATTR, 'true');
+  mountRoot.setAttribute(PORTABLEUI_SCOPE_ATTR, 'shadow');
+  shadowRoot.appendChild(mountRoot);
+  return mountRoot;
 }
 
 class AppScopeBase<TRegistry extends DeclarativeRegistry = BuiltInDeclarativeRegistry> {
@@ -159,7 +213,8 @@ export class App extends AppScopeBase<BuiltInDeclarativeRegistry> {
 
     const components = new Map<string, BaseComponent>();
     const mountOrder: BaseComponent[] = [];
-    super(container, components, mountOrder, builtInComponentRegistry);
+    const mountRoot = resolveMountRoot(container, options.styleIsolation);
+    super(mountRoot, components, mountOrder, builtInComponentRegistry);
 
     this.host = container;
 
@@ -174,7 +229,7 @@ export class App extends AppScopeBase<BuiltInDeclarativeRegistry> {
       throw new Error(`Duplicate component id: ${rootId}`);
     }
 
-    rootContainer.mount(container);
+    rootContainer.mount(mountRoot);
 
     if (rootId) {
       components.set(rootId, rootContainer);
