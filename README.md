@@ -6,21 +6,16 @@
 
 这个库在使用时通常是以Greasemonkey或Mod的形式注入到已有的环境中，需要保证环境的样式不影响当前库的元素，当前库的样式也不影响环境。
 
-## 设计计划
+## 当前已实现
 
-- [ ] 基础UI组件：按钮、输入框、标签、文本框、下拉框、复选框、单选框、滑动条、日期选择器、文件上传等。
-- [ ] 复杂UI组件：表格、树形视图、标签页、模态框、通知、进度条等。
-- [ ] 简易的状态变更系统：单向绑定、双向绑定、信号和槽机制等。
-- [ ] 简易的布局系统：简易快速的布局系统，支持常见的布局方式，如水平、垂直、网格等。
-- [ ] 支持插入 图片 和 Canvas。
-- [ ] 布局组件：容器、网格、弹性布局、快速分组等。
-- [ ] 样式系统：内敛的样式系统，样式本身不溢出到外部，不容易受到外部环境样式影响。支持简易的主题和自定义样式。
-- [ ] 事件系统：组件事件、全局事件、事件冒泡和捕获机制。
-- [ ] 响应式设计：适应不同屏幕尺寸和设备。
-- [ ] 国际化支持：多语言支持和本地化功能。
-- [ ] 可扩展性：允许用户创建自定义组件和插件。
-- [ ] 性能优化：轻量级、快速加载和渲染。
-- [ ] 文档和示例：提供详细的文档和示例代码，帮助用户快速上手和使用库的功能。
+- **基础组件**：`Button`、`Input`、`Label`、`TextBox`、`Select`、`Checkbox`、`Radio`、`Slider`、`DatePicker`、`FileUpload`、`Image`、`Canvas`
+- **复杂组件**：`Table`、`TreeView`、`Tabs`、`Modal`、`Toast`、`Progress`、`Autocomplete`、`CascadingSelect`
+- **布局容器**：`Container`、`Flex`、`Grid`、`GridItem`、`Group`
+- **核心能力**：`BaseComponent`、`DOMAccessor`、`EventSystem`、`StateManager`、`StyleManager`、`StyleIsolation`、`LayoutEngine`、`I18nManager`
+- **两种适配器入口**：`CreatePortableUi`（声明式）和 `App`（命令式）
+- **统一入口**：`src/index.ts` 会导出核心、类型、样式、工具、布局、i18n、适配器以及全部组件模块
+
+这些能力已经覆盖了库的主要使用场景：注入式 UI、Shadow DOM 样式隔离、组件树管理、国际化与布局组合。
 
 ## 关键设计原则
 

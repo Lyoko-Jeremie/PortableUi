@@ -12,14 +12,14 @@
 
 ### 1. 核心系统 (`src/core/`)
 
-#### BaseComponent.ts
+#### `BaseComponent.ts`
 - 所有组件的基类
 - 提供生命周期管理（mount, update, unmount）
 - 属性和状态管理
 - DOM 元素管理
 - **新增: 完整的 DOM 访问和修改 API**
 
-#### DOMAccessor.ts ⭐ 新增
+#### `DOMAccessor.ts`
 - 灵活的 DOM 查询和操作
 - 40+ 个 DOM 操作方法（详见下方）
 - Shadow DOM 支持和查询
@@ -146,18 +146,25 @@
 
 ### 7. 组件库 (`src/components/`)
 
-#### basic/ (基础组件 - 计划中)
-- Button, Input, Label, TextBox
-- Select, Checkbox, Radio
-- Slider, DatePicker, FileUpload
-- Image, Canvas
+#### `basic/`（基础组件）
+- `Button`, `Input`, `Label`, `TextBox`
+- `Select`, `Checkbox`, `Radio`
+- `Slider`, `DatePicker`, `FileUpload`
+- `Image`, `Canvas`
 
-#### complex/ (复杂组件 - 计划中)
-- Table, TreeView, Tabs
-- Modal, Toast, Progress
+这些组件已在 `src/components/basic/` 中实现并通过 `src/components/basic/index.ts` 导出。
 
-#### container/ (容器组件 - 计划中)
-- Container, Grid, Flex, Group
+#### `complex/`（复杂组件）
+- `Table`, `TreeView`, `Tabs`
+- `Modal`, `Toast`, `Progress`
+- `Autocomplete`, `CascadingSelect`
+
+这些组件已在 `src/components/complex/` 中实现并通过 `src/components/complex/index.ts` 导出。
+
+#### `container/`（容器组件）
+- `Container`, `Grid`, `Flex`, `Group`
+
+这些组件已在 `src/components/container/` 中实现并通过 `src/components/container/index.ts` 导出。
 
 ## 主入口 (`src/index.ts`)
 
@@ -167,6 +174,8 @@
 - 工具函数（dom, 类型检查、helpers 等）
 - 布局系统（LayoutEngine 等）
 - 国际化系统（I18nManager 等）
+- 适配器系统（`CreatePortableUi`, `App`, `createPortableUiFactory`, `registerDeclarativeComponent`）
+- 组件库（`basic`, `complex`, `container`）
 
 ## 单例对象
 
