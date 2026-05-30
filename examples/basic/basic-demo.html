@@ -5,65 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PortableUi — 基础组件示例</title>
   <link rel="stylesheet" href="../../src/css/theme1.css" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      max-width: 860px;
-      margin: 0 auto;
-      padding: 24px 16px 64px;
-      background: #f8f9fa;
-      color: #212529;
-    }
-    h1 { font-size: 22px; border-bottom: 2px solid #4f46e5; padding-bottom: 8px; color: #4f46e5; }
-    section {
-      background: #fff;
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
-      padding: 20px 24px;
-      margin-bottom: 20px;
-      box-shadow: 0 1px 3px rgba(0,0,0,.06);
-    }
-    h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: #6b7280; margin: 0 0 14px; }
-    .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 8px; }
-    .output { font-size: 13px; color: #6b7280; margin-top: 6px; }
-
-    /* ── 组件基础样式 ── */
-    .portableui-button {
-      padding: 6px 16px; border: 1px solid #d1d5db; border-radius: 5px;
-      background: #fff; cursor: pointer; font-size: 14px;
-      transition: background .15s;
-    }
-    .portableui-button:hover:not(:disabled) { background: #f3f4f6; }
-    .portableui-button:disabled { opacity: .5; cursor: not-allowed; }
-
-    .portableui-input,
-    .portableui-textbox,
-    .portableui-select,
-    .portableui-date-picker,
-    .portableui-file-upload {
-      padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 5px;
-      font-size: 14px; background: #fff; outline: none;
-      transition: border-color .15s;
-    }
-    .portableui-input:focus,
-    .portableui-textbox:focus,
-    .portableui-select:focus,
-    .portableui-date-picker:focus { border-color: #4f46e5; }
-    .portableui-input:disabled,
-    .portableui-textbox:disabled,
-    .portableui-select:disabled,
-    .portableui-date-picker:disabled { background: #f3f4f6; }
-
-    .portableui-label { font-size: 14px; font-weight: 500; }
-
-    .portableui-checkbox,
-    .portableui-radio { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; cursor: pointer; }
-
-    .portableui-slider { display: inline-flex; align-items: center; gap: 10px; }
-    .portableui-slider input[type=range] { width: 200px; accent-color: #4f46e5; }
-    .portableui-slider-value { font-size: 13px; font-weight: 600; color: #4f46e5; min-width: 32px; }
-  </style>
 </head>
 <body>
 
