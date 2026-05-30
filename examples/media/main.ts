@@ -1,7 +1,10 @@
 import '../../src/css/theme1.scss';
 import '../styles/demo-shell.scss';
 import './styles.css';
+import {ensurePortableUiRootScope} from '../utils/ensurePortableUiRoot';
 import {mountCanvasDemo, mountImageDemo} from './media-demo';
+
+ensurePortableUiRootScope();
 
 const imageTarget = document.getElementById('image-demo');
 if (imageTarget) {

@@ -1,13 +1,19 @@
 import '../../src/css/theme1.scss';
 import '../styles/demo-shell.scss';
 import {App} from '../../src';
+import {ensurePortableUiRootScope} from '../utils/ensurePortableUiRoot';
+
+ensurePortableUiRootScope();
 
 const host = document.getElementById('app');
 if (!host) {
   throw new Error('Missing #app');
 }
 
-const app = new App(host, {id: 'imperative-demo'});
+const app = new App(host, {
+  id: 'imperative-demo',
+  styleIsolation: {mode: 'scoped'},
+});
 
 app.root.classList.add('imperative-root');
 

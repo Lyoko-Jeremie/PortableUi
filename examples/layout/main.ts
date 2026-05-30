@@ -1,6 +1,7 @@
 import '../../src/css/theme1.scss';
 import '../styles/demo-shell.scss';
 import './styles.css';
+import {ensurePortableUiRootScope} from '../utils/ensurePortableUiRoot';
 import {Button} from '../../src/components/basic';
 import {Container} from '../../src/layout';
 import {
@@ -11,6 +12,8 @@ import {
   groupLayoutExample,
   responsiveLayoutExample,
 } from './layout-demo';
+
+ensurePortableUiRootScope();
 
 const mount = (id: string, element: HTMLElement): void => {
   const target = document.getElementById(id);
