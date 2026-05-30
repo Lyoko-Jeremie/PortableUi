@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig.json",
+  "description": "Example TypeScript config for using PortableUi as git submodule with direct source code (no dist build)",
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "esnext",
+    "lib": ["ES2020", "DOM"],
+
+    // 核心配置：路径映射
+    "baseUrl": ".",
+    "paths": {
+      // 指向库的源代码目录（而非 dist）
+      "PortableUi": ["./submodules/PortableUi/src"],
+      "PortableUi/*": ["./submodules/PortableUi/src/*"]
+    },
+
+    // 输出配置
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+
+    // 模块解析
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+
+    // 严格检查
+    "strict": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "noEmitOnError": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}
+
