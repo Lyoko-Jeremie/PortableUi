@@ -2,7 +2,7 @@ import '../../src/css/theme1.scss';
 import '../styles/demo-shell.scss';
 import './styles.css';
 import {ensurePortableUiRootScope} from '../utils/ensurePortableUiRoot';
-import {mountTabsExample} from './tabs-demo.ts';
+import {mountTabsExample} from './tabs-demo';
 
 ensurePortableUiRootScope();
 
