@@ -38,7 +38,7 @@ const button1 = ui.getComponent('button1');
 console.log(button1?.getId());
 ```
 
-## 嵌套声明式结构
+### 嵌套声明式结构
 
 ```typescript
 import {CreatePortableUi} from 'PortableUi';
@@ -74,7 +74,7 @@ const ui = CreatePortableUi(el, {
 ui.destroy();
 ```
 
-## 适配器返回对象
+### 适配器返回对象
 
 `CreatePortableUi(...)` 返回：
 
@@ -84,7 +84,7 @@ ui.destroy();
 - `getAllComponents()` - 获取所有已创建组件
 - `destroy()` - 卸载并清理全部组件
 
-## 更严格的类型约束（TypeScript）
+### 更严格的类型约束（TypeScript）
 
 适配器现在把 `type` 和对应组件 `props` 关联起来，推荐这样写：
 
@@ -135,7 +135,7 @@ const config: PortableUiDeclarativeConfig<typeof registry> = {
 createUi(document.getElementById('app')!, config);
 ```
 
-## 测试
+### 测试
 
 新增测试文件：`test/adaptor/CreatePortableUi.test.ts`，覆盖：
 
