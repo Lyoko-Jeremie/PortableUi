@@ -12,6 +12,7 @@ module.exports = {
     layout: './examples/layout/main.ts',
     media: './examples/media/main.ts',
     imperative: './examples/imperative/main.ts',
+    tabs: './examples/tabs/main.ts',
   },
   output: {
     path: distDir,
@@ -73,6 +74,12 @@ module.exports = {
       filename: 'imperative.html',
       template: './examples/imperative/template.html',
       chunks: ['imperative'],
+      inject: 'body',
+    }),
+    new HtmlWebpackPlugin({
+      filename: 'tabs.html',
+      template: './examples/tabs/template.html',
+      chunks: ['tabs'],
       inject: 'body',
     }),
   ],
