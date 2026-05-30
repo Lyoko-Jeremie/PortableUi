@@ -18,6 +18,33 @@ import { Slider }     from '../../src/components/basic/Slider';
 import { DatePicker } from '../../src/components/basic/DatePicker';
 import { FileUpload } from '../../src/components/basic/FileUpload';
 
+const demoRoot =
+  (document.getElementById('app') as HTMLElement | null) ||
+  (document.querySelector('.page') as HTMLElement | null) ||
+  document.body;
+
+// Add minimal demo spacing to keep controls readable even when section internals are inline.
+const demoStyle = document.createElement('style');
+demoStyle.textContent = `
+  #app section > button,
+  #app section > .portableui-button,
+  #app section .portableui-checkbox,
+  #app section .portableui-radio,
+  #app section > input,
+  #app section > select,
+  #app section > textarea,
+  #app section > .portableui-input,
+  #app section > .portableui-textbox,
+  #app section > .portableui-select,
+  #app section > .portableui-slider,
+  #app section > .portableui-date-picker,
+  #app section > .portableui-file-upload {
+    margin-right: 8px;
+    margin-bottom: 8px;
+  }
+`;
+document.head.appendChild(demoStyle);
+
 // ─── 工具：创建带标题的区块 ─────────────────────────────────────────────────
 function section(title: string): HTMLElement {
   const wrap = document.createElement('section');
@@ -28,7 +55,7 @@ function section(title: string): HTMLElement {
   h2.textContent = title;
   wrap.appendChild(h2);
 
-  document.body.appendChild(wrap);
+  demoRoot.appendChild(wrap);
   return wrap;
 }
 
