@@ -13,6 +13,10 @@ import {
   Slider,
   TextBox,
 } from '../basic';
+import type {Container} from './Container';
+import type {Flex} from './Flex';
+import type {Grid, GridItem} from './Grid';
+import type {Group} from './Group';
 import {
   Autocomplete,
   CascadingSelect,
@@ -65,11 +69,11 @@ export type BuiltInContainerChildRegistry = typeof builtInContainerChildRegistry
 
 // 容器组件的延迟导入类型（避免循环依赖）
 export type ContainerComponentCtors = {
-  Container: new (props?: any) => BaseComponent;
-  Flex: new (props?: any) => BaseComponent;
-  Grid: new (props?: any) => BaseComponent;
-  GridItem: new (props?: any) => BaseComponent;
-  Group: new (props?: any) => BaseComponent;
+  Container: typeof Container;
+  Flex: typeof Flex;
+  Grid: typeof Grid;
+  GridItem: typeof GridItem;
+  Group: typeof Group;
 };
 
 export type BuiltInContainerWithNestedRegistry = BuiltInContainerChildRegistry & ContainerComponentCtors;
@@ -96,12 +100,17 @@ export function getContainerComponentCtors(): ContainerComponentCtors {
     throw new Error('Container constructor is not registered.');
   }
 
+  const flexCtor = registeredContainerComponentCtors.Flex ?? (containerCtor as unknown as ContainerComponentCtors['Flex']);
+  const gridCtor = registeredContainerComponentCtors.Grid ?? (containerCtor as unknown as ContainerComponentCtors['Grid']);
+  const gridItemCtor = registeredContainerComponentCtors.GridItem ?? (containerCtor as unknown as ContainerComponentCtors['GridItem']);
+  const groupCtor = registeredContainerComponentCtors.Group ?? (containerCtor as unknown as ContainerComponentCtors['Group']);
+
   return {
     Container: containerCtor,
-    Flex: registeredContainerComponentCtors.Flex ?? containerCtor,
-    Grid: registeredContainerComponentCtors.Grid ?? containerCtor,
-    GridItem: registeredContainerComponentCtors.GridItem ?? containerCtor,
-    Group: registeredContainerComponentCtors.Group ?? containerCtor,
+    Flex: flexCtor,
+    Grid: gridCtor,
+    GridItem: gridItemCtor,
+    Group: groupCtor,
   };
 }
 
