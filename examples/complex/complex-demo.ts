@@ -13,6 +13,7 @@
  */
 
 import {Button} from '../../src/components/basic';
+import {Container} from '../../src/components/container';
 import {
   Autocomplete,
   CascadingOption,
@@ -188,7 +189,7 @@ export function treeViewExample(): HTMLElement {
 export function tabsExample(): HTMLElement {
   const {root, mountPoint} = createCard(
     '3. Tabs 标签页',
-    '演示标签页切换，以及字符串内容和自定义元素内容的混合使用。'
+    '演示标签页切换，以及使用 Container 组织标签页内容。'
   );
 
   const info = document.createElement('p');
@@ -201,21 +202,29 @@ export function tabsExample(): HTMLElement {
       {
         id: 'overview',
         title: '概览',
-        content: 'PortableUi 提供适用于脚本环境和 Web 应用的可组合组件。',
+        content: new Container({
+          children: [Object.assign(document.createElement('p'), {
+            textContent: 'PortableUi 提供适用于脚本环境和 Web 应用的可组合组件。',
+          })],
+        }),
       },
       {
         id: 'stats',
         title: '统计',
-        content: () => {
-          const wrap = document.createElement('div');
-          wrap.innerHTML = '<strong>本周使用增长：</strong> +23%';
-          return wrap;
-        },
+        content: new Container({
+          children: [Object.assign(document.createElement('div'), {
+            innerHTML: '<strong>本周使用增长：</strong> +23%',
+          })],
+        }),
       },
       {
         id: 'settings',
         title: '设置',
-        content: '可以在同一处统一调整行为、主题和国际化配置。',
+        content: new Container({
+          children: [Object.assign(document.createElement('p'), {
+            textContent: '可以在同一处统一调整行为、主题和国际化配置。',
+          })],
+        }),
       },
     ],
     onTabChange: (_self, _event, tab) => {

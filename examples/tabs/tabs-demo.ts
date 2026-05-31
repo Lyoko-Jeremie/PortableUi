@@ -1,7 +1,8 @@
 import {Button} from '../../src/components/basic';
+import {Container} from '../../src/components/container';
 import {TabItem, Tabs} from '../../src/components/complex';
 
-function buildTabContent(title: string, description: string): HTMLElement {
+function buildTabContent(title: string, description: string): Container {
   const wrap = document.createElement('div');
 
   const heading = document.createElement('h3');
@@ -14,7 +15,7 @@ function buildTabContent(title: string, description: string): HTMLElement {
 
   wrap.appendChild(heading);
   wrap.appendChild(body);
-  return wrap;
+  return new Container({children: [wrap]});
 }
 
 export function mountTabsExample(container: HTMLElement): void {
@@ -43,20 +44,17 @@ export function mountTabsExample(container: HTMLElement): void {
     {
       id: 'metrics',
       title: '指标',
-      content: () => {
-        const now = new Date().toLocaleString();
-        return buildTabContent('指标', `这是函数内容渲染，生成时间：${now}`);
-      },
+      content: buildTabContent('指标', `这是容器内容渲染，生成时间：${new Date().toLocaleString()}`),
     },
     {
       id: 'roadmap',
       title: '路线图',
-      content: '这个页签展示纯字符串内容。',
+      content: buildTabContent('路线图', '这个页签展示容器内容。'),
     },
     {
       id: 'blocked',
       title: '禁用项',
-      content: '你不应看到这个内容。',
+      content: buildTabContent('禁用项', '你不应看到这个内容。'),
       disabled: true,
     },
   ];

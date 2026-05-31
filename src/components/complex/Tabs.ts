@@ -1,11 +1,12 @@
 import {BaseComponent} from '../../core';
 import {ComponentElement, ComponentProps} from '../../types';
 import {applyCommonElementProps} from '../basic/internal';
+import type {Container} from '../container/Container';
 
 export interface TabItem {
   id: string;
   title: string;
-  content: string | HTMLElement | ((tabs: Tabs) => string | HTMLElement);
+  content: Container;
   disabled?: boolean;
 }
 
@@ -62,11 +63,12 @@ export class Tabs extends BaseComponent {
 
     const activeTab = tabs.find((tab) => tab.id === activeTabId);
     if (activeTab) {
-      const node = this.renderContent(activeTab.content);
-      if (node instanceof HTMLElement) {
-        body.appendChild(node);
+      const contentContainer = activeTab.content;
+      const containerElement = contentContainer.getElement();
+      if (containerElement) {
+        body.appendChild(containerElement);
       } else {
-        body.textContent = node;
+        contentContainer.mount(body);
       }
     }
 
@@ -103,13 +105,5 @@ export class Tabs extends BaseComponent {
     }
 
     return tabs.find((tab) => !tab.disabled)?.id;
-  }
-
-  private renderContent(content: TabItem['content']): string | HTMLElement {
-    if (typeof content === 'function') {
-      return content(this);
-    }
-
-    return content;
   }
 }

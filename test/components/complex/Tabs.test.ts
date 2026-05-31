@@ -1,4 +1,11 @@
 import {Tabs} from '../../../src/components/complex/Tabs';
+import {Container} from '../../../src/components/container';
+
+function createTabContent(text: string): Container {
+  const node = document.createElement('div');
+  node.textContent = text;
+  return new Container({children: [node]});
+}
 
 describe('Tabs', () => {
   let container: HTMLElement;
@@ -15,8 +22,8 @@ describe('Tabs', () => {
   it('should render tab headers', () => {
     const tabs = new Tabs({
       tabs: [
-        {id: 'a', title: 'Tab A', content: 'Content A'},
-        {id: 'b', title: 'Tab B', content: 'Content B'},
+        {id: 'a', title: 'Tab A', content: createTabContent('Content A')},
+        {id: 'b', title: 'Tab B', content: createTabContent('Content B')},
       ],
     });
 
@@ -29,8 +36,8 @@ describe('Tabs', () => {
   it('should switch active tab', () => {
     const tabs = new Tabs({
       tabs: [
-        {id: 'a', title: 'Tab A', content: 'Content A'},
-        {id: 'b', title: 'Tab B', content: 'Content B'},
+        {id: 'a', title: 'Tab A', content: createTabContent('Content A')},
+        {id: 'b', title: 'Tab B', content: createTabContent('Content B')},
       ],
     });
 
@@ -44,8 +51,8 @@ describe('Tabs', () => {
     const tabs = new Tabs({
       stretch: true,
       tabs: [
-        {id: 'a', title: 'Tab A', content: 'Content A'},
-        {id: 'b', title: 'Tab B', content: 'Content B'},
+        {id: 'a', title: 'Tab A', content: createTabContent('Content A')},
+        {id: 'b', title: 'Tab B', content: createTabContent('Content B')},
       ],
     });
 
@@ -61,12 +68,12 @@ describe('Tabs', () => {
   it('should append a tab via appendTab', () => {
     const tabs = new Tabs({
       tabs: [
-        {id: 'a', title: 'Tab A', content: 'Content A'},
+        {id: 'a', title: 'Tab A', content: createTabContent('Content A')},
       ],
     });
 
     tabs.mount(container);
-    tabs.appendTab({id: 'b', title: 'Tab B', content: 'Content B'});
+    tabs.appendTab({id: 'b', title: 'Tab B', content: createTabContent('Content B')});
 
     const buttons = container.querySelectorAll('.portableui-tabs-button');
     expect(buttons.length).toBe(2);

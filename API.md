@@ -420,7 +420,7 @@ tabScope.addInput({ id: 'name' });
   - methods: `setNodes`, `setSelectedId`, `setExpandedIds`, `expandAll`, `collapseAll`
 - `Tabs`
   - props: `tabs`, `activeTabId`, `stretch`, `onTabChange`
-  - 
+  - `tabs` item: `{ id: string; title: string; content: Container; disabled?: boolean }`
   - methods: `setTabs`, `appendTab`, `setActiveTab`, `getActiveTabId`
 - `Modal`
   - props: `visible`, `title`, `content`, `width`, `confirmText`, `cancelText`, `showFooter`, `showCloseButton`, `closeOnOverlayClick`, `onOpen`, `onClose`, `onConfirm`, `onCancel`
