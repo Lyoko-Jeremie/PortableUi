@@ -214,4 +214,15 @@ describe('Container', () => {
     expect(group).toBeTruthy();
     expect(comp.getContainerChildren()).toContain(group);
   });
+
+  test('should support adding HtmlLabel to Container', () => {
+    const comp = new Container({id: 'parent'});
+    comp.mount(container);
+
+    const htmlLabel = comp.add.HtmlLabel({id: 'html-label', html: '<strong>HTML Label</strong>'});
+
+    expect(htmlLabel).toBeTruthy();
+    expect(comp.getContainerChildren()).toContain(htmlLabel);
+    expect(comp.getElement()?.querySelector('#html-label strong')?.textContent).toBe('HTML Label');
+  });
 });

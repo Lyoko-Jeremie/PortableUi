@@ -1,4 +1,4 @@
-import {BaseComponent, Button, Container, Flex, Grid, GridItem} from '../../../src';
+import {BaseComponent, Button, Container, Flex, Grid, GridItem, HtmlLabel} from '../../../src';
 
 describe('Container typing', () => {
   it('preserves concrete return types for generated add.* methods', () => {
@@ -20,12 +20,14 @@ describe('Container typing', () => {
     const nestedFlexButton = nestedFlex.add.Button({text: 'nested flex button'});
     const nestedGridItemButton = nestedGrid.add.GridItem({}).add.Button({text: 'nested grid item button'});
     const nestedGridButton = nestedGridItem.add.Button({text: 'nested grid item button'});
+    const htmlLabel = container.add.HtmlLabel({html: '<strong>typed</strong>'});
 
     const typedContainer: Container = childFlex;
     const typedFlex: Flex = nestedFlex;
     const typedGrid: Grid = nestedGrid;
     const typedGridItem: GridItem = nestedGridItem;
     const typedButton: Button = flexButton;
+    const typedHtmlLabel: HtmlLabel = htmlLabel;
     const typedBase: BaseComponent = gridButton;
 
     void typedContainer;
@@ -33,6 +35,7 @@ describe('Container typing', () => {
     void typedGrid;
     void typedGridItem;
     void typedButton;
+    void typedHtmlLabel;
     void typedBase;
     void gridItemButton;
     void nestedFlexButton;

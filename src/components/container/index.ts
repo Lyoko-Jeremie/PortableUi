@@ -19,6 +19,9 @@ registerContainerComponentCtors({
 export {Container} from './Container';
 export type {ContainerProps} from './Container';
 
+export {HtmlContainer} from './HtmlContainer';
+export type {HtmlContainerProps, NativeHtmlContent} from './HtmlContainer';
+
 export {Grid, GridItem} from './Grid';
 export type {GridProps, GridItemProps} from './Grid';
 

@@ -5,6 +5,7 @@ import {
   Checkbox,
   DatePicker,
   FileUpload,
+  HtmlLabel,
   Image,
   Input,
   Label,
@@ -123,6 +124,10 @@ export class ContainerAddObject {
 
   Label(props: ComponentPropsOf<typeof Label>) {
     return this.addByCtor(Label, props);
+  }
+
+  HtmlLabel(props: ComponentPropsOf<typeof HtmlLabel>) {
+    return this.addByCtor(HtmlLabel, props);
   }
 
   Modal(props: ComponentPropsOf<typeof Modal>) {
