@@ -6,10 +6,16 @@
 import {ComponentProps, ComponentState, ComponentElement, ComponentLifecycle} from '../types';
 import {DOMAccessor} from './DOMAccessor';
 import {extensibilityManager} from './Extensibility';
+import {signal} from 'alien-signals';
 
 const COMPONENT_INSTANCE_KEY = '__portableui_component_instance__';
 
-export abstract class BaseComponent {
+export interface BaseState {
+}
+
+export abstract class BaseComponent<S extends BaseState = BaseState> {
+  abstract signalState: ReturnType<typeof signal<S>>;
+
   /** 组件 DOM 元素 */
   protected element: ComponentElement = null;
 
@@ -342,7 +348,7 @@ export abstract class BaseComponent {
     }
 
     element.id = this.props.id;
-    (element as HTMLElement & {[COMPONENT_INSTANCE_KEY]?: BaseComponent})[COMPONENT_INSTANCE_KEY] = this;
+    (element as HTMLElement & { [COMPONENT_INSTANCE_KEY]?: BaseComponent })[COMPONENT_INSTANCE_KEY] = this;
   }
 
   /**
@@ -353,14 +359,14 @@ export abstract class BaseComponent {
       return;
     }
 
-    delete (element as HTMLElement & {[COMPONENT_INSTANCE_KEY]?: BaseComponent})[COMPONENT_INSTANCE_KEY];
+    delete (element as HTMLElement & { [COMPONENT_INSTANCE_KEY]?: BaseComponent })[COMPONENT_INSTANCE_KEY];
   }
 
   /**
    * 从元素上读取组件实例绑定
    */
   private static readComponentFromElement<T extends BaseComponent = BaseComponent>(element: HTMLElement): T | null {
-    const component = (element as HTMLElement & {[COMPONENT_INSTANCE_KEY]?: BaseComponent})[COMPONENT_INSTANCE_KEY];
+    const component = (element as HTMLElement & { [COMPONENT_INSTANCE_KEY]?: BaseComponent })[COMPONENT_INSTANCE_KEY];
     if (!component) {
       return null;
     }
@@ -599,14 +605,14 @@ export abstract class BaseComponent {
   /**
    * 获取元素尺寸
    */
-  getSize(): {width: number; height: number} {
+  getSize(): { width: number; height: number } {
     return DOMAccessor.getSize(this.element);
   }
 
   /**
    * 获取元素位置
    */
-  getPosition(): {top: number; left: number} {
+  getPosition(): { top: number; left: number } {
     return DOMAccessor.getPosition(this.element);
   }
 

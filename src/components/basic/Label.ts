@@ -1,15 +1,30 @@
 import {BaseComponent} from '../../core';
-import {ComponentElement, ComponentProps} from '../../types';
+import {ComponentElement, ComponentProps, ComponentState} from '../../types';
 import {applyCommonElementProps} from './internal';
+import {effect, signal} from "alien-signals";
 
 export interface LabelProps extends ComponentProps {
   text?: string;
   htmlFor?: string;
 }
 
-export class Label extends BaseComponent {
+export interface LabelState extends ComponentState {
+  text: string | null;
+}
+
+export class Label extends BaseComponent<LabelState> {
+  signalState;
+
   constructor(props: LabelProps = {}) {
     super(props);
+    this.signalState = signal<LabelState>({
+      text: this.props.text,
+    });
+    effect(() => {
+      this.update({
+        text: this.signalState().text,
+      });
+    })
   }
 
   protected render(): ComponentElement {
@@ -27,7 +42,7 @@ export class Label extends BaseComponent {
   }
 
   setText(text: string): void {
-    this.update({text});
+    this.signalState().text = text;
   }
 }
 
