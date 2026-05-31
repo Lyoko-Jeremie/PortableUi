@@ -57,5 +57,19 @@ describe('Tabs', () => {
     expect(header?.classList.contains('portableui-tabs-header-stretch')).toBe(true);
     expect(button?.style.flex).toBe('');
   });
-});
 
+  it('should append a tab via addTab', () => {
+    const tabs = new Tabs({
+      tabs: [
+        {id: 'a', title: 'Tab A', content: 'Content A'},
+      ],
+    });
+
+    tabs.mount(container);
+    tabs.addTab({id: 'b', title: 'Tab B', content: 'Content B'});
+
+    const buttons = container.querySelectorAll('.portableui-tabs-button');
+    expect(buttons.length).toBe(2);
+    expect(buttons[1]?.textContent).toBe('Tab B');
+  });
+});

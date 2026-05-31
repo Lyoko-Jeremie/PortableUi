@@ -80,6 +80,12 @@ export class Tabs extends BaseComponent {
     this.update({tabs});
   }
 
+  addTab(tab: TabItem): void {
+    const props = this.props as TabsProps;
+    const tabs = [...(props.tabs ?? []), tab];
+    this.update({tabs});
+  }
+
   setActiveTab(tabId: string): void {
     this.update({activeTabId: tabId});
   }
@@ -107,4 +113,3 @@ export class Tabs extends BaseComponent {
     return content;
   }
 }
-
