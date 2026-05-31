@@ -146,4 +146,27 @@ describe('Tabs', () => {
     buttons[1]?.dispatchEvent(new MouseEvent('click', {bubbles: true}));
     expect(container.querySelector('.portableui-tabs-body')?.textContent).toContain('Content D');
   });
+
+  it('should append and activate tab content via add().Group()', () => {
+    const tabs = new Tabs({
+      tabs: [
+        {id: 'a', title: 'Tab A', content: createTabContent('Content A')},
+      ],
+    });
+
+    tabs.mount(container);
+
+    const node = document.createElement('div');
+    node.textContent = 'Content E';
+    const addedGroup = tabs.add({id: 'e', title: 'Tab E'}).Group({children: [node]});
+
+    expect(addedGroup).toBeDefined();
+
+    const buttons = container.querySelectorAll('.portableui-tabs-button');
+    expect(buttons.length).toBe(2);
+    expect(buttons[1]?.textContent).toBe('Tab E');
+
+    buttons[1]?.dispatchEvent(new MouseEvent('click', {bubbles: true}));
+    expect(container.querySelector('.portableui-tabs-body')?.textContent).toContain('Content E');
+  });
 });
