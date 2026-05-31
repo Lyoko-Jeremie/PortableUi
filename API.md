@@ -358,7 +358,6 @@ adapter.markDirty('form.name');
 - `createPortableUiFactory(registry)` 可生成绑定自定义 registry 的工厂函数。
 - 声明式绑定支持两种写法并存：
   - 局部（强类型推荐）：`children.xxx.bind`
-  - 兼容：`props.bind`
   - 全局：`config.bindings[keyOrId]`
   - 冲突时全局覆盖局部，并输出开发期警告。
   - `children.xxx.bind` 会基于 `config.model` 提供点路径自动提示与类型检查。
@@ -387,7 +386,6 @@ const adapter = CreatePortableUi(container, {
         value: 'form.name',
       },
       props: {
-        // 兼容旧写法
         id: 'nameInput',
       },
     },

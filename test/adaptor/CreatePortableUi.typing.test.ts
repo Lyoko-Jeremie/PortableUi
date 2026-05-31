@@ -192,21 +192,17 @@ describe('CreatePortableUi typing', () => {
       children: {
         signalInput: {
           type: 'Input',
-          props: {
-            bind: {
-              value: nameSignal,
-            },
+          bind: {
+            value: nameSignal,
           },
         },
         accessorInput: {
           type: 'Input',
-          props: {
-            bind: {
-              value: {
-                get: () => state.name,
-                set: (value: string) => {
-                  state.name = value;
-                },
+          bind: {
+            value: {
+              get: () => state.name,
+              set: (value: string) => {
+                state.name = value;
               },
             },
           },
@@ -215,10 +211,10 @@ describe('CreatePortableUi typing', () => {
           type: 'Button',
           props: {
             text: 'Save',
-            bind: {
-              onClick: (ctx: BindingContext) => {
-                ctx.set('form.name', 'Charlie');
-              },
+          },
+          bind: {
+            onClick: (ctx: BindingContext) => {
+              ctx.set('form.name', 'Charlie');
             },
           },
         },
@@ -291,10 +287,8 @@ const validSignalBindingConfig: PortableUiDeclarativeConfig<BuiltInDeclarativeRe
   children: {
     input1: {
       type: 'Input',
-      props: {
-        bind: {
-          value: writableNameSignal,
-        },
+      bind: {
+        value: writableNameSignal,
       },
     },
   },
@@ -306,13 +300,11 @@ const validAccessorBindingConfig: PortableUiDeclarativeConfig<BuiltInDeclarative
   children: {
     input1: {
       type: 'Input',
-      props: {
-        bind: {
-          value: {
-            get: () => stateForBindingSamples.name,
-            set: (value: string) => {
-              stateForBindingSamples.name = value;
-            },
+      bind: {
+        value: {
+          get: () => stateForBindingSamples.name,
+          set: (value: string) => {
+            stateForBindingSamples.name = value;
           },
         },
       },

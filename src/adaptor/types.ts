@@ -156,8 +156,8 @@ type DeclarativeProps<
   TType extends Extract<keyof TRegistry, string>,
   TModel extends Record<string, any>,
 > = TType extends 'Button'
-  ? ConstructorProps<TRegistry[TType]> & BindableComponentProps<ConstructorProps<TRegistry[TType]>, TModel> & {label?: string}
-  : ConstructorProps<TRegistry[TType]> & BindableComponentProps<ConstructorProps<TRegistry[TType]>, TModel>;
+  ? ConstructorProps<TRegistry[TType]> & {label?: string}
+  : ConstructorProps<TRegistry[TType]>;
 
 export type DeclarativeComponentNode<
   TRegistry extends DeclarativeRegistry,

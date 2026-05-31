@@ -161,23 +161,23 @@ describe('CreatePortableUi', () => {
       children: {
         nameInput: {
           type: 'Input',
+          bind: {
+            value: 'form.name',
+          },
           props: {
             id: 'nameInput',
-            bind: {
-              value: 'form.name',
-            },
           },
         },
         saveButton: {
           type: 'Button',
+          bind: {
+            onClick: (ctx: BindingContext) => {
+              ctx.set('form.name', 'Carol');
+            },
+          },
           props: {
             id: 'saveButton',
             text: 'Save',
-            bind: {
-              onClick: (ctx: BindingContext) => {
-                ctx.set('form.name', 'Carol');
-              },
-            },
           },
         },
       },
@@ -239,11 +239,11 @@ describe('CreatePortableUi', () => {
         },
         overrideInput: {
           type: 'Input',
+          bind: {
+            value: 'form.local',
+          },
           props: {
             id: 'overrideInput',
-            bind: {
-              value: 'form.local',
-            },
           },
         },
       },
@@ -295,11 +295,11 @@ describe('CreatePortableUi', () => {
       children: {
         displayName: {
           type: 'Input',
+          bind: {
+            value: 'form.profile.displayName',
+          },
           props: {
             id: 'displayName',
-            bind: {
-              value: 'form.profile.displayName',
-            },
           },
         },
       },

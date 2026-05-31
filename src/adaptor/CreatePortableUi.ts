@@ -125,10 +125,7 @@ function mountNode<TRegistry extends DeclarativeRegistry>(
 
   const normalizedProps = normalizeProps(node.type, node.props ?? {}, key);
   if (node.bind) {
-    normalizedProps.bind = {
-      ...(normalizedProps.bind ?? {}),
-      ...node.bind,
-    };
+    normalizedProps.bind = node.bind;
   }
   const prepared = bindingEngine.prepareComponentBindings(key, normalizedProps.id ?? key, normalizedProps);
   const instance = new ctor(prepared.props);

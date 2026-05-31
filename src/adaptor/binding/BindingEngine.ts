@@ -112,7 +112,7 @@ function mergeBindings(
         componentId,
         componentKey,
         field,
-        from: 'props.bind',
+        from: 'node.bind',
         to: 'bindings',
       });
     }

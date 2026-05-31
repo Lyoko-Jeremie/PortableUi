@@ -249,7 +249,7 @@ void agree;
 
 新增统一绑定能力，声明式和命令式都支持：
 
-- 双语法并存：`node.bind`（声明式强类型推荐）+ `props.bind`（兼容）+ 全局 `bindings`
+- 双语法并存：`node.bind`（声明式）+ 全局 `bindings`
 - 变更驱动：`markDirty(path?)`
 - 可选 `proxy`（默认关闭）
 - 回调双签名兼容：
@@ -312,7 +312,7 @@ const ui = CreatePortableUi(host, {
   },
   bindings: {
     nameInput: {
-      // 全局优先于 props.bind，冲突会输出开发期 warning
+      // 全局优先于 node.bind，冲突会输出开发期 warning
       value: 'form.name',
     },
   },
