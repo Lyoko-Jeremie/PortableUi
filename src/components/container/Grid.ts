@@ -10,14 +10,11 @@ import {LayoutEngine} from '../../layout/LayoutEngine';
 import {applyCommonElementProps} from '../basic/internal';
 import {BaseComponent} from '../../core';
 import {
-  builtInContainerChildRegistry,
   BuiltInContainerWithNestedAddMethods,
-  BuiltInContainerWithNestedRegistry,
   ComponentPropsOf,
   AnyComponentCtor,
-  getContainerComponentCtors,
-  installGeneratedAddMethods,
-  registerContainerComponentCtors,
+  createContainerAddObject,
+  registerContainerComponentCtors, ContainerAddObject,
 } from './imperative';
 
 export interface GridProps extends ContainerProps {
@@ -45,8 +42,16 @@ export interface GridItemProps extends ComponentProps {
 }
 
 export class GridItem extends BaseComponent {
-  // Explicitly declare generated imperative namespace for stable type inference.
-  declare readonly add: BuiltInContainerWithNestedAddMethods['add'];
+  // Lazily initialized imperative namespace, bound to this grid item instance.
+  private addNamespace?: ContainerAddObject;
+
+  get add(): ContainerAddObject {
+    if (!this.addNamespace) {
+      this.addNamespace = createContainerAddObject((ctor, props) => this.createAndAddChild(ctor, props));
+    }
+
+    return this.addNamespace;
+  }
 
   /** 子组件集合 */
   private children: (BaseComponent | HTMLElement)[] = [];
@@ -54,7 +59,6 @@ export class GridItem extends BaseComponent {
   constructor(props: GridItemProps = {}) {
     super(props);
     this.children = props.children ?? [];
-    this.installGeneratedAddMethods();
   }
 
   protected render(): ComponentElement {
@@ -120,29 +124,6 @@ export class GridItem extends BaseComponent {
         container.appendChild(child);
       }
     }
-  }
-
-   /**
-    * 安装 add* 命令式快捷方法
-    */
-  private installGeneratedAddMethods(): void {
-    const registry = this.getFullRegistry();
-    installGeneratedAddMethods(this, registry, (ctor, props) => this.createAndAddChild(ctor, props));
-  }
-
-  /**
-   * 获取完整的容器注册表（包含容器组件本身和所有子组件）
-   */
-  private getFullRegistry(): BuiltInContainerWithNestedRegistry {
-    const {Container, Flex, Grid, Group} = getContainerComponentCtors();
-    return {
-      ...builtInContainerChildRegistry,
-      Container,
-      Flex,
-      Grid,
-      GridItem: GridItem,
-      Group,
-    } as BuiltInContainerWithNestedRegistry;
   }
 
   /**
@@ -257,4 +238,3 @@ export class Grid extends Container {
 }
 
 registerContainerComponentCtors({Grid, GridItem});
-

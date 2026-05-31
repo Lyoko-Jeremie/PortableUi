@@ -9,13 +9,11 @@ import {LayoutConfig} from '../../layout';
 import {LayoutEngine} from '../../layout/LayoutEngine';
 import {applyCommonElementProps} from '../basic/internal';
 import {
-  builtInContainerChildRegistry,
   BuiltInContainerWithNestedAddMethods,
-  BuiltInContainerWithNestedRegistry,
   ComponentPropsOf,
   AnyComponentCtor,
-  getContainerComponentCtors,
-  registerContainerComponentCtors,
+  createContainerAddObject,
+  registerContainerComponentCtors, ContainerAddObject,
 } from './imperative';
 
 export interface ContainerProps extends ComponentProps {
@@ -45,22 +43,11 @@ export interface ContainerProps extends ComponentProps {
 
 export class Container extends BaseComponent {
   // Lazily initialized imperative namespace, bound to this container instance.
-  private addNamespace?: BuiltInContainerWithNestedAddMethods['add'];
+  private addNamespace?: ContainerAddObject;
 
-  get add(): BuiltInContainerWithNestedAddMethods['add'] {
+  get add(): ContainerAddObject {
     if (!this.addNamespace) {
-      const registry = this.getFullRegistry();
-      const namespace: Record<string, unknown> = {};
-
-      for (const [type, ctor] of Object.entries(registry) as Array<[
-        Extract<keyof BuiltInContainerWithNestedRegistry, string>,
-        BuiltInContainerWithNestedRegistry[Extract<keyof BuiltInContainerWithNestedRegistry, string>]
-      ]>) {
-        namespace[type] = (props: unknown) =>
-          this.createAndAddChild(ctor as AnyComponentCtor, props as ComponentPropsOf<AnyComponentCtor>);
-      }
-
-      this.addNamespace = namespace as BuiltInContainerWithNestedAddMethods['add'];
+      this.addNamespace = createContainerAddObject((ctor, props) => this.createAndAddChild(ctor, props));
     }
 
     return this.addNamespace;
@@ -74,20 +61,6 @@ export class Container extends BaseComponent {
     this.children = props.children || [];
   }
 
-  /**
-   * 获取完整的容器注册表（包含容器组件本身和所有子组件）
-   */
-  private getFullRegistry(): BuiltInContainerWithNestedRegistry {
-    const {Container, Flex, Grid, GridItem, Group} = getContainerComponentCtors();
-    return {
-      ...builtInContainerChildRegistry,
-      Container,
-      Flex,
-      Grid,
-      GridItem,
-      Group,
-    } as BuiltInContainerWithNestedRegistry;
-  }
 
   /**
    * 创建并追加子组件，供 add* 快捷方法复用
