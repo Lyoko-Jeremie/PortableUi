@@ -2,8 +2,16 @@ import {BaseComponent} from '../../core';
 import {ComponentElement, ComponentProps} from '../../types';
 import {applyCommonElementProps} from '../basic/internal';
 import type {Container} from '../container/Container';
+import {Flex} from '../container/Flex';
+import type {FlexProps} from '../container/Flex';
+import {Grid} from '../container/Grid';
+import type {GridProps} from '../container/Grid';
+import {Group} from '../container/Group';
+import type {GroupProps} from '../container/Group';
+import {HtmlContainer} from '../container/HtmlContainer';
+import type {HtmlContainerProps} from '../container/HtmlContainer';
 
-export interface TabItem<C extends Container = Container> {
+export interface TabItem<C extends BaseComponent = Container> {
   id: string;
   title: string;
   content: C;
@@ -82,11 +90,28 @@ export class Tabs extends BaseComponent {
     this.update({tabs});
   }
 
-  appendTab<C extends Container = Container>(tab: TabItem<C>): C {
+  appendTab<C extends BaseComponent = Container>(tab: TabItem<C>): C {
     const props = this.props as TabsProps;
     const tabs = [...(props.tabs ?? []), tab];
     this.update({tabs});
     return tab.content;
+  }
+
+  add(tab: Omit<TabItem, 'content'>) {
+    return {
+      Flex: (props?: FlexProps) => {
+        return this.appendTab({...tab, content: new Flex(props)});
+      },
+      Grid: (props?: GridProps) => {
+        return this.appendTab({...tab, content: new Grid(props)});
+      },
+      Group: (props?: GroupProps) => {
+        return this.appendTab({...tab, content: new Group(props)});
+      },
+      HtmlContainer: (props?: HtmlContainerProps) => {
+        return this.appendTab({...tab, content: new HtmlContainer(props)});
+      },
+    }
   }
 
   setActiveTab(tabId: string): void {

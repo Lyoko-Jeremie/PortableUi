@@ -2,13 +2,18 @@
  * 复杂组件导出
  */
 
+import {registerComplexComponentCtors} from '../container/imperative';
+import {Tabs} from './Tabs';
+
 export {Table} from './Table';
 export type {TableColumn, TableProps} from './Table';
 
 export {TreeView} from './TreeView';
 export type {TreeNode, TreeViewProps} from './TreeView';
 
-export {Tabs} from './Tabs';
+registerComplexComponentCtors({Tabs});
+
+export {Tabs};
 export type {TabItem, TabsProps} from './Tabs';
 
 export {Modal} from './Modal';

@@ -79,4 +79,48 @@ describe('Tabs', () => {
     expect(buttons.length).toBe(2);
     expect(buttons[1]?.textContent).toBe('Tab B');
   });
+
+  it('should append and activate tab content via add().Flex()', () => {
+    const tabs = new Tabs({
+      tabs: [
+        {id: 'a', title: 'Tab A', content: createTabContent('Content A')},
+      ],
+    });
+
+    tabs.mount(container);
+
+    const node = document.createElement('div');
+    node.textContent = 'Content B';
+    const addedFlex = tabs.add({id: 'b', title: 'Tab B'}).Flex({children: [node]});
+
+    expect(addedFlex).toBeDefined();
+
+    const buttons = container.querySelectorAll('.portableui-tabs-button');
+    expect(buttons.length).toBe(2);
+    expect(buttons[1]?.textContent).toBe('Tab B');
+
+    buttons[1]?.dispatchEvent(new MouseEvent('click', {bubbles: true}));
+    expect(container.querySelector('.portableui-tabs-body')?.textContent).toContain('Content B');
+  });
+
+  it('should append and activate tab content via add().HtmlContainer()', () => {
+    const tabs = new Tabs({
+      tabs: [
+        {id: 'a', title: 'Tab A', content: createTabContent('Content A')},
+      ],
+    });
+
+    tabs.mount(container);
+
+    const addedHtmlContainer = tabs.add({id: 'c', title: 'Tab C'}).HtmlContainer({html: '<span>Content C</span>'});
+
+    expect(addedHtmlContainer).toBeDefined();
+
+    const buttons = container.querySelectorAll('.portableui-tabs-button');
+    expect(buttons.length).toBe(2);
+    expect(buttons[1]?.textContent).toBe('Tab C');
+
+    buttons[1]?.dispatchEvent(new MouseEvent('click', {bubbles: true}));
+    expect(container.querySelector('.portableui-tabs-body')?.textContent).toContain('Content C');
+  });
 });

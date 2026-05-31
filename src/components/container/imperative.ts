@@ -18,16 +18,14 @@ import type {Container} from './Container';
 import type {Flex} from './Flex';
 import type {Grid, GridItem} from './Grid';
 import type {Group} from './Group';
-import {
-  Autocomplete,
-  CascadingSelect,
-  Modal,
-  Progress,
-  Table,
-  Tabs,
-  Toast,
-  TreeView,
-} from '../complex';
+import type {Tabs} from '../complex/Tabs';
+import {Autocomplete} from '../complex/Autocomplete';
+import {CascadingSelect} from '../complex/CascadingSelect';
+import {Modal} from '../complex/Modal';
+import {Progress} from '../complex/Progress';
+import {Table} from '../complex/Table';
+import {Toast} from '../complex/Toast';
+import {TreeView} from '../complex/TreeView';
 
 export type AnyComponentCtor = new (props?: any) => BaseComponent;
 
@@ -64,6 +62,10 @@ export type ContainerComponentCtors = {
   Group: typeof Group;
 };
 
+type ComplexComponentCtors = {
+  Tabs: typeof Tabs;
+};
+
 export interface ContainerAddTypeExtensions {
   Container: AddMethod<ContainerComponentCtors['Container']>;
   Flex: AddMethod<ContainerComponentCtors['Flex']>;
@@ -77,6 +79,7 @@ export interface ContainerAddTypeExtensions {
  * 设计为 Partial，允许宿主按需注册（例如仅注册 Container）。
  */
 const registeredContainerTypeCtors: Partial<ContainerComponentCtors> = {};
+const registeredComplexTypeCtors: Partial<ComplexComponentCtors> = {};
 
 /**
  * 解析容器组件构造器：
@@ -96,6 +99,15 @@ function resolveRegisteredContainerCtor<K extends keyof ContainerComponentCtors>
   }
 
   return containerCtor as unknown as ContainerComponentCtors[K];
+}
+
+function resolveRegisteredComplexCtor<K extends keyof ComplexComponentCtors>(type: K): ComplexComponentCtors[K] {
+  const ctor = registeredComplexTypeCtors[type];
+  if (!ctor) {
+    throw new Error(`${type} constructor is not registered.`);
+  }
+
+  return ctor as ComplexComponentCtors[K];
 }
 
 /**
@@ -193,8 +205,8 @@ export class ContainerAddObject {
     return this.addByCtor(Table, props);
   }
 
-  Tabs(props: ComponentPropsOf<typeof Tabs>) {
-    return this.addByCtor(Tabs, props);
+  Tabs(props: ComponentPropsOf<ComplexComponentCtors['Tabs']>) {
+    return this.addByCtor(resolveRegisteredComplexCtor('Tabs'), props);
   }
 
   TextBox(props: ComponentPropsOf<typeof TextBox>) {
@@ -259,3 +271,8 @@ export function createContainerAddObject(mountComponent: MountComponentFn): Cont
 export function registerContainerComponentCtors(ctors: Partial<ContainerComponentCtors>): void {
   Object.assign(registeredContainerTypeCtors, ctors);
 }
+
+export function registerComplexComponentCtors(ctors: Partial<ComplexComponentCtors>): void {
+  Object.assign(registeredComplexTypeCtors, ctors);
+}
+
