@@ -170,5 +170,39 @@ describe('App imperative adaptor', () => {
     accessorElement.dispatchEvent(new Event('input', {bubbles: true}));
     expect(store.draft).toBe('Delta');
   });
+
+  it('tracks deep path writes and deletes automatically when proxy=true', async () => {
+    const app = new App(host, {
+      id: 'root',
+      model: {
+        form: {
+          contact: {
+            city: 'Nanjing',
+          },
+        },
+      },
+      bindingOptions: {
+        proxy: true,
+      },
+    });
+
+    const cityInput = app.add.Input({
+      id: 'city-input',
+      bind: {
+        value: 'form.contact.city',
+      },
+    });
+
+    expect(cityInput.getValue()).toBe('Nanjing');
+
+    const model = app.getModel<{form: {contact: {city?: string}}}>();
+    model.form.contact.city = 'Suzhou';
+    await flushBindings();
+    expect(cityInput.getValue()).toBe('Suzhou');
+
+    delete model.form.contact.city;
+    await flushBindings();
+    expect(cityInput.getValue()).toBe('');
+  });
 });
 

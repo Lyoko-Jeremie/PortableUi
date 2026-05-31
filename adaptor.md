@@ -379,5 +379,15 @@ app.add.Input({
 
 说明：只读 accessor（仅 `get`）绑定到可写字段时会在开发期警告并阻止写回。
 
+### 绑定 warning code 一览
+
+| Code | 说明 | 典型修复 |
+|---|---|---|
+| `BINDING_CONFLICT` | 局部 `props.bind` 与全局 `bindings` 同字段冲突，已按全局覆盖 | 删除重复绑定，保留单一来源 |
+| `MISSING_BINDING_PATH` | 开启 `strict` 后绑定路径不存在 | 预先初始化模型结构或修正路径 |
+| `INVALID_BINDING_SOURCE` | 绑定源类型非法 | 改为路径 / signal / accessor |
+| `READONLY_BINDING_WRITE` | 向只读绑定源写入被阻止 | 提供 `set` 或改为只读展示 |
+| `INVALID_CALLBACK_BINDING` | 回调路径未映射到函数 | 检查 `model.actions` 路径拼写 |
+
 
 

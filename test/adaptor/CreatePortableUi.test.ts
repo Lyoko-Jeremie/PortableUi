@@ -270,5 +270,45 @@ describe('CreatePortableUi', () => {
 
     warnSpy.mockRestore();
   });
+
+  it('tracks nested path changes automatically when proxy=true', async () => {
+    const ui = CreatePortableUi(host, {
+      model: {
+        form: {
+          profile: {
+            displayName: 'Alice',
+          },
+        },
+      },
+      bindingOptions: {
+        proxy: true,
+      },
+      children: {
+        displayName: {
+          type: 'Input',
+          props: {
+            id: 'displayName',
+            bind: {
+              value: 'form.profile.displayName',
+            },
+          },
+        },
+      },
+    });
+
+    const input = ui.getComponent('displayName') as Input | null;
+    expect(input?.getValue()).toBe('Alice');
+
+    const model = ui.getModel<{form: {profile: {displayName?: string}}}>();
+    model.form.profile.displayName = 'Bob';
+    await flushBindings();
+
+    expect(input?.getValue()).toBe('Bob');
+
+    delete model.form.profile.displayName;
+    await flushBindings();
+
+    expect(input?.getValue()).toBe('');
+  });
 });
 

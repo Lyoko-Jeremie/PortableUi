@@ -467,15 +467,27 @@ void input;
 - getter/setter：
 
 ```ts
-value: {
-  get: () => store.name,
-  set: (next) => {
-    store.name = next;
+const binding = {
+  value: {
+    get: () => store.name,
+    set: (next) => {
+      store.name = next;
+    },
   },
-}
+};
 ```
 
 注：只读 computed 在类型层不能完全区分可写 signal，运行时会阻止写回并给出开发期警告。
+
+绑定 warning code（开发期）：
+
+| Code | 触发条件 | 建议处理 |
+|---|---|---|
+| `BINDING_CONFLICT` | `props.bind` 与全局 `bindings[key/id]` 同字段冲突，全局覆盖局部 | 统一绑定来源，避免同字段重复定义 |
+| `MISSING_BINDING_PATH` | `bindingOptions.strict=true` 且路径不存在 | 检查模型结构或提前初始化路径 |
+| `INVALID_BINDING_SOURCE` | 字段绑定源既不是路径，也不是 signal/accessor | 修正为合法绑定源 |
+| `READONLY_BINDING_WRITE` | 写回发生在只读源（如无 `set` accessor） | 改为可写源或改用只读展示字段 |
+| `INVALID_CALLBACK_BINDING` | 回调路径未解析到函数 | 检查 `model.actions.*` 路径和函数声明 |
 
 ---
 
