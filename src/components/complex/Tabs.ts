@@ -1,7 +1,8 @@
 import {BaseComponent} from '../../core';
 import {ComponentElement, ComponentProps} from '../../types';
 import {applyCommonElementProps} from '../basic/internal';
-import type {Container} from '../container/Container';
+import {Container,} from '../container/Container';
+import type {ContainerProps} from '../container/Container';
 import {Flex} from '../container/Flex';
 import type {FlexProps} from '../container/Flex';
 import {Grid} from '../container/Grid';
@@ -99,6 +100,9 @@ export class Tabs extends BaseComponent {
 
   add(tab: Omit<TabItem, 'content'>) {
     return {
+      Container: (props?: ContainerProps) => {
+        return this.appendTab({...tab, content: new Container(props)});
+      },
       Flex: (props?: FlexProps) => {
         return this.appendTab({...tab, content: new Flex(props)});
       },
