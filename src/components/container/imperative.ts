@@ -31,15 +31,28 @@ import {
 
 export type AnyComponentCtor = new (props?: any) => BaseComponent;
 
+/**
+ * 从组件构造器中提取 props 类型：
+ * - 若构造器参数可为 undefined，则将其视作“无需 props”组件，返回空对象类型；
+ * - 否则返回首个构造参数的非空类型。
+ */
 export type ComponentPropsOf<TCtor extends AnyComponentCtor> = ConstructorParameters<TCtor>[0] extends undefined
   ? Record<string, never>
   : NonNullable<ConstructorParameters<TCtor>[0]>;
 
+/**
+ * 组件挂载函数：给定构造器和 props，返回对应组件实例。
+ * 由容器在运行时注入，add 对象只负责类型安全地转发调用。
+ */
 type MountComponentFn = <TCtor extends AnyComponentCtor>(
   ctor: TCtor,
   props: ComponentPropsOf<TCtor>
 ) => InstanceType<TCtor>;
 
+/**
+ * add 对象单个方法的通用签名：
+ * 传入某组件 props，返回该组件实例。
+ */
 type AddMethod<TCtor extends AnyComponentCtor> = (props: ComponentPropsOf<TCtor>) => InstanceType<TCtor>;
 
 // 容器组件类型（仅用于 add 对象方法类型扩展）
@@ -59,8 +72,18 @@ export interface ContainerAddTypeExtensions {
   Group: AddMethod<ContainerComponentCtors['Group']>;
 }
 
+/**
+ * 运行时可注册的容器组件构造器表。
+ * 设计为 Partial，允许宿主按需注册（例如仅注册 Container）。
+ */
 const registeredContainerTypeCtors: Partial<ContainerComponentCtors> = {};
 
+/**
+ * 解析容器组件构造器：
+ * 1) 优先使用对应类型的已注册构造器；
+ * 2) 若缺失则回退到 Container 构造器（兼容旧实现/最小注册场景）；
+ * 3) 连 Container 都未注册时抛出明确错误。
+ */
 function resolveRegisteredContainerCtor<K extends keyof ContainerComponentCtors>(type: K): ContainerComponentCtors[K] {
   const directCtor = registeredContainerTypeCtors[type];
   if (directCtor) {
@@ -75,16 +98,32 @@ function resolveRegisteredContainerCtor<K extends keyof ContainerComponentCtors>
   return containerCtor as unknown as ContainerComponentCtors[K];
 }
 
+/**
+ * `container.add` 对象的实现。
+ *
+ * 目标：
+ * - 暴露统一、可发现的 imperative API（`add.Button(...)`、`add.Flex(...)` 等）；
+ * - 通过泛型将 props / 返回实例类型与具体组件精确绑定；
+ * - 将真正的挂载细节交由注入的 `mountComponent` 处理，保持该对象职责单一。
+ */
 export class ContainerAddObject {
   constructor(private readonly mountComponent: MountComponentFn) {}
 
+  /**
+   * 原始构造器挂载入口，供内部与高级场景复用。
+   */
   mountByCtor<TCtor extends AnyComponentCtor>(ctor: TCtor, props: ComponentPropsOf<TCtor>): InstanceType<TCtor> {
     return this.mountComponent(ctor, props);
   }
 
+  /**
+   * add 系列方法的公共实现，语义上表示“按构造器新增子组件”。
+   */
   private addByCtor<TCtor extends AnyComponentCtor>(ctor: TCtor, props: ComponentPropsOf<TCtor>): InstanceType<TCtor> {
     return this.mountByCtor(ctor, props);
   }
+
+  // ===== 基础/复杂组件：直接使用静态导入的构造器 =====
 
   Autocomplete(props: ComponentPropsOf<typeof Autocomplete>) {
     return this.addByCtor(Autocomplete, props);
@@ -170,6 +209,8 @@ export class ContainerAddObject {
     return this.addByCtor(TreeView, props);
   }
 
+  // ===== 容器类组件：使用运行时注册构造器（支持扩展/替换） =====
+
   Container(props: ComponentPropsOf<ContainerComponentCtors['Container']>) {
     return this.mountByCtor(resolveRegisteredContainerCtor('Container'), props);
   }
@@ -194,16 +235,26 @@ export class ContainerAddObject {
 // 通过类型扩展将容器类 add 方法并入对象类型。
 export interface ContainerAddObject extends ContainerAddTypeExtensions {}
 
+/**
+ * 提供给外部的“具有嵌套 add 方法”的容器能力描述。
+ */
 export type BuiltInContainerWithNestedAddMethods = {
   add: ContainerAddObject;
 };
 
+/**
+ * 工厂函数：创建 `ContainerAddObject`，便于在容器初始化阶段注入挂载逻辑。
+ */
 export function createContainerAddObject(mountComponent: MountComponentFn): ContainerAddObject {
   return new ContainerAddObject(mountComponent);
 }
 
 /**
- * 注册容器组件构造器：直接更新 add 对象使用的类型构造器。
+ * 注册容器组件构造器。
+ *
+ * - 可多次调用，后注册会覆盖同名构造器；
+ * - 仅影响容器类方法（Container/Flex/Grid/GridItem/Group）的解析；
+ * - 不影响基础组件方法（如 Button/Input），它们始终使用静态导入构造器。
  */
 export function registerContainerComponentCtors(ctors: Partial<ContainerComponentCtors>): void {
   Object.assign(registeredContainerTypeCtors, ctors);
