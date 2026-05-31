@@ -28,10 +28,10 @@ export interface ComponentConfig extends ComponentProps {
 
 /** 组件生命周期回调 */
 export interface ComponentLifecycle {
-  onMount?: <T extends BaseComponent>(self: T) => void;
-  onUpdate?: <T extends BaseComponent>(self: T) => void;
-  onUnmount?: <T extends BaseComponent>(self: T) => void;
-  onError?: <T extends BaseComponent>(self: T, error: Error) => void;
+  onMount?: <T extends BaseComponent<any>>(self: T) => void;
+  onUpdate?: <T extends BaseComponent<any>>(self: T) => void;
+  onUnmount?: <T extends BaseComponent<any>>(self: T) => void;
+  onError?: <T extends BaseComponent<any>>(self: T, error: Error) => void;
 }
 
 /** DOM 元素 */

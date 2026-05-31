@@ -6,7 +6,7 @@
 import {ComponentProps, ComponentState, ComponentElement, ComponentLifecycle} from '../types';
 import {DOMAccessor} from './DOMAccessor';
 import {extensibilityManager} from './Extensibility';
-import {signal} from 'alien-signals';
+import {effect, signal} from 'alien-signals';
 
 const COMPONENT_INSTANCE_KEY = '__portableui_component_instance__';
 
@@ -14,7 +14,7 @@ export interface BaseState {
 }
 
 export abstract class BaseComponent<S extends BaseState = BaseState> {
-  abstract signalState: ReturnType<typeof signal<S>>;
+  signalState: ReturnType<typeof signal<S>>;
 
   /** 组件 DOM 元素 */
   protected element: ComponentElement = null;
@@ -39,6 +39,17 @@ export abstract class BaseComponent<S extends BaseState = BaseState> {
   constructor(props: ComponentProps = {}, lifecycle: Partial<ComponentLifecycle> = {}) {
     this.props = props;
     this.lifecycle = lifecycle as ComponentLifecycle;
+    this.signalState = signal<S>(this.props as S);
+
+    effect(() => {
+      const currentState = this.signalState();
+      this.props = {...this.props, ...(currentState as ComponentProps)};
+
+      if (this.mounted && this.element) {
+        this.rerender();
+      }
+    });
+
     // 初始化组件id
     this.initializeComponentId();
   }
@@ -121,13 +132,14 @@ export abstract class BaseComponent<S extends BaseState = BaseState> {
 
     if (!this.mounted || !this.element) {
       this.props = nextProps;
+      this.signalState({...this.signalState(), ...nextProps} as S);
       return;
     }
 
     try {
       extensibilityManager.runLifecycle('update', this, {props: nextProps}, () => {
         this.props = nextProps;
-        this.rerender();
+        this.signalState({...this.signalState(), ...nextProps} as S);
         this.lifecycle.onUpdate?.(this);
       });
     } catch (error) {
@@ -348,7 +360,7 @@ export abstract class BaseComponent<S extends BaseState = BaseState> {
     }
 
     element.id = this.props.id;
-    (element as HTMLElement & { [COMPONENT_INSTANCE_KEY]?: BaseComponent })[COMPONENT_INSTANCE_KEY] = this;
+    (element as HTMLElement & { [COMPONENT_INSTANCE_KEY]?: BaseComponent<any> })[COMPONENT_INSTANCE_KEY] = this;
   }
 
   /**
@@ -359,14 +371,14 @@ export abstract class BaseComponent<S extends BaseState = BaseState> {
       return;
     }
 
-    delete (element as HTMLElement & { [COMPONENT_INSTANCE_KEY]?: BaseComponent })[COMPONENT_INSTANCE_KEY];
+    delete (element as HTMLElement & { [COMPONENT_INSTANCE_KEY]?: BaseComponent<any> })[COMPONENT_INSTANCE_KEY];
   }
 
   /**
    * 从元素上读取组件实例绑定
    */
   private static readComponentFromElement<T extends BaseComponent = BaseComponent>(element: HTMLElement): T | null {
-    const component = (element as HTMLElement & { [COMPONENT_INSTANCE_KEY]?: BaseComponent })[COMPONENT_INSTANCE_KEY];
+    const component = (element as HTMLElement & { [COMPONENT_INSTANCE_KEY]?: BaseComponent<any> })[COMPONENT_INSTANCE_KEY];
     if (!component) {
       return null;
     }

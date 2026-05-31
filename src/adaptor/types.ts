@@ -2,7 +2,7 @@ import {BaseComponent} from '../core';
 
 export type ComponentCtor<
   TProps extends Record<string, any> = Record<string, any>,
-  TInstance extends BaseComponent = BaseComponent,
+  TInstance extends BaseComponent<any> = BaseComponent<any>,
 > = new (props?: TProps) => TInstance;
 
 export type DeclarativeRegistry = Record<string, ComponentCtor>;
@@ -123,7 +123,7 @@ type TopLevelNodeMap<
     ? {
         [K in Extract<keyof TChildren, string>]: NodeInstance<TRegistry, TChildren[K]>;
       }
-    : Record<string, BaseComponent>;
+    : Record<string, BaseComponent<any>>;
 
 export type InferTopLevelComponentMap<
   TRegistry extends DeclarativeRegistry,
@@ -135,7 +135,7 @@ export type InferDeclarativeComponentMap<
   TConfig extends PortableUiDeclarativeConfig<TRegistry>,
 > = InferDeclarativeChildrenMap<TRegistry, TConfig['children']>;
 
-export interface PortableUiAdapter<TComponentMap extends Record<string, BaseComponent> = Record<string, BaseComponent>> {
+export interface PortableUiAdapter<TComponentMap extends Record<string, BaseComponent<any>> = Record<string, BaseComponent<any>>> {
   id?: string;
   /** 组件实际挂载的根节点（Shadow 模式下为 Shadow 内的挂载 div，其他模式下为宿主容器本身） */
   root: HTMLElement;
@@ -146,7 +146,7 @@ export interface PortableUiAdapter<TComponentMap extends Record<string, BaseComp
    */
   shadowRoot: ShadowRoot | null;
   getComponent<TKey extends Extract<keyof TComponentMap, string>>(id: TKey): TComponentMap[TKey] | null;
-  getAllComponents(): BaseComponent[];
+  getAllComponents(): BaseComponent<any>[];
   destroy(): void;
 }
 

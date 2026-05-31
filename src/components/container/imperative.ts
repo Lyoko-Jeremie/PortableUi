@@ -27,7 +27,7 @@ import {Table} from '../complex/Table';
 import {Toast} from '../complex/Toast';
 import {TreeView} from '../complex/TreeView';
 
-export type AnyComponentCtor = new (props?: any) => BaseComponent;
+export type AnyComponentCtor = new (props?: any) => BaseComponent<any>;
 
 /**
  * 从组件构造器中提取 props 类型：

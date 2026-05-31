@@ -8,7 +8,7 @@ import type {ComponentConstructor, CustomComponentDefinition} from './Extensibil
 export function defineComponent<P extends ComponentProps = ComponentProps>(
   definition: CustomComponentDefinition<P>
 ): ComponentConstructor<P> {
-  return class DefinedComponent extends BaseComponent {
+  return class DefinedComponent extends BaseComponent<P> {
     constructor(props: P = {} as P) {
       const defaultProps = definition.defaultProps ?? {};
       super({...defaultProps, ...props});

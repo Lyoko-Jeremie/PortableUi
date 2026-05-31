@@ -3,7 +3,7 @@ import type {BaseComponent} from './BaseComponent';
 
 export interface MiddlewareContext {
   phase: LifecycleMethod;
-  component: BaseComponent;
+  component: BaseComponent<any>;
   payload?: unknown;
   cancel: boolean;
   metadata: Record<string, unknown>;
@@ -21,9 +21,9 @@ export type ExtensibilityHook =
   | 'cancelled'
   | 'error';
 
-export type HookHandler = (component: BaseComponent, payload?: unknown) => void;
+export type HookHandler = (component: BaseComponent<any>, payload?: unknown) => void;
 
-export type ComponentConstructor<P extends ComponentProps = ComponentProps> = new (props?: P) => BaseComponent;
+export type ComponentConstructor<P extends ComponentProps = ComponentProps> = new (props?: P) => BaseComponent<any>;
 
 export interface PluginAPI {
   registerComponent: <P extends ComponentProps>(name: string, component: ComponentConstructor<P>) => void;
@@ -42,7 +42,7 @@ export interface PortableUiPlugin {
 
 export interface CustomComponentDefinition<P extends ComponentProps = ComponentProps> {
   defaultProps?: Partial<P>;
-  render: (props: P, self: BaseComponent) => HTMLElement;
+  render: (props: P, self: BaseComponent<any>) => HTMLElement;
 }
 
 class MiddlewareManager {
@@ -91,7 +91,7 @@ class HookManager {
     };
   }
 
-  emit(hook: ExtensibilityHook, component: BaseComponent, payload?: unknown): void {
+  emit(hook: ExtensibilityHook, component: BaseComponent<any>, payload?: unknown): void {
     const handlers = this.hooks.get(hook);
     if (!handlers) {
       return;
@@ -122,7 +122,7 @@ class ComponentRegistry {
     return this.components.has(name);
   }
 
-  create<P extends ComponentProps>(name: string, props?: P): BaseComponent {
+  create<P extends ComponentProps>(name: string, props?: P): BaseComponent<any> {
     const component = this.components.get(name);
     if (!component) {
       throw new Error(`Component "${name}" is not registered`);
@@ -198,7 +198,7 @@ export class ExtensibilityManager {
 
   runLifecycle(
     phase: LifecycleMethod,
-    component: BaseComponent,
+    component: BaseComponent<any>,
     payload: unknown,
     operation: () => void
   ): void {
