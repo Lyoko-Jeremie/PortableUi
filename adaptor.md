@@ -243,5 +243,141 @@ void title;
 void agree;
 ```
 
+---
+
+## 绑定能力（Zone.js + alien-signals）
+
+新增统一绑定能力，声明式和命令式都支持：
+
+- 双语法并存：`props.bind` + 全局 `bindings`
+- 变更驱动：`markDirty(path?)`
+- 可选 `proxy`（默认关闭）
+- 回调双签名兼容：
+  - 旧签名：`(self, event, payload?)`
+  - 新签名：`(ctx, self, event, payload?)`
+- `alien-signals` 双形态支持：
+  - 直接 signal
+  - getter/setter 访问器
+
+### 声明式示例
+
+```typescript
+import {signal} from 'alien-signals';
+import {CreatePortableUi} from 'PortableUi';
+
+const host = document.getElementById('app');
+if (!host) {
+  throw new Error('Missing #app');
+}
+
+const nameSignal = signal('Alice');
+
+const ui = CreatePortableUi(host, {
+  model: {
+    form: {
+      name: 'Alice',
+    },
+    actions: {
+      save: (ctx) => {
+        console.log('saved name =', ctx.get('form.name'));
+      },
+    },
+  },
+  bindingOptions: {
+    flush: 'microtask',
+    proxy: false,
+    warn: true,
+  },
+  children: {
+    nameInput: {
+      type: 'Input',
+      props: {
+        id: 'nameInput',
+        bind: {
+          value: nameSignal,
+        },
+      },
+    },
+    saveBtn: {
+      type: 'Button',
+      props: {
+        id: 'saveBtn',
+        text: 'Save',
+        bind: {
+          onClick: 'actions.save',
+        },
+      },
+    },
+  },
+  bindings: {
+    nameInput: {
+      // 全局优先于 props.bind，冲突会输出开发期 warning
+      value: 'form.name',
+    },
+  },
+});
+
+ui.markDirty('form.name');
+```
+
+### 命令式示例
+
+```typescript
+import {App} from 'PortableUi';
+
+const host = document.getElementById('app');
+if (!host) {
+  throw new Error('Missing #app');
+}
+
+const app = new App(host, {
+  id: 'root',
+  model: {
+    form: {
+      email: 'alice@example.com',
+    },
+  },
+});
+
+const input = app.add.Input({
+  id: 'email',
+  bind: {
+    value: 'form.email',
+  },
+});
+
+app.add.Button({
+  id: 'apply',
+  text: 'Apply',
+  bind: {
+    onClick: (ctx) => {
+      ctx.set('form.email', 'carol@example.com');
+    },
+  },
+});
+
+void input;
+```
+
+### accessor 绑定示例
+
+```typescript
+const store = {draft: 'hello'};
+
+app.add.Input({
+  id: 'draft',
+  bind: {
+    value: {
+      get: () => store.draft,
+      set: (next: string) => {
+        store.draft = next;
+      },
+    },
+  },
+});
+```
+
+说明：只读 accessor（仅 `get`）绑定到可写字段时会在开发期警告并阻止写回。
+
 
 

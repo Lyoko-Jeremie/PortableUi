@@ -24,7 +24,8 @@ import {
   TextBox,
 } from '../components/basic';
 import {Container, Flex, Grid, GridItem, Group, type ContainerProps} from '../components/container';
-import type {DeclarativeRegistry, StyleIsolationConfig} from './types';
+import {BindingEngine} from './binding';
+import type {BindableComponentProps, BindingOptions, DeclarativeRegistry, StyleIsolationConfig} from './types';
 
 const PORTABLEUI_SCOPE_ATTR = 'data-portableui-root';
 const PORTABLEUI_MOUNT_ATTR = 'data-portableui-mount-root';
@@ -32,9 +33,11 @@ const PORTABLEUI_STYLE_ATTR = 'data-portableui-style';
 
 type AnyComponentCtor = new (props?: any) => BaseComponent;
 
-type ComponentPropsOf<TCtor extends AnyComponentCtor> = ConstructorParameters<TCtor>[0] extends undefined
+type RawComponentPropsOf<TCtor extends AnyComponentCtor> = ConstructorParameters<TCtor>[0] extends undefined
   ? Record<string, never>
   : NonNullable<ConstructorParameters<TCtor>[0]>;
+
+type ComponentPropsOf<TCtor extends AnyComponentCtor> = RawComponentPropsOf<TCtor> & BindableComponentProps<RawComponentPropsOf<TCtor>>;
 
 type GeneratedAddMethods<TRegistry extends DeclarativeRegistry> = {
   [K in Extract<keyof TRegistry, string>]: (
@@ -81,8 +84,11 @@ export type BuiltInAddMethods = {
 
 export interface AppOptions {
   id?: string;
-  rootProps?: Omit<ContainerProps, 'id'>;
+  rootProps?: Omit<ContainerProps, 'id'> & BindableComponentProps<Omit<ContainerProps, 'id'>>;
   styleIsolation?: StyleIsolationConfig;
+  model?: Record<string, any>;
+  bindings?: Record<string, Record<string, any>>;
+  bindingOptions?: BindingOptions;
 }
 
 export interface AppTabOptions extends Omit<ContainerProps, 'children'> {
@@ -145,7 +151,8 @@ class AppScopeBase<TRegistry extends DeclarativeRegistry = BuiltInDeclarativeReg
     protected mountPoint: HTMLElement,
     protected readonly components: Map<string, BaseComponent>,
     protected readonly mountOrder: BaseComponent[],
-    protected readonly registry: TRegistry
+    protected readonly registry: TRegistry,
+    protected readonly bindingEngine: BindingEngine<Record<string, any>>
   ) {
     this.add = {} as AppScopeAddMethods<TRegistry>;
     this.installGeneratedAddMethods();
@@ -164,11 +171,13 @@ class AppScopeBase<TRegistry extends DeclarativeRegistry = BuiltInDeclarativeReg
       throw new Error(`Failed to mount tab: ${options.id}`);
     }
 
-    return new AppScopeBase(tabElement, this.components, this.mountOrder, this.registry) as AppScope<TRegistry>;
+    return new AppScopeBase(tabElement, this.components, this.mountOrder, this.registry, this.bindingEngine) as AppScope<TRegistry>;
   }
 
   protected mountComponent<TCtor extends AnyComponentCtor>(ctor: TCtor, props: ComponentPropsOf<TCtor>): InstanceType<TCtor> {
-    const instance = new ctor(props);
+    const componentKey = props.id ?? `${ctor.name}_${this.mountOrder.length}`;
+    const prepared = this.bindingEngine.prepareComponentBindings(componentKey, props.id ?? componentKey, props as Record<string, any>);
+    const instance = new ctor(prepared.props);
     const id = instance.getId();
 
     if (id && this.components.has(id)) {
@@ -181,6 +190,7 @@ class AppScopeBase<TRegistry extends DeclarativeRegistry = BuiltInDeclarativeReg
       this.components.set(id, instance);
     }
 
+    this.bindingEngine.attachComponent(prepared, instance);
     this.mountOrder.push(instance);
     return instance as InstanceType<TCtor>;
   }
@@ -218,6 +228,7 @@ export type AppScope<TRegistry extends DeclarativeRegistry = BuiltInDeclarativeR
   AppScopeBase<TRegistry> & {add: AppScopeAddMethods<TRegistry>};
 
 export class App extends AppScopeBase<BuiltInDeclarativeRegistry> {
+  readonly boundModel: Record<string, any>;
   readonly root: HTMLElement;
   private readonly host: HTMLElement;
 
@@ -229,9 +240,16 @@ export class App extends AppScopeBase<BuiltInDeclarativeRegistry> {
     const components = new Map<string, BaseComponent>();
     const mountOrder: BaseComponent[] = [];
     const mountRoot = resolveMountRoot(container, options.styleIsolation);
-    super(mountRoot, components, mountOrder, builtInComponentRegistry);
+    const bindingEngine = new BindingEngine<Record<string, any>>({
+      ownerType: 'app',
+      ...(options.model ? {model: options.model} : {}),
+      ...(options.bindings ? {bindings: options.bindings} : {}),
+      ...(options.bindingOptions ? {options: options.bindingOptions} : {}),
+    });
+    super(mountRoot, components, mountOrder, builtInComponentRegistry, bindingEngine);
 
     this.host = container;
+    this.boundModel = bindingEngine.getModel();
 
     const rootContainer = new Container({
       direction: 'vertical',
@@ -259,6 +277,15 @@ export class App extends AppScopeBase<BuiltInDeclarativeRegistry> {
 
     this.root = rootElement;
     this.mountPoint = this.root;
+    this.bindingEngine.setOwner(this);
+  }
+
+  getModel<TModel extends Record<string, any> = Record<string, any>>(): TModel {
+    return this.bindingEngine.getModel() as TModel;
+  }
+
+  markDirty(path?: string): void {
+    this.bindingEngine.markDirty(path);
   }
 
   getComponent<TComponent extends BaseComponent = BaseComponent>(id: string): TComponent | null {
@@ -293,6 +320,7 @@ export class App extends AppScopeBase<BuiltInDeclarativeRegistry> {
       }
 
       const id = component.getId();
+      this.bindingEngine.detachComponent(id);
       component.unmount();
       if (id) {
         this.components.delete(id);
@@ -300,6 +328,7 @@ export class App extends AppScopeBase<BuiltInDeclarativeRegistry> {
     }
 
     this.mountOrder.length = 0;
+    this.bindingEngine.destroy();
   }
 }
 

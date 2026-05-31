@@ -7,6 +7,97 @@ export type ComponentCtor<
 
 export type DeclarativeRegistry = Record<string, ComponentCtor>;
 
+type KnownKeys<T> = {
+  [K in keyof T]: string extends K
+    ? never
+    : number extends K
+      ? never
+      : symbol extends K
+        ? never
+        : K;
+}[keyof T];
+
+type KnownProps<T> = Pick<T, KnownKeys<T>>;
+
+export type PortableUiStrictProps<T> = KnownProps<T>;
+
+export type PathBinding = string;
+
+export type PortableUiReadableSignal<T = any> = () => T;
+
+export interface PortableUiWritableSignal<T = any> {
+  (): T;
+
+  (value: T): void;
+}
+
+export interface PortableUiReadableAccessor<T = any> {
+  get: () => T;
+  subscribe?: (notify: () => void) => () => void;
+}
+
+export interface PortableUiWritableAccessor<T = any> extends PortableUiReadableAccessor<T> {
+  set: (value: T) => void;
+}
+
+export type PortableUiReadableBindingSource<T = any> =
+  | PathBinding
+  | PortableUiReadableSignal<T>
+  | PortableUiReadableAccessor<T>;
+
+export type PortableUiWritableBindingSource<T = any> =
+  | PathBinding
+  | PortableUiWritableSignal<T>
+  | PortableUiWritableAccessor<T>;
+
+export type PortableUiCallback = (...args: any[]) => unknown;
+
+export type PortableUiCallbackSource = PathBinding | PortableUiCallback;
+
+export type PortableUiWritableBindingField = 'value' | 'checked' | 'valuePath' | 'activeTabId' | 'selectedId';
+
+type BindingSourceForProp<TPropName extends string, TValue> = TPropName extends `on${string}`
+  ? PortableUiCallbackSource
+  : TPropName extends PortableUiWritableBindingField
+    ? PortableUiWritableBindingSource<TValue>
+    : PortableUiReadableBindingSource<TValue>;
+
+export type PortableUiBindingMap<TProps extends Record<string, any> = Record<string, any>> = {
+  [K in Extract<keyof KnownProps<Omit<TProps, 'bind'>>, string>]?: BindingSourceForProp<K, Omit<TProps, 'bind'>[K]>;
+};
+
+export interface BindableComponentProps<TProps extends Record<string, any> = Record<string, any>> {
+  bind?: PortableUiBindingMap<TProps>;
+}
+
+export type PortableUiBindingsMap = Record<string, PortableUiBindingMap<Record<string, any>>>;
+
+export type BindingFlushMode = 'microtask' | 'sync';
+
+export interface BindingOptions {
+  flush?: BindingFlushMode;
+  proxy?: boolean;
+  warn?: boolean;
+  strict?: boolean;
+}
+
+export interface PortableUiBindingHost<TModel extends Record<string, any> = Record<string, any>> {
+  boundModel: TModel;
+  getModel<TResolvedModel extends TModel = TModel>(): TResolvedModel;
+  markDirty(path?: string): void;
+}
+
+export interface BindingContext<TModel extends Record<string, any> = Record<string, any>> {
+  model: TModel;
+  component: BaseComponent<any>;
+  adapter?: PortableUiBindingHost<TModel>;
+  app?: PortableUiBindingHost<TModel>;
+  markDirty: (path?: string) => void;
+  get: (path: string) => any;
+  set: (path: string, value: any) => void;
+  warn: (code: string, detail?: Record<string, any>) => void;
+}
+
 type ConstructorProps<TCtor extends ComponentCtor> = ConstructorParameters<TCtor>[0] extends undefined
   ? Record<string, never>
   : NonNullable<ConstructorParameters<TCtor>[0]>;
@@ -15,8 +106,8 @@ type DeclarativeProps<
   TRegistry extends DeclarativeRegistry,
   TType extends Extract<keyof TRegistry, string>,
 > = TType extends 'Button'
-  ? ConstructorProps<TRegistry[TType]> & {label?: string}
-  : ConstructorProps<TRegistry[TType]>;
+  ? ConstructorProps<TRegistry[TType]> & BindableComponentProps<ConstructorProps<TRegistry[TType]>> & {label?: string}
+  : ConstructorProps<TRegistry[TType]> & BindableComponentProps<ConstructorProps<TRegistry[TType]>>;
 
 export type DeclarativeComponentNode<
   TRegistry extends DeclarativeRegistry,
@@ -46,6 +137,9 @@ export interface PortableUiDeclarativeConfig<TRegistry extends DeclarativeRegist
   id?: string;
   children: DeclarativeChildren<TRegistry>;
   styleIsolation?: StyleIsolationConfig;
+  model?: Record<string, any>;
+  bindings?: PortableUiBindingsMap;
+  bindingOptions?: BindingOptions;
 }
 
 type ResolveId<TId, TFallback extends string> = TId extends string
@@ -135,7 +229,10 @@ export type InferDeclarativeComponentMap<
   TConfig extends PortableUiDeclarativeConfig<TRegistry>,
 > = InferDeclarativeChildrenMap<TRegistry, TConfig['children']>;
 
-export interface PortableUiAdapter<TComponentMap extends Record<string, BaseComponent<any>> = Record<string, BaseComponent<any>>> {
+export interface PortableUiAdapter<
+  TComponentMap extends Record<string, BaseComponent<any>> = Record<string, BaseComponent<any>>,
+  TModel extends Record<string, any> = Record<string, any>,
+> extends PortableUiBindingHost<TModel> {
   id?: string;
   /** 组件实际挂载的根节点（Shadow 模式下为 Shadow 内的挂载 div，其他模式下为宿主容器本身） */
   root: HTMLElement;

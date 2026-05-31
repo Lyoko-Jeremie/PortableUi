@@ -1,10 +1,15 @@
+import {computed, signal} from 'alien-signals';
+
 import {
+  App,
   BaseComponent,
   Button,
   CreatePortableUi,
   Input,
+  type PortableUiBindingMap,
   createPortableUiFactory,
   type BuiltInDeclarativeRegistry,
+  type BindingContext,
   type PortableUiDeclarativeConfig,
 } from '../../src';
 
@@ -85,6 +90,66 @@ describe('CreatePortableUi typing', () => {
     const wrongByType: Input | null = ui.getComponent('button1');
     void wrongByType;
   });
+
+  it('accepts alien-signals writable signal and accessor bindings', () => {
+    const nameSignal = signal('Alice');
+    const state = {name: 'Bob'};
+
+    const config: PortableUiDeclarativeConfig<BuiltInDeclarativeRegistry> = {
+      children: {
+        signalInput: {
+          type: 'Input',
+          props: {
+            bind: {
+              value: nameSignal,
+            },
+          },
+        },
+        accessorInput: {
+          type: 'Input',
+          props: {
+            bind: {
+              value: {
+                get: () => state.name,
+                set: (value: string) => {
+                  state.name = value;
+                },
+              },
+            },
+          },
+        },
+        boundButton: {
+          type: 'Button',
+          props: {
+            text: 'Save',
+            bind: {
+              onClick: (ctx: BindingContext) => {
+                ctx.set('form.name', 'Charlie');
+              },
+            },
+          },
+        },
+      },
+    };
+
+    expect(config.children).toBeDefined();
+  });
+
+  it('supports imperative add.* binding typings', () => {
+    const host = document.createElement('div');
+    const app = new App(host, {id: 'root'});
+    const draftSignal = signal('draft');
+
+    const typedInput = app.add.Input({
+      id: 'draftInput',
+      bind: {
+        value: draftSignal,
+      },
+    });
+
+    const input: Input = typedInput;
+    void input;
+  });
 });
 
 const validBuiltInConfig: PortableUiDeclarativeConfig<BuiltInDeclarativeRegistry> = {
@@ -125,4 +190,73 @@ const invalidPropsConfig: PortableUiDeclarativeConfig<BuiltInDeclarativeRegistry
 };
 
 void invalidPropsConfig;
+
+const stateForBindingSamples = {name: 'sample'};
+const writableNameSignal = signal('sample');
+const readonlyNameSignal = computed(() => stateForBindingSamples.name);
+
+const validSignalBindingConfig: PortableUiDeclarativeConfig<BuiltInDeclarativeRegistry> = {
+  children: {
+    input1: {
+      type: 'Input',
+      props: {
+        bind: {
+          value: writableNameSignal,
+        },
+      },
+    },
+  },
+};
+
+void validSignalBindingConfig;
+
+const validAccessorBindingConfig: PortableUiDeclarativeConfig<BuiltInDeclarativeRegistry> = {
+  children: {
+    input1: {
+      type: 'Input',
+      props: {
+        bind: {
+          value: {
+            get: () => stateForBindingSamples.name,
+            set: (value: string) => {
+              stateForBindingSamples.name = value;
+            },
+          },
+        },
+      },
+    },
+  },
+};
+
+void validAccessorBindingConfig;
+
+interface StrictInputBindingProps {
+  value?: string;
+  onChange?: (self: Input, event: Event, value: string) => void;
+}
+
+const validInputBindingMap: PortableUiBindingMap<StrictInputBindingProps> = {
+  value: writableNameSignal,
+  onChange: (ctx: BindingContext) => {
+    ctx.markDirty('form.name');
+  },
+};
+
+void validInputBindingMap;
+
+const invalidReadonlyAccessorBindingMap: PortableUiBindingMap<StrictInputBindingProps> = {
+  // @ts-expect-error writable field "value" requires a writable accessor.
+  value: {
+    get: () => stateForBindingSamples.name,
+  },
+};
+
+void invalidReadonlyAccessorBindingMap;
+
+const invalidReadonlySignalBindingMap: PortableUiBindingMap<StrictInputBindingProps> = {
+  // Computed signals are read-only at runtime; compile-time cannot fully distinguish writable overloads.
+  value: readonlyNameSignal,
+};
+
+void invalidReadonlySignalBindingMap;
 

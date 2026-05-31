@@ -308,6 +308,14 @@ CreatePortableUi(container, config, registry?) => PortableUiAdapter
 interface PortableUiDeclarativeConfig<TRegistry> {
   id?: string;
   children: DeclarativeChildren<TRegistry>; // 对象或数组
+  model?: Record<string, any>;             // 绑定模型
+  bindings?: Record<string, Record<string, any>>; // 全局绑定表，按 key/id 组织
+  bindingOptions?: {
+    flush?: 'microtask' | 'sync';
+    proxy?: boolean; // 默认 false
+    warn?: boolean;  // 默认 true
+    strict?: boolean;
+  };
   styleIsolation?: {
     mode?: 'none' | 'scoped' | 'shadow'; // 默认 shadow
     styles?: string;
@@ -323,6 +331,9 @@ interface PortableUiDeclarativeConfig<TRegistry> {
 - `getComponent(id)`
 - `getAllComponents()`
 - `destroy()`
+- `boundModel: Record<string, any>`（绑定模型引用，proxy=true 时为代理对象）
+- `getModel<T>()`
+- `markDirty(path?)`
 
 最小示例：
 
@@ -337,6 +348,7 @@ const adapter = CreatePortableUi(container, {
 });
 
 adapter.getComponent('submitBtn');
+adapter.markDirty('form.name');
 ```
 
 补充：
@@ -344,6 +356,56 @@ adapter.getComponent('submitBtn');
 - 对 `Button` 支持 `label -> text` 兼容映射。
 - `registerDeclarativeComponent(type, ctor)` 可扩展内建声明式组件表。
 - `createPortableUiFactory(registry)` 可生成绑定自定义 registry 的工厂函数。
+- 声明式绑定支持两种写法并存：
+  - 局部：`props.bind`
+  - 全局：`config.bindings[keyOrId]`
+  - 冲突时全局覆盖局部，并输出开发期警告。
+
+声明式绑定示例（含 `alien-signals`）：
+
+```ts
+import {signal} from 'alien-signals';
+
+const nameSig = signal('Alice');
+
+const adapter = CreatePortableUi(container, {
+  model: {
+    form: {name: 'Alice'},
+    actions: {
+      save: (ctx) => {
+        console.log(ctx.get('form.name'));
+      },
+    },
+  },
+  children: {
+    nameInput: {
+      type: 'Input',
+      props: {
+        bind: {
+          value: nameSig,
+        },
+      },
+    },
+    saveBtn: {
+      type: 'Button',
+      props: {
+        text: 'Save',
+        bind: {
+          onClick: 'actions.save',
+        },
+      },
+    },
+  },
+  bindings: {
+    nameInput: {
+      // 全局绑定优先于 props.bind（会告警）
+      value: 'form.name',
+    },
+  },
+});
+
+adapter.markDirty('form.name');
+```
 
 ## 4.2 命令式：`App`
 
@@ -352,6 +414,8 @@ const app = new App(container, {
   id: 'root',
   rootProps: { direction: 'vertical', gap: 8 },
   styleIsolation: { mode: 'shadow' },
+  model: { form: { email: '' } },
+  bindingOptions: { flush: 'microtask', proxy: false },
 });
 
 const btn = app.addButton({ id: 'okBtn', text: 'OK' });
@@ -364,6 +428,54 @@ tabScope.addInput({ id: 'name' });
 - `App` 自动生成 `addXxx(props)`（来自内建组件 registry）。
 - `addTab(options)` 返回子 `AppScope`，用于分区追加组件。
 - `getComponent(id)` / `getAllComponents()` / `destroy()` / `getShadowRoot()`。
+- `boundModel` / `getModel<T>()` / `markDirty(path?)`。
+
+命令式绑定示例（路径 + accessor + 双签名回调）：
+
+```ts
+const app = new App(container, {
+  id: 'root',
+  model: {
+    form: {email: 'a@example.com'},
+  },
+});
+
+const input = app.add.Input({
+  id: 'email',
+  bind: {
+    value: 'form.email',
+  },
+});
+
+app.add.Button({
+  id: 'save',
+  text: 'Save',
+  bind: {
+    // 新签名：ctx + 旧参数
+    onClick: (ctx, self, event) => {
+      ctx.set('form.email', 'saved@example.com');
+    },
+  },
+});
+
+void input;
+```
+
+`alien-signals` 绑定输入形态：
+
+- 直接 signal：`value: mySignal`
+- getter/setter：
+
+```ts
+value: {
+  get: () => store.name,
+  set: (next) => {
+    store.name = next;
+  },
+}
+```
+
+注：只读 computed 在类型层不能完全区分可写 signal，运行时会阻止写回并给出开发期警告。
 
 ---
 

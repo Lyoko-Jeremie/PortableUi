@@ -1,8 +1,13 @@
 export {App} from './App';
-export type {AppOptions, AppScope, AppTabOptions, BuiltInAddMethods, BuiltInDeclarativeRegistry} from './App';
+export type {AppOptions, AppScope, AppTabOptions, BuiltInAddMethods} from './App';
 
 export {CreatePortableUi, createPortableUiFactory, registerDeclarativeComponent} from './CreatePortableUi';
+export type {BuiltInDeclarativeRegistry} from './CreatePortableUi';
 export type {
+  BindableComponentProps,
+  BindingContext,
+  BindingFlushMode,
+  BindingOptions,
   ComponentCtor,
   DeclarativeChildren,
   DeclarativeComponentNode,
@@ -11,8 +16,22 @@ export type {
   InferDeclarativeChildrenMap,
   InferDeclarativeComponentMap,
   InferTopLevelComponentMap,
+  PathBinding,
+  PortableUiBindingHost,
+  PortableUiBindingMap,
+  PortableUiBindingsMap,
   PortableUiAdapter,
+  PortableUiCallback,
+  PortableUiCallbackSource,
   PortableUiDeclarativeConfig,
+  PortableUiReadableAccessor,
+  PortableUiReadableBindingSource,
+  PortableUiReadableSignal,
+  PortableUiStrictProps,
   StyleIsolationConfig,
   StyleIsolationMode,
+  PortableUiWritableAccessor,
+  PortableUiWritableBindingField,
+  PortableUiWritableBindingSource,
+  PortableUiWritableSignal,
 } from './types';

@@ -1,3 +1,6 @@
+import {signal} from 'alien-signals';
+
+import type {BindingContext} from '../../src/adaptor';
 import {App, Button, Input} from '../../src';
 
 /** Query inside PortableUi's Shadow DOM on a host element */
@@ -7,6 +10,11 @@ function shadowQ(host: HTMLElement, selector: string): Element | null {
 
 describe('App imperative adaptor', () => {
   let host: HTMLElement;
+
+  const flushBindings = async (): Promise<void> => {
+    await Promise.resolve();
+    await Promise.resolve();
+  };
 
   beforeEach(() => {
     host = document.createElement('div');
@@ -69,6 +77,98 @@ describe('App imperative adaptor', () => {
     expect(shadowQ(host, '#btn1')).toBeNull();
     expect(shadowQ(host, '#tab1')).toBeNull();
     expect(app.getAllComponents()).toHaveLength(0);
+  });
+
+  it('supports imperative path bindings and callback context helpers', async () => {
+    const app = new App(host, {
+      id: 'root',
+      model: {
+        form: {
+          email: 'alice@example.com',
+        },
+      },
+    });
+
+    const input = app.add.Input({
+      id: 'email',
+      bind: {
+        value: 'form.email',
+      },
+    });
+
+    const button = app.add.Button({
+      id: 'apply-email',
+      text: 'Apply',
+      bind: {
+        onClick: (ctx: BindingContext) => {
+          ctx.set('form.email', 'carol@example.com');
+        },
+      },
+    });
+
+    expect(input.getValue()).toBe('alice@example.com');
+
+    const inputElement = input.getElement() as HTMLInputElement | null;
+    const buttonElement = button.getElement();
+    if (!inputElement || !buttonElement) {
+      throw new Error('Expected imperative components to mount.');
+    }
+
+    inputElement.value = 'bob@example.com';
+    inputElement.dispatchEvent(new Event('input', {bubbles: true}));
+    expect(app.getModel<{form: {email: string}}>().form.email).toBe('bob@example.com');
+
+    buttonElement.dispatchEvent(new MouseEvent('click', {bubbles: true}));
+    await flushBindings();
+    expect(input.getValue()).toBe('carol@example.com');
+
+    const model = app.getModel<{form: {email: string}}>();
+    model.form.email = 'dana@example.com';
+    app.markDirty('form.email');
+    await flushBindings();
+    expect(input.getValue()).toBe('dana@example.com');
+    expect(app.boundModel).toBe(model);
+  });
+
+  it('supports signal and accessor bindings in imperative mode', async () => {
+    const nameSignal = signal('Alpha');
+    const store = {draft: 'Beta'};
+
+    const app = new App(host, {id: 'root'});
+    const signalInput = app.add.Input({
+      id: 'signal-input',
+      bind: {
+        value: nameSignal,
+      },
+    });
+    const accessorInput = app.add.Input({
+      id: 'accessor-input',
+      bind: {
+        value: {
+          get: () => store.draft,
+          set: (value: string) => {
+            store.draft = value;
+          },
+        },
+      },
+    });
+
+    expect(signalInput.getValue()).toBe('Alpha');
+    expect(accessorInput.getValue()).toBe('Beta');
+
+    nameSignal('Gamma');
+    app.markDirty();
+    await flushBindings();
+    expect(signalInput.getValue()).toBe('Gamma');
+
+    const accessorElement = accessorInput.getElement() as HTMLInputElement | null;
+    if (!accessorElement) {
+      throw new Error('Expected accessor input element.');
+    }
+
+    accessorElement.value = 'Delta';
+    accessorElement.dispatchEvent(new Event('input', {bubbles: true}));
+    expect(store.draft).toBe('Delta');
   });
 });
 

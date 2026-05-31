@@ -1,8 +1,15 @@
-import {CreatePortableUi, createPortableUiFactory, type PortableUiDeclarativeConfig} from '../../src/adaptor';
-import {BaseComponent, Button, Container} from '../../src';
+import {signal} from 'alien-signals';
+
+import {CreatePortableUi, createPortableUiFactory, type BindingContext, type PortableUiDeclarativeConfig} from '../../src/adaptor';
+import {BaseComponent, Button, Container, Input} from '../../src';
 
 describe('CreatePortableUi', () => {
   let host: HTMLElement;
+
+  const flushBindings = async (): Promise<void> => {
+    await Promise.resolve();
+    await Promise.resolve();
+  };
 
   beforeEach(() => {
     host = document.createElement('div');
@@ -131,6 +138,137 @@ describe('CreatePortableUi', () => {
         },
       });
     }).toThrow('Duplicate component id: same-id');
+  });
+
+  it('supports path-based two-way binding and callback context', async () => {
+    const model = {
+      form: {
+        name: 'Alice',
+      },
+    };
+
+    const ui = CreatePortableUi(host, {
+      model,
+      children: {
+        nameInput: {
+          type: 'Input',
+          props: {
+            id: 'nameInput',
+            bind: {
+              value: 'form.name',
+            },
+          },
+        },
+        saveButton: {
+          type: 'Button',
+          props: {
+            id: 'saveButton',
+            text: 'Save',
+            bind: {
+              onClick: (ctx: BindingContext) => {
+                ctx.set('form.name', 'Carol');
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const input = ui.getComponent('nameInput') as Input | null;
+    const button = ui.getComponent('saveButton') as Button | null;
+    expect(input?.getValue()).toBe('Alice');
+    expect(ui.boundModel).toBe(model);
+
+    const inputElement = input?.getElement() as HTMLInputElement | null;
+    expect(inputElement).toBeTruthy();
+    if (!input || !inputElement || !button?.getElement()) {
+      throw new Error('Expected input and button to be mounted.');
+    }
+
+    inputElement.value = 'Bob';
+    inputElement.dispatchEvent(new Event('input', {bubbles: true}));
+
+    expect(model.form.name).toBe('Bob');
+
+    button.getElement()?.dispatchEvent(new MouseEvent('click', {bubbles: true}));
+    await flushBindings();
+
+    expect(model.form.name).toBe('Carol');
+    expect(input.getValue()).toBe('Carol');
+
+    model.form.name = 'Dana';
+    ui.markDirty('form.name');
+    await flushBindings();
+
+    expect(input.getValue()).toBe('Dana');
+  });
+
+  it('supports alien-signals bindings and global binding override warnings', async () => {
+    const nameSignal = signal('Signal Alice');
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    const ui = CreatePortableUi(host, {
+      model: {
+        form: {
+          local: 'Local',
+        },
+      },
+      bindings: {
+        signalInput: {
+          value: nameSignal,
+        },
+        overrideInput: {
+          value: 'form.global',
+        },
+      },
+      children: {
+        signalInput: {
+          type: 'Input',
+          props: {
+            id: 'signalInput',
+          },
+        },
+        overrideInput: {
+          type: 'Input',
+          props: {
+            id: 'overrideInput',
+            bind: {
+              value: 'form.local',
+            },
+          },
+        },
+      },
+    });
+
+    const signalInput = ui.getComponent('signalInput') as Input | null;
+    const overrideInput = ui.getComponent('overrideInput') as Input | null;
+
+    const model = ui.getModel<{form: {global: string; local: string}}>();
+    model.form.global = 'Global';
+    ui.markDirty('form.global');
+    await flushBindings();
+
+    expect(signalInput?.getValue()).toBe('Signal Alice');
+    expect(overrideInput?.getValue()).toBe('Global');
+    expect(warnSpy).toHaveBeenCalledWith(
+      '[PortableUi Binding Warn][BINDING_CONFLICT]',
+      expect.objectContaining({componentId: 'overrideInput', field: 'value'})
+    );
+
+    nameSignal('Signal Bob');
+    await flushBindings();
+    expect(signalInput?.getValue()).toBe('Signal Bob');
+
+    const signalElement = signalInput?.getElement() as HTMLInputElement | null;
+    if (!signalElement) {
+      throw new Error('Expected signal input element.');
+    }
+
+    signalElement.value = 'Signal Carol';
+    signalElement.dispatchEvent(new Event('input', {bubbles: true}));
+    expect(nameSignal()).toBe('Signal Carol');
+
+    warnSpy.mockRestore();
   });
 });
 

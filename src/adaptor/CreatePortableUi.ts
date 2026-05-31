@@ -1,5 +1,6 @@
 import {BaseComponent} from '../core';
 import {
+  BindingOptions,
   ComponentCtor,
   DeclarativeChildren,
   DeclarativeNodeUnion,
@@ -8,6 +9,7 @@ import {
   PortableUiAdapter,
   StyleIsolationConfig,
 } from './types';
+import {BindingEngine} from './binding';
 import {
   Button,
   Canvas,
@@ -38,6 +40,9 @@ interface PortableUiCreateConfig<TChildren> {
   id?: string;
   children: TChildren;
   styleIsolation?: StyleIsolationConfig;
+  model?: Record<string, any>;
+  bindings?: Record<string, Record<string, any>>;
+  bindingOptions?: BindingOptions;
 }
 
 const PORTABLEUI_SCOPE_ATTR = 'data-portableui-root';
@@ -108,15 +113,17 @@ function mountNode<TRegistry extends DeclarativeRegistry>(
   key: string,
   node: DeclarativeNodeUnion<TRegistry>,
   parent: HTMLElement,
-  components: Map<string, BaseComponent>
+  components: Map<string, BaseComponent>,
+  bindingEngine: BindingEngine<Record<string, any>>
 ): void {
   const ctor = registry[node.type];
   if (!ctor) {
     throw new Error(`Unknown component type: ${node.type}`);
   }
 
-  const props = normalizeProps(node.type, node.props ?? {}, key);
-  const instance = new ctor(props);
+  const normalizedProps = normalizeProps(node.type, node.props ?? {}, key);
+  const prepared = bindingEngine.prepareComponentBindings(key, normalizedProps.id ?? key, normalizedProps);
+  const instance = new ctor(prepared.props);
   const id = instance.getId();
 
   if (id && components.has(id)) {
@@ -129,13 +136,15 @@ function mountNode<TRegistry extends DeclarativeRegistry>(
     components.set(id, instance);
   }
 
+  bindingEngine.attachComponent(prepared, instance);
+
   const element = instance.getElement();
   if (!element) {
     return;
   }
 
   for (const [childKey, childNode] of toEntries(node.children)) {
-    mountNode(registry, childKey, childNode, element, components);
+    mountNode(registry, childKey, childNode, element, components, bindingEngine);
   }
 }
 
@@ -206,12 +215,18 @@ export function CreatePortableUi(
   container: HTMLElement,
   config: PortableUiCreateConfig<unknown>,
   registry?: DeclarativeRegistry
-): PortableUiAdapter<Record<string, BaseComponent>> {
+): PortableUiAdapter<Record<string, BaseComponent>, Record<string, any>> {
   if (!container) {
     throw new Error('CreatePortableUi requires a valid container element.');
   }
 
   const components = new Map<string, BaseComponent>();
+  const bindingEngine = new BindingEngine<Record<string, any>>({
+    ownerType: 'adapter',
+    ...(config.model ? {model: config.model} : {}),
+    ...(config.bindings ? {bindings: config.bindings} : {}),
+    ...(config.bindingOptions ? {options: config.bindingOptions} : {}),
+  });
 
   if (config.id) {
     container.setAttribute('data-portableui-id', config.id);
@@ -222,13 +237,27 @@ export function CreatePortableUi(
   const effectiveRegistry = (registry ?? builtInComponentRegistry) as DeclarativeRegistry;
 
   for (const [key, node] of toEntries(config.children as DeclarativeChildren<DeclarativeRegistry>)) {
-    mountNode(effectiveRegistry, key, node as DeclarativeNodeUnion<DeclarativeRegistry>, mountRoot, components);
+    mountNode(
+      effectiveRegistry,
+      key,
+      node as DeclarativeNodeUnion<DeclarativeRegistry>,
+      mountRoot,
+      components,
+      bindingEngine
+    );
   }
 
-  const adapter: PortableUiAdapter<Record<string, BaseComponent>> = {
+  const adapter: PortableUiAdapter<Record<string, BaseComponent>, Record<string, any>> = {
+    boundModel: bindingEngine.getModel(),
     root: mountRoot,
     // Shadow 模式下暴露 shadowRoot，方便使用者用原生 DOM API 查询 Shadow 内元素
     shadowRoot: container.shadowRoot ?? null,
+    getModel<TResolvedModel extends Record<string, any> = Record<string, any>>(): TResolvedModel {
+      return bindingEngine.getModel() as TResolvedModel;
+    },
+    markDirty(path?: string): void {
+      bindingEngine.markDirty(path);
+    },
     getComponent<TKey extends string>(id: TKey): BaseComponent | null {
       return components.get(id) ?? null;
     },
@@ -240,12 +269,16 @@ export function CreatePortableUi(
       for (let i = instances.length - 1; i >= 0; i -= 1) {
         const instance = instances[i];
         if (instance) {
+          bindingEngine.detachComponent(instance.getId());
           instance.unmount();
         }
       }
       components.clear();
+      bindingEngine.destroy();
     },
   };
+
+  bindingEngine.setOwner(adapter);
 
   if (config.id) {
     adapter.id = config.id;
