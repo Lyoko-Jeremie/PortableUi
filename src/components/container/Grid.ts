@@ -45,6 +45,9 @@ export interface GridItemProps extends ComponentProps {
 }
 
 export class GridItem extends BaseComponent {
+  // Explicitly declare generated imperative namespace for stable type inference.
+  declare readonly add: BuiltInContainerWithNestedAddMethods['add'];
+
   /** 子组件集合 */
   private children: (BaseComponent | HTMLElement)[] = [];
 

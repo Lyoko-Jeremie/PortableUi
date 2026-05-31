@@ -45,6 +45,9 @@ export interface ContainerProps extends ComponentProps {
 }
 
 export class Container extends BaseComponent {
+  // Explicitly declare generated imperative namespace for stronger downstream typing.
+  declare readonly add: BuiltInContainerWithNestedAddMethods['add'];
+
   /** 子组件集合 */
   private children: (BaseComponent | HTMLElement)[] = [];
 
