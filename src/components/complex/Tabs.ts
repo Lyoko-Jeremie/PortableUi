@@ -3,10 +3,10 @@ import {ComponentElement, ComponentProps} from '../../types';
 import {applyCommonElementProps} from '../basic/internal';
 import type {Container} from '../container/Container';
 
-export interface TabItem {
+export interface TabItem<C extends Container = Container> {
   id: string;
   title: string;
-  content: Container;
+  content: C;
   disabled?: boolean;
 }
 
@@ -82,10 +82,11 @@ export class Tabs extends BaseComponent {
     this.update({tabs});
   }
 
-  appendTab(tab: TabItem) {
+  appendTab<C extends Container = Container>(tab: TabItem<C>): C {
     const props = this.props as TabsProps;
     const tabs = [...(props.tabs ?? []), tab];
     this.update({tabs});
+    return tab.content;
   }
 
   setActiveTab(tabId: string): void {
