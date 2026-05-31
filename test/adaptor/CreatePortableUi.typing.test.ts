@@ -6,6 +6,7 @@ import {
   Button,
   CreatePortableUi,
   Input,
+  type PathBinding,
   type PortableUiBindingMap,
   createPortableUiFactory,
   type BuiltInDeclarativeRegistry,
@@ -14,6 +15,89 @@ import {
 } from '../../src';
 
 describe('CreatePortableUi typing', () => {
+  it('infers bind dot-paths from model structure', () => {
+    const model = {
+      form: {
+        profile: {
+          name: 'Alice',
+        },
+      },
+      actions: {
+        save: (_ctx: BindingContext) => {
+        },
+      },
+    };
+
+    const validConfig: PortableUiDeclarativeConfig<BuiltInDeclarativeRegistry, typeof model> = {
+      model,
+      children: {
+        nameInput: {
+          type: 'Input',
+          bind: {
+            value: 'form.profile.name',
+          },
+        },
+        saveBtn: {
+          type: 'Button',
+          props: {
+            text: 'Save',
+          },
+          bind: {
+            onClick: 'actions.save',
+          },
+        },
+      },
+    };
+
+    expect(validConfig.children).toBeDefined();
+  });
+
+  it('rejects unknown bind paths against model', () => {
+    const model = {
+      form: {
+        profile: {
+          name: 'Alice',
+        },
+      },
+      actions: {
+        save: (_ctx: BindingContext) => {
+        },
+      },
+    };
+
+    const invalidConfig: PortableUiDeclarativeConfig<BuiltInDeclarativeRegistry, typeof model> = {
+      model,
+      children: {
+        nameInput: {
+          type: 'Input',
+          bind: {
+            // @ts-expect-error "form.profile.nickname" does not exist in model paths.
+            value: 'form.profile.nickname',
+          },
+        },
+        saveBtn: {
+          type: 'Button',
+          props: {
+            text: 'Save',
+          },
+          bind: {
+            // @ts-expect-error callback path must resolve to a function field.
+            onClick: 'actions.unknown',
+          },
+        },
+      },
+    };
+
+    type ModelPaths = PathBinding<typeof model>;
+    const validPath: ModelPaths = 'form.profile.name';
+    void validPath;
+    // @ts-expect-error invalid path should be rejected by dot-path type.
+    const invalidPath: ModelPaths = 'form.profile.nickname';
+    void invalidPath;
+
+    expect(invalidConfig.children).toBeDefined();
+  });
+
   it('keeps declarative config strongly typed at compile time', () => {
     const validConfig: PortableUiDeclarativeConfig<BuiltInDeclarativeRegistry> = {
       children: {
@@ -32,7 +116,16 @@ describe('CreatePortableUi typing', () => {
   });
 
   it('enforces custom registry keys at compile time', () => {
+    interface BadgeProps {
+      id?: string;
+      text?: string;
+    }
+
     class Badge extends BaseComponent {
+      constructor(props: BadgeProps = {}) {
+        super(props);
+      }
+
       protected render(): HTMLElement {
         const el = document.createElement('span');
         el.textContent = String(this.getProps().text ?? '');
@@ -140,14 +233,13 @@ describe('CreatePortableUi typing', () => {
     const app = new App(host, {id: 'root'});
     const draftSignal = signal('draft');
 
-    const typedInput = app.add.Input({
+    const input: Input = app.add.Input({
       id: 'draftInput',
       bind: {
         value: draftSignal,
       },
     });
 
-    const input: Input = typedInput;
     void input;
   });
 });

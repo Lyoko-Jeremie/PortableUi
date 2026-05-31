@@ -357,9 +357,11 @@ adapter.markDirty('form.name');
 - `registerDeclarativeComponent(type, ctor)` 可扩展内建声明式组件表。
 - `createPortableUiFactory(registry)` 可生成绑定自定义 registry 的工厂函数。
 - 声明式绑定支持两种写法并存：
-  - 局部：`props.bind`
+  - 局部（强类型推荐）：`children.xxx.bind`
+  - 兼容：`props.bind`
   - 全局：`config.bindings[keyOrId]`
   - 冲突时全局覆盖局部，并输出开发期警告。
+  - `children.xxx.bind` 会基于 `config.model` 提供点路径自动提示与类型检查。
 
 声明式绑定示例（含 `alien-signals`）：
 
@@ -380,19 +382,22 @@ const adapter = CreatePortableUi(container, {
   children: {
     nameInput: {
       type: 'Input',
+      bind: {
+        // 基于 model 的路径提示
+        value: 'form.name',
+      },
       props: {
-        bind: {
-          value: nameSig,
-        },
+        // 兼容旧写法
+        id: 'nameInput',
       },
     },
     saveBtn: {
       type: 'Button',
+      bind: {
+        onClick: 'actions.save',
+      },
       props: {
         text: 'Save',
-        bind: {
-          onClick: 'actions.save',
-        },
       },
     },
   },

@@ -6,7 +6,9 @@ import {
   DeclarativeNodeUnion,
   DeclarativeRegistry,
   InferTopLevelComponentMap,
+  PortableUiBindingsMap,
   PortableUiAdapter,
+  PortableUiDeclarativeConfig,
   StyleIsolationConfig,
 } from './types';
 import {BindingEngine} from './binding';
@@ -36,12 +38,12 @@ import {
 } from '../components/complex';
 import {Container, Flex, Grid, GridItem, Group} from '../components/container';
 
-interface PortableUiCreateConfig<TChildren> {
+interface PortableUiCreateConfig<TChildren, TModel extends Record<string, any> = Record<string, any>> {
   id?: string;
   children: TChildren;
   styleIsolation?: StyleIsolationConfig;
-  model?: Record<string, any>;
-  bindings?: Record<string, Record<string, any>>;
+  model?: TModel;
+  bindings?: PortableUiBindingsMap<TModel>;
   bindingOptions?: BindingOptions;
 }
 
@@ -122,6 +124,12 @@ function mountNode<TRegistry extends DeclarativeRegistry>(
   }
 
   const normalizedProps = normalizeProps(node.type, node.props ?? {}, key);
+  if (node.bind) {
+    normalizedProps.bind = {
+      ...(normalizedProps.bind ?? {}),
+      ...node.bind,
+    };
+  }
   const prepared = bindingEngine.prepareComponentBindings(key, normalizedProps.id ?? key, normalizedProps);
   const instance = new ctor(prepared.props);
   const id = instance.getId();
@@ -198,19 +206,24 @@ function resolveMountRoot(container: HTMLElement, styleIsolation?: StyleIsolatio
 }
 
 export function CreatePortableUi<
-  const TChildren,
+  TModel extends Record<string, any> = Record<string, any>,
+  const TConfig extends PortableUiDeclarativeConfig<BuiltInDeclarativeRegistry, TModel> = PortableUiDeclarativeConfig<
+    BuiltInDeclarativeRegistry,
+    TModel
+  >,
 >(
   container: HTMLElement,
-  config: PortableUiCreateConfig<TChildren>
-): PortableUiAdapter<InferTopLevelComponentMap<BuiltInDeclarativeRegistry, TChildren>>;
+  config: TConfig
+): PortableUiAdapter<InferTopLevelComponentMap<BuiltInDeclarativeRegistry, TConfig['children']>, TModel>;
 export function CreatePortableUi<
   TRegistry extends DeclarativeRegistry,
-  const TChildren,
+  TModel extends Record<string, any> = Record<string, any>,
+  const TConfig extends PortableUiDeclarativeConfig<TRegistry, TModel> = PortableUiDeclarativeConfig<TRegistry, TModel>,
 >(
   container: HTMLElement,
-  config: PortableUiCreateConfig<TChildren>,
+  config: TConfig,
   registry: TRegistry
-): PortableUiAdapter<InferTopLevelComponentMap<TRegistry, TChildren>>;
+): PortableUiAdapter<InferTopLevelComponentMap<TRegistry, TConfig['children']>, TModel>;
 export function CreatePortableUi(
   container: HTMLElement,
   config: PortableUiCreateConfig<unknown>,
@@ -288,11 +301,18 @@ export function CreatePortableUi(
 }
 
 export function createPortableUiFactory<TRegistry extends DeclarativeRegistry>(registry: TRegistry) {
-  return <const TChildren>(
+  return <
+    TModel extends Record<string, any> = Record<string, any>,
+    const TConfig extends PortableUiDeclarativeConfig<TRegistry, TModel> = PortableUiDeclarativeConfig<TRegistry, TModel>,
+  >(
     container: HTMLElement,
-    config: PortableUiCreateConfig<TChildren>
-  ): PortableUiAdapter<InferTopLevelComponentMap<TRegistry, TChildren>> => {
-    return CreatePortableUi(container, config, registry);
+    config: TConfig
+  ): PortableUiAdapter<InferTopLevelComponentMap<TRegistry, TConfig['children']>, TModel> => {
+    return CreatePortableUi(
+      container,
+      config as PortableUiCreateConfig<TConfig['children'], TModel>,
+      registry
+    ) as PortableUiAdapter<InferTopLevelComponentMap<TRegistry, TConfig['children']>, TModel>;
   };
 }
 

@@ -98,7 +98,16 @@ describe('CreatePortableUi', () => {
   });
 
   it('supports a custom typed registry through createPortableUiFactory', () => {
+    interface BadgeProps {
+      id?: string;
+      text?: string;
+    }
+
     class Badge extends BaseComponent {
+      constructor(props: BadgeProps = {}) {
+        super(props);
+      }
+
       protected render(): HTMLElement {
         const el = document.createElement('span');
         el.textContent = String(this.getProps().text ?? '');

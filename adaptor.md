@@ -249,7 +249,7 @@ void agree;
 
 新增统一绑定能力，声明式和命令式都支持：
 
-- 双语法并存：`props.bind` + 全局 `bindings`
+- 双语法并存：`node.bind`（声明式强类型推荐）+ `props.bind`（兼容）+ 全局 `bindings`
 - 变更驱动：`markDirty(path?)`
 - 可选 `proxy`（默认关闭）
 - 回调双签名兼容：
@@ -291,21 +291,22 @@ const ui = CreatePortableUi(host, {
   children: {
     nameInput: {
       type: 'Input',
+      bind: {
+        // 这里会根据上方 model 自动提示路径
+        value: 'form.name',
+      },
       props: {
         id: 'nameInput',
-        bind: {
-          value: nameSignal,
-        },
       },
     },
     saveBtn: {
       type: 'Button',
+      bind: {
+        onClick: 'actions.save',
+      },
       props: {
         id: 'saveBtn',
         text: 'Save',
-        bind: {
-          onClick: 'actions.save',
-        },
       },
     },
   },
@@ -319,6 +320,8 @@ const ui = CreatePortableUi(host, {
 
 ui.markDirty('form.name');
 ```
+
+提示：如果希望 IDE 对点分割路径（如 `form.profile.name`）进行自动提示和错误检查，优先使用声明式节点上的 `bind` 字段（`children.xxx.bind`）。
 
 ### 命令式示例
 
