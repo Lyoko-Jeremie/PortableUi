@@ -420,7 +420,8 @@ tabScope.addInput({ id: 'name' });
   - methods: `setNodes`, `setSelectedId`, `setExpandedIds`, `expandAll`, `collapseAll`
 - `Tabs`
   - props: `tabs`, `activeTabId`, `stretch`, `onTabChange`
-  - methods: `setTabs`, `setActiveTab`, `getActiveTabId`
+  - 
+  - methods: `setTabs`, `appendTab`, `setActiveTab`, `getActiveTabId`
 - `Modal`
   - props: `visible`, `title`, `content`, `width`, `confirmText`, `cancelText`, `showFooter`, `showCloseButton`, `closeOnOverlayClick`, `onOpen`, `onClose`, `onConfirm`, `onCancel`
   - methods: `open`, `close`, `toggle`, `setTitle`, `setContent`
@@ -674,5 +675,3 @@ modal.open();
 - 目标：**插件扩展和生命周期拦截**
   - 看：`extensibilityManager`（`middleware`、`hooks`、`plugins`）
   - 声明式扩展：`registerDeclarativeComponent`
-
-

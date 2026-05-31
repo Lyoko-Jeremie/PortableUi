@@ -5,7 +5,7 @@ import {applyCommonElementProps} from '../basic/internal';
 export interface TabItem {
   id: string;
   title: string;
-  content: string | HTMLElement | (() => string | HTMLElement);
+  content: string | HTMLElement | ((tabs: Tabs) => string | HTMLElement);
   disabled?: boolean;
 }
 
@@ -80,7 +80,7 @@ export class Tabs extends BaseComponent {
     this.update({tabs});
   }
 
-  addTab(tab: TabItem): void {
+  appendTab(tab: TabItem) {
     const props = this.props as TabsProps;
     const tabs = [...(props.tabs ?? []), tab];
     this.update({tabs});
@@ -107,7 +107,7 @@ export class Tabs extends BaseComponent {
 
   private renderContent(content: TabItem['content']): string | HTMLElement {
     if (typeof content === 'function') {
-      return content();
+      return content(this);
     }
 
     return content;

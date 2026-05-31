@@ -58,7 +58,7 @@ describe('Tabs', () => {
     expect(button?.style.flex).toBe('');
   });
 
-  it('should append a tab via addTab', () => {
+  it('should append a tab via appendTab', () => {
     const tabs = new Tabs({
       tabs: [
         {id: 'a', title: 'Tab A', content: 'Content A'},
@@ -66,7 +66,7 @@ describe('Tabs', () => {
     });
 
     tabs.mount(container);
-    tabs.addTab({id: 'b', title: 'Tab B', content: 'Content B'});
+    tabs.appendTab({id: 'b', title: 'Tab B', content: 'Content B'});
 
     const buttons = container.querySelectorAll('.portableui-tabs-button');
     expect(buttons.length).toBe(2);
