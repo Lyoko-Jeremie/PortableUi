@@ -15,7 +15,6 @@ import {
   ComponentPropsOf,
   AnyComponentCtor,
   getContainerComponentCtors,
-  installGeneratedAddMethods,
   registerContainerComponentCtors,
 } from './imperative';
 
@@ -45,8 +44,27 @@ export interface ContainerProps extends ComponentProps {
 }
 
 export class Container extends BaseComponent {
-  // Explicitly declare generated imperative namespace for stronger downstream typing.
-  declare readonly add: BuiltInContainerWithNestedAddMethods['add'];
+  // Lazily initialized imperative namespace, bound to this container instance.
+  private addNamespace?: BuiltInContainerWithNestedAddMethods['add'];
+
+  get add(): BuiltInContainerWithNestedAddMethods['add'] {
+    if (!this.addNamespace) {
+      const registry = this.getFullRegistry();
+      const namespace: Record<string, unknown> = {};
+
+      for (const [type, ctor] of Object.entries(registry) as Array<[
+        Extract<keyof BuiltInContainerWithNestedRegistry, string>,
+        BuiltInContainerWithNestedRegistry[Extract<keyof BuiltInContainerWithNestedRegistry, string>]
+      ]>) {
+        namespace[type] = (props: unknown) =>
+          this.createAndAddChild(ctor as AnyComponentCtor, props as ComponentPropsOf<AnyComponentCtor>);
+      }
+
+      this.addNamespace = namespace as BuiltInContainerWithNestedAddMethods['add'];
+    }
+
+    return this.addNamespace;
+  }
 
   /** 子组件集合 */
   private children: (BaseComponent | HTMLElement)[] = [];
@@ -54,7 +72,6 @@ export class Container extends BaseComponent {
   constructor(props: ContainerProps = {}) {
     super(props);
     this.children = props.children || [];
-    this.installGeneratedAddMethods();
   }
 
   /**
@@ -70,14 +87,6 @@ export class Container extends BaseComponent {
       GridItem,
       Group,
     } as BuiltInContainerWithNestedRegistry;
-  }
-
-  /**
-   * 安装 add* 命令式快捷方法
-   */
-  private installGeneratedAddMethods(): void {
-    const registry = this.getFullRegistry();
-    installGeneratedAddMethods(this, registry, (ctor, props) => this.createAndAddChild(ctor, props));
   }
 
   /**
