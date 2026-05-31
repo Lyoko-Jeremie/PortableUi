@@ -421,9 +421,9 @@ const app = new App(container, {
   bindingOptions: { flush: 'microtask', proxy: false },
 });
 
-const btn = app.addButton({ id: 'okBtn', text: 'OK' });
-const tabScope = app.addTab({ id: 'tab1' });
-tabScope.addInput({ id: 'name' });
+const btn = app.add.Button({ id: 'okBtn', text: 'OK' });
+const tabScope = app.add.Tab({ id: 'tab1' });
+tabScope.add.Input({ id: 'name' });
 ```
 
 特性：
