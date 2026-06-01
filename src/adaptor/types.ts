@@ -117,26 +117,59 @@ export type ObjectKeyPathOf<T extends Record<string, any>> = IsAny<T> extends tr
 
 // 新增：组件级变更检测模式
 /**
- * 变更检测模式：
- * - 'binding': 基于绑定的变更检测，只在显式绑定触发时进行检测
- *   @example
- *   // 示例：当特定绑定值变化时才进行检测
- *   const options: BindingOptions = { changeDetection: 'binding' };
- *   adapter.bind(component, { value: model.fieldA });
- *   // 仅当 fieldA 变化时检测，不会因为 fieldB 变化而触发
+ * 变更检测模式（与 Zone.js 联动）：
  *
- * - 'tree': 基于组件树的变更检测，自上而下传播检测
+ * - 'binding': 基于绑定的变更检测，仅路径/对象脏标记驱动（性能优先）
  *   @example
- *   // 示例：父组件变化时，子组件自动检测
- *   const options: BindingOptions = { changeDetection: 'tree' };
- *   // 当任何父级绑定数据变化时，整个子树都会自动检测
- *   markDirty(); // 触发整个树的检测
+ *   // 与 createModZone + zoneAutoDirty 配合：需要显式 markDirty 或 ctx.touch()
+ *   const modZone = createModZone({ name: 'my-mod' });
+ *   const ui = modZone.runIn(() => CreatePortableUi(host, {
+ *     bindingOptions: { changeDetection: 'binding', zoneAutoDirty: true },
+ *     children: {
+ *       field: {
+ *         type: 'Input',
+ *         bind: { value: { target: data, key: 'name' } }
+ *       }
+ *     }
+ *   }));
+ *   // 更新数据时，必须调用：
+ *   modZone.runIn(() => {
+ *     data.name = 'new value';
+ *     ctx.touch('name'); // 或 ui.markDirty(data, 'name')
+ *   });
  *
- * - 'hybrid': 混合模式，结合绑定和树级别的变更检测机制
+ * - 'tree': 基于组件树的变更检测，Zone 稳定后自动参与树级扫描
  *   @example
- *   // 示例：既支持精确绑定又支持树级检测
- *   const options: BindingOptions = { changeDetection: 'hybrid' };
- *   // 绑定字段优先检测，同时支持手动 markDirty 进行树级检测
+ *   // 与 createModZone + zoneAutoDirty 配合：自动扫描整个组件树
+ *   const ui = modZone.runIn(() => CreatePortableUi(host, {
+ *     bindingOptions: { changeDetection: 'tree', zoneAutoDirty: true },
+ *     children: { /* ... */ }
+ *   }));
+ *   // 更新数据，不需要 markDirty，zone 稳定后自动扫描检测
+ *   modZone.runIn(() => {
+ *     data.field1 = 'changed';
+ *     data.field2 = 'changed';
+ *     // zone 任务结束时自动触发树扫描
+ *   });
+ *
+ * - 'hybrid': 混合模式，先尝试 binding 检测，失败时参与 tree 兜底
+ *   @example
+ *   // 与 createModZone + zoneAutoDirty 配合：灵活组合两种策略
+ *   const ui = modZone.runIn(() => CreatePortableUi(host, {
+ *     bindingOptions: { changeDetection: 'hybrid', zoneAutoDirty: true },
+ *     children: {
+ *       // 直接绑定的字段：由 binding 驱动
+ *       nameInput: {
+ *         type: 'Input',
+ *         bind: { value: { target: user, key: 'profile.name' } }
+ *       },
+ *       // 非绑定的字段变化：降级由 tree 扫描驱动
+ *     }
+ *   }));
+ *   modZone.runIn(() => {
+ *     user.profile.name = 'Alice'; // binding 命中
+ *     user.profile.age = 30;       // tree 扫描兜底
+ *   });
  */
 export type ComponentChangeDetectionMode = 'binding' | 'tree' | 'hybrid';
 
