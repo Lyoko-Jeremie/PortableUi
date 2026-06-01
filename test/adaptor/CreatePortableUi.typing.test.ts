@@ -121,7 +121,7 @@ describe('CreatePortableUi typing', () => {
       text?: string;
     }
 
-    class Badge extends BaseComponent {
+    class Badge extends BaseComponent<any, BadgeProps> {
       constructor(props: BadgeProps = {}) {
         super(props);
       }
@@ -263,10 +263,10 @@ void invalidTypeConfig;
 
 const invalidPropsConfig: PortableUiDeclarativeConfig<BuiltInDeclarativeRegistry> = {
   children: {
-    // @ts-expect-error known property type mismatch should be rejected.
     btn: {
       type: 'Button',
       props: {
+        // @ts-expect-error known property type mismatch should be rejected.
         text: 123,
       },
     },

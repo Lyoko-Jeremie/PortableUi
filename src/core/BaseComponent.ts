@@ -13,14 +13,14 @@ const COMPONENT_INSTANCE_KEY = '__portableui_component_instance__';
 export interface BaseState {
 }
 
-export abstract class BaseComponent<S extends BaseState = any> {
+export abstract class BaseComponent<S extends BaseState = any, P extends ComponentProps = ComponentProps> {
   signalState: ReturnType<typeof signal<S>>;
 
   /** 组件 DOM 元素 */
   protected element: ComponentElement = null;
 
   /** 组件属性 */
-  protected props: ComponentProps = {};
+  protected props: P = {} as P;
 
   /** 组件状态 */
   protected state: ComponentState = {};
@@ -157,7 +157,7 @@ export abstract class BaseComponent<S extends BaseState = any> {
     }
   }
 
-  private hasPropChanges(nextProps: ComponentProps): boolean {
+  private hasPropChanges(nextProps: P): boolean {
     const currentKeys = Object.keys(this.props);
     const nextKeys = Object.keys(nextProps);
 
@@ -200,14 +200,14 @@ export abstract class BaseComponent<S extends BaseState = any> {
    * @param props - 组件属性
    * @param lifecycle - 生命周期回调
    */
-  constructor(props: ComponentProps = {}, lifecycle: Partial<ComponentLifecycle> = {}) {
+  constructor(props: P = {} as P, lifecycle: Partial<ComponentLifecycle> = {}) {
     this.props = props;
     this.lifecycle = lifecycle as ComponentLifecycle;
-    this.signalState = signal<S>(this.props as S);
+    this.signalState = signal<S>(this.props as unknown as S);
 
     effect(() => {
       const currentState = this.signalState();
-      this.props = {...this.props, ...(currentState as ComponentProps)};
+      this.props = {...this.props, ...(currentState as Partial<P>)};
 
       if (this.mounted && this.element) {
         this.rerender();
@@ -291,8 +291,8 @@ export abstract class BaseComponent<S extends BaseState = any> {
    * 更新组件
    * @param props - 新的属性
    */
-  update(props: Partial<ComponentProps>): void {
-    const nextProps = {...this.props, ...props};
+  update(props: Partial<P>): void {
+    const nextProps = {...this.props, ...props} as P;
 
     if (this.mounted && this.element && !this.hasPropChanges(nextProps)) {
       return;
@@ -359,7 +359,7 @@ export abstract class BaseComponent<S extends BaseState = any> {
   /**
    * 获取组件属性
    */
-  getProps(): ComponentProps {
+  getProps(): P {
     return {...this.props};
   }
 
@@ -382,7 +382,7 @@ export abstract class BaseComponent<S extends BaseState = any> {
    */
   destroy(): void {
     this.unmount();
-    this.props = {};
+    this.props = {} as P;
     this.state = {};
     this.lifecycle = {};
   }

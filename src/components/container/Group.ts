@@ -30,7 +30,7 @@ export interface GroupProps extends ContainerProps {
   backgroundColor?: string;
 }
 
-export class Group extends Container {
+export class Group extends Container<GroupProps> {
   constructor(props: GroupProps = {}) {
     super(props);
   }

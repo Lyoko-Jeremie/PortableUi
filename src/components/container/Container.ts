@@ -46,7 +46,7 @@ export interface ContainerProps extends ComponentProps {
   children?: (BaseComponent | HTMLElement)[];
 }
 
-export class Container extends BaseComponent implements NestedAddMountTarget {
+export class Container<P extends ContainerProps = ContainerProps> extends BaseComponent<any, P> implements NestedAddMountTarget {
   // Lazily initialized imperative namespace, bound to this container instance.
   private addNamespace?: ContainerAddObject;
 
@@ -70,7 +70,7 @@ export class Container extends BaseComponent implements NestedAddMountTarget {
   /** 子组件集合 */
   private children: (BaseComponent | HTMLElement)[] = [];
 
-  constructor(props: ContainerProps = {}) {
+  constructor(props: P = {} as P) {
     super(props);
     this.children = props.children || [];
   }

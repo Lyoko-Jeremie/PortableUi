@@ -103,7 +103,7 @@ describe('CreatePortableUi', () => {
       text?: string;
     }
 
-    class Badge extends BaseComponent {
+    class Badge extends BaseComponent<any, BadgeProps> {
       constructor(props: BadgeProps = {}) {
         super(props);
       }

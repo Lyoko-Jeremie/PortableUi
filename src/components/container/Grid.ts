@@ -153,7 +153,7 @@ export class GridItem extends BaseComponent implements NestedAddMountTarget {
 
 export interface GridItem extends BuiltInContainerWithNestedAddMethods {}
 
-export class Grid extends Container {
+export class Grid extends Container<GridProps> {
   constructor(props: GridProps = {}) {
     super(props);
   }

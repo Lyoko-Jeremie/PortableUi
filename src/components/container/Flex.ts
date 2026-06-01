@@ -22,7 +22,7 @@ export interface FlexProps extends ContainerProps {
   inline?: boolean;
 }
 
-export class Flex extends Container {
+export class Flex extends Container<FlexProps> {
   constructor(props: FlexProps = {}) {
     super(props);
   }

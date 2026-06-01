@@ -151,8 +151,8 @@ describe('App imperative adaptor', () => {
       bind: {
         value: {
           get: () => store.draft,
-          set: (value: string) => {
-            store.draft = value;
+          set: (value: string | undefined) => {
+            store.draft = value ?? '';
           },
         },
       },
