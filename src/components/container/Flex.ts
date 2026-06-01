@@ -41,6 +41,7 @@ export class Flex extends Container {
       ...(props.alignItems && {alignItems: props.alignItems}),
       ...(props.gap !== undefined && {gap: props.gap}),
       ...(props.padding !== undefined && {padding: props.padding}),
+      ...(props.margin !== undefined && {margin: props.margin}),
       wrap: props.wrap ?? false,
       grow: props.grow ?? 1,
       shrink: props.shrink ?? 1,

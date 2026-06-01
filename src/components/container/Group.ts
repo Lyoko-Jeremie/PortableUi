@@ -97,6 +97,7 @@ export class Group extends Container {
       ...(props.alignItems && {alignItems: props.alignItems}),
       ...(props.gap !== undefined && {gap: props.gap}),
       ...(props.padding !== undefined && {padding: props.padding}),
+      ...(props.margin !== undefined && {margin: props.margin}),
       wrap: props.wrap ?? false,
     };
 

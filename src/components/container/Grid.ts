@@ -173,6 +173,7 @@ export class Grid extends Container {
       ...(props.rowGap !== undefined && {rowGap: props.rowGap ?? props.gap}),
       ...(props.gap !== undefined && {gap: props.gap}),
       ...(props.padding !== undefined && {padding: props.padding}),
+      ...(props.margin !== undefined && {margin: props.margin}),
       ...(props.justifyContent && {justifyContent: props.justifyContent}),
       ...(props.alignItems && {alignItems: props.alignItems}),
     };
