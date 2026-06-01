@@ -100,19 +100,35 @@ export type PortableUiCallbackSource<TModel extends Record<string, any> = Record
 
 export type PortableUiWritableBindingField = 'value' | 'checked' | 'valuePath' | 'activeTabId' | 'selectedId';
 
+// 新增：Object Key 路径推导（支持点分隔 deep path 的 IDE 提示）
+type ObjectKeyPathInner<T, Prefix extends string = ''> = {
+  [K in Extract<KnownKeys<T>, string>]:
+    | `${Prefix}${K}`
+    | (IsPlainObject<T[K]> extends true
+        ? ObjectKeyPathInner<T[K], `${Prefix}${K}.`>
+        : never);
+}[Extract<KnownKeys<T>, string>];
+
+export type ObjectKeyPathOf<T extends Record<string, any>> = IsAny<T> extends true
+  ? string
+  : HasStringIndex<T> extends true
+    ? string
+    : ObjectKeyPathInner<T>;
+
 // 新增：组件级变更检测模式
 export type ComponentChangeDetectionMode = 'binding' | 'tree' | 'hybrid';
 
-// 新增：ObjectKeyBinding - 对象 + 点分隔 key 绑定
+// 新增：ObjectKeyBinding - 对象 + 点分隔 key 绑定（泛型版本，带路径约束）
 export interface ObjectKeyBinding<
   TTarget extends Record<string, any> = Record<string, any>,
   TValue = any,
+  TKey extends string = ObjectKeyPathOf<TTarget>,
 > {
   // 绑定对象根
   target: TTarget;
 
   // deep 路径，例：profile.name / settings.theme.mode
-  key: string;
+  key: TKey;
 
   // rw: 可读可写, ro: 只读展示, wo: 仅写回
   mode?: 'rw' | 'ro' | 'wo';

@@ -25,7 +25,7 @@ import {
 } from '../components/basic';
 import {Container, Flex, Grid, GridItem, Group, type ContainerProps} from '../components/container';
 import {BindingEngine} from './binding';
-import type {BindableComponentProps, BindingOptions, DeclarativeRegistry, StyleIsolationConfig} from './types';
+import type {BindableComponentProps, BindingOptions, DeclarativeRegistry, ObjectKeyPathOf, StyleIsolationConfig} from './types';
 
 const PORTABLEUI_SCOPE_ATTR = 'data-portableui-root';
 const PORTABLEUI_MOUNT_ATTR = 'data-portableui-mount-root';
@@ -289,6 +289,8 @@ export class App extends AppScopeBase<BuiltInDeclarativeRegistry> {
    * - 旧用法：markDirty('path.to.field') - 路径字符串，针对全局 model
    * - 新用法：markDirty(target, 'key.path') - 对象级脏标记，针对组件绑定的数据对象
    */
+  markDirty(path: string): void;
+  markDirty<T extends Record<string, any>>(target: T, key?: ObjectKeyPathOf<T>): void;
   markDirty(target: object | string, key?: string): void {
     if (typeof target === 'string') {
       // 旧用法：路径字符串

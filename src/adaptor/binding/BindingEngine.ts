@@ -5,6 +5,7 @@ import type {
   BindingContext,
   BindingOptions,
   ObjectKeyBinding,
+  ObjectKeyPathOf,
   PortableUiBindingHost,
   PortableUiBindingMap,
   PortableUiBindingsMap,
