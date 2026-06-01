@@ -143,7 +143,7 @@ export type ObjectKeyPathOf<T extends Record<string, any>> = IsAny<T> extends tr
  *   // 与 createModZone + zoneAutoDirty 配合：自动扫描整个组件树
  *   const ui = modZone.runIn(() => CreatePortableUi(host, {
  *     bindingOptions: { changeDetection: 'tree', zoneAutoDirty: true },
- *     children: { /* ... */ }
+ *     children: { / * ... * / }
  *   }));
  *   // 更新数据，不需要 markDirty，zone 稳定后自动扫描检测
  *   modZone.runIn(() => {
