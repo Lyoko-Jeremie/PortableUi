@@ -155,6 +155,31 @@ describe('Input', () => {
       el.dispatchEvent(new Event('change'));
       expect(onChange.mock.calls[0]?.[2]).toBe('changed');
     });
+
+    it('should keep focus and caret during controlled typing rerenders', () => {
+      const inputComponent = new Input({
+        onInput: (self, _event, value) => {
+          self.setValue(value);
+        },
+      });
+
+      inputComponent.mount(container);
+
+      let input = container.querySelector('input') as HTMLInputElement;
+      input.focus();
+
+      for (const text of ['a', 'ab', 'abc']) {
+        input.value = text;
+        input.setSelectionRange(text.length, text.length);
+        input.dispatchEvent(new Event('input', {bubbles: true}));
+
+        input = container.querySelector('input') as HTMLInputElement;
+        expect(document.activeElement).toBe(input);
+        expect(input.selectionStart).toBe(text.length);
+        expect(input.selectionEnd).toBe(text.length);
+        expect(input.value).toBe(text);
+      }
+    });
   });
 
   // ── 方法 ─────────────────────────────────────────────────────────

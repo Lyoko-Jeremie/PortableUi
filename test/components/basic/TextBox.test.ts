@@ -129,6 +129,31 @@ describe('TextBox', () => {
       el.dispatchEvent(new Event('change'));
       expect(onChange).toHaveBeenCalledTimes(1);
     });
+
+    it('should keep focus and caret during controlled typing rerenders', () => {
+      const tb = new TextBox({
+        onInput: (self, _event, value) => {
+          self.setValue(value);
+        },
+      });
+
+      tb.mount(container);
+
+      let textarea = container.querySelector('textarea') as HTMLTextAreaElement;
+      textarea.focus();
+
+      for (const text of ['a', 'ab', 'abc']) {
+        textarea.value = text;
+        textarea.setSelectionRange(text.length, text.length);
+        textarea.dispatchEvent(new Event('input', {bubbles: true}));
+
+        textarea = container.querySelector('textarea') as HTMLTextAreaElement;
+        expect(document.activeElement).toBe(textarea);
+        expect(textarea.selectionStart).toBe(text.length);
+        expect(textarea.selectionEnd).toBe(text.length);
+        expect(textarea.value).toBe(text);
+      }
+    });
   });
 
   // ── 方法 ─────────────────────────────────────────────────────────
