@@ -284,8 +284,26 @@ export class App extends AppScopeBase<BuiltInDeclarativeRegistry> {
     return this.bindingEngine.getModel() as TModel;
   }
 
-  markDirty(path?: string): void {
-    this.bindingEngine.markDirty(path);
+  /**
+   * 标记对象路径脏，触发双向绑定刷新
+   * - 旧用法：markDirty('path.to.field') - 路径字符串，针对全局 model
+   * - 新用法：markDirty(target, 'key.path') - 对象级脏标记，针对组件绑定的数据对象
+   */
+  markDirty(target: object | string, key?: string): void {
+    if (typeof target === 'string') {
+      // 旧用法：路径字符串
+      this.bindingEngine.markDirty(target);
+    } else {
+      // 新用法：对象级
+      this.bindingEngine.markDirtyObject(target, key);
+    }
+  }
+
+  /**
+   * 标记整个对象为脏，触发全部相关绑定刷新（不指定具体路径）
+   */
+  markDirtyAll(target: object): void {
+    this.bindingEngine.markDirtyAll(target);
   }
 
   getComponent<TComponent extends BaseComponent = BaseComponent>(id: string): TComponent | null {

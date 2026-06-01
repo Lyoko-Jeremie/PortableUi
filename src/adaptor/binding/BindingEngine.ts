@@ -4,6 +4,7 @@ import {BaseComponent} from '../../core';
 import type {
   BindingContext,
   BindingOptions,
+  ObjectKeyBinding,
   PortableUiBindingHost,
   PortableUiBindingMap,
   PortableUiBindingsMap,
@@ -16,7 +17,8 @@ import type {
   PortableUiWritableSignal,
 } from '../types';
 import {getValueAtPath, hasPath, matchesDirtyPath, setValueAtPath} from './PathAccess';
-import {ZoneScheduler} from './ZoneScheduler';
+import {ObjectBindingIndex} from './ObjectBindingIndex';
+import {ZoneScheduler, type ZoneSchedulerHooks} from './ZoneScheduler';
 
 type BindingOwnerType = 'adapter' | 'app';
 
@@ -68,6 +70,17 @@ function isWritableSignal<T = any>(value: unknown): value is PortableUiWritableS
 
 function isReadableSignal(value: unknown): value is () => any {
   return typeof value === 'function' && (isSignal(value as () => void) || isComputed(value as () => void));
+}
+
+function isObjectKeyBinding(value: unknown): value is ObjectKeyBinding<any, any> {
+  return (
+    typeof value === 'object'
+    && value !== null
+    && 'target' in value
+    && 'key' in value
+    && typeof (value as any).target === 'object'
+    && typeof (value as any).key === 'string'
+  );
 }
 
 function isWritableBindingField(field: string): field is PortableUiWritableBindingField {
@@ -185,11 +198,22 @@ export class BindingEngine<TModel extends Record<string, any> = Record<string, a
   private readonly disposers = new Map<string, Array<() => void>>();
   private readonly pendingUpdates = new Map<string, () => void>();
   private readonly emittedWarnings = new Set<string>();
+  // 新增：对象级绑定索引
+  private readonly objectBindingIndex = new ObjectBindingIndex();
+  // 新增：zone 内收集的脏对象与路径（用对象存储以避免类型问题）
+  private readonly pendingDirtyObjects: Array<{target: object; key?: string | undefined}> = [];
+  // 新增：标志是否在 flushing，防止重入
+  private isFlushing = false;
 
   constructor({model, bindings, options, ownerType}: BindingEngineOptions<TModel>) {
     this.model = (model ?? {}) as TModel;
     this.globalBindings = bindings ?? {};
-    this.scheduler = new ZoneScheduler(options?.flush ?? 'microtask');
+    // 新增：传入 zone hooks
+    const hooks: ZoneSchedulerHooks = {
+      onTaskDone: () => this.onZoneTaskDone(),
+      onMicrotaskEmpty: () => this.onZoneMicrotaskEmpty(),
+    };
+    this.scheduler = new ZoneScheduler(options?.flush ?? 'microtask', options?.zoneAutoDirty ? hooks : undefined);
     this.warnEnabled = options?.warn ?? true;
     this.strict = options?.strict ?? false;
     this.proxyEnabled = options?.proxy ?? false;
@@ -199,7 +223,67 @@ export class BindingEngine<TModel extends Record<string, any> = Record<string, a
       : this.model;
   }
 
-  setOwner(owner: PortableUiBindingHost<TModel>): void {
+  // ...existing code...
+
+  private onZoneTaskDone(): void {
+    if (!this.pendingDirtyObjects.length) {
+      return;
+    }
+    this.flushCollectedDirty();
+  }
+
+  private onZoneMicrotaskEmpty(): void {
+    if (!this.pendingDirtyObjects.length) {
+      return;
+    }
+    this.flushCollectedDirty();
+  }
+
+  private flushCollectedDirty(): void {
+    if (this.isFlushing) {
+      return;
+    }
+
+    this.isFlushing = true;
+    try {
+      const collected = Array.from(this.pendingDirtyObjects);
+      this.pendingDirtyObjects.length = 0;
+
+      for (const {target, key} of collected) {
+        const regs = this.objectBindingIndex.collectByTargetAndKey(target, key);
+        for (const reg of regs) {
+          if (reg.updateFn) {
+            reg.updateFn();
+          }
+        }
+      }
+    } finally {
+      this.isFlushing = false;
+    }
+  }
+
+  // 新增：zone 内触发的脏标记（收集而非立即刷新）
+  private touchDirty(target: object, key: string | undefined = undefined): void {
+    this.pendingDirtyObjects.push({target, key: key ?? undefined});
+  }
+
+  // 新增：对象级 markDirty，触发脏集合 flush
+  markDirtyObject(target: object, key?: string): void {
+    const regs = this.objectBindingIndex.collectByTargetAndKey(target, key);
+    for (const reg of regs) {
+      if (reg.updateFn) {
+        this.scheduler.run(() => {
+          reg.updateFn?.();
+        });
+      }
+    }
+  }
+
+  markDirtyAll(target: object): void {
+    this.markDirtyObject(target);
+  }
+
+  setOwner(owner: PortableUiBindingHost<TModel> | any): void {
     this.owner = owner;
   }
 
@@ -219,10 +303,15 @@ export class BindingEngine<TModel extends Record<string, any> = Record<string, a
     const originalProps = {...rawProps};
     delete originalProps.bind;
 
-    const preparedProps: Record<string, any> = {...originalProps};
+     const preparedProps: Record<string, any> = {...originalProps};
     if (bindings) {
       for (const [field, source] of Object.entries(bindings)) {
         if (isCallbackKey(field)) {
+          continue;
+        }
+
+        // 新增：ObjectKeyBinding 的初始化放在 attachComponent 中
+        if (isObjectKeyBinding(source)) {
           continue;
         }
 
@@ -247,6 +336,18 @@ export class BindingEngine<TModel extends Record<string, any> = Record<string, a
         const entry = eventHandlers.get(field) ?? {callbacks: [], writebacks: []};
         entry.callbacks.push({source: source as PortableUiCallbackSource, preferContext: true});
         eventHandlers.set(field, entry);
+        continue;
+      }
+
+      // 新增：支持 ObjectKeyBinding 的写回
+      if (isObjectKeyBinding(source)) {
+        if (source.mode !== 'ro') { // 非只读
+          for (const eventName of getWritebackEvents(field)) {
+            const entry = eventHandlers.get(eventName) ?? {callbacks: [], writebacks: []};
+            entry.writebacks.push({field, source: source as any});
+            eventHandlers.set(eventName, entry);
+          }
+        }
         continue;
       }
 
@@ -305,6 +406,7 @@ export class BindingEngine<TModel extends Record<string, any> = Record<string, a
     prepared.componentRef.current = component;
 
     if (!prepared.bindings) {
+      // 新增：即使没有绑定也要在索引中注册组件以便清理
       return;
     }
 
@@ -313,6 +415,43 @@ export class BindingEngine<TModel extends Record<string, any> = Record<string, a
 
     for (const [field, source] of Object.entries(prepared.bindings)) {
       if (isCallbackKey(field)) {
+        continue;
+      }
+
+      // 新增：处理 ObjectKeyBinding
+      if (isObjectKeyBinding(source)) {
+        const targetId = this.objectBindingIndex.getTargetId(source.target);
+        const updateFn = () => {
+          const component = prepared.componentRef.current;
+          if (!component || !component.isMounted()) {
+            return;
+          }
+
+          const nextValue = getValueAtPath(source.target, source.key);
+          const equals = source.equals ?? ((a: any, b: any) => a === b);
+          const prevValue = component.getProps()[field];
+
+          if (!equals(prevValue, nextValue)) {
+            component.update({[field]: nextValue});
+          }
+        };
+
+        const objReg = {
+          componentId: prepared.componentId,
+          propName: field,
+          targetId,
+          key: source.key,
+          ...(source.changeDetection ? {changeDetection: source.changeDetection} : {}),
+          componentRef: prepared.componentRef,
+          updateFn,
+        };
+
+        this.objectBindingIndex.add(objReg);
+
+        // 初始化组件值
+        const initialValue = getValueAtPath(source.target, source.key);
+        prepared.props[field] = initialValue;
+
         continue;
       }
 
@@ -359,6 +498,9 @@ export class BindingEngine<TModel extends Record<string, any> = Record<string, a
   detachComponent(componentId: string): void {
     this.registrations.delete(componentId);
 
+    // 新增：从对象索引中清理
+    this.objectBindingIndex.removeByComponent(componentId);
+
     const disposers = this.disposers.get(componentId);
     for (const dispose of disposers ?? []) {
       try {
@@ -402,7 +544,11 @@ export class BindingEngine<TModel extends Record<string, any> = Record<string, a
       this.detachComponent(componentId);
     }
 
+    // 新增：清理对象索引
+    this.objectBindingIndex.clear();
+
     this.pendingUpdates.clear();
+    this.pendingDirtyObjects.length = 0;
     this.scheduler.destroy();
   }
 
@@ -467,11 +613,20 @@ export class BindingEngine<TModel extends Record<string, any> = Record<string, a
   }
 
   private writeBindingValue(
-    source: PortableUiReadableBindingSource<any>,
+    source: PortableUiReadableBindingSource<any> | ObjectKeyBinding<any, any>,
     value: any,
     componentId: string,
     field: string
   ): void {
+    // 新增：处理 ObjectKeyBinding 的写回
+    if (isObjectKeyBinding(source)) {
+      setValueAtPath(source.target, source.key, value);
+      if (source.detect === 'manual') {
+        this.markDirtyObject(source.target, source.key);
+      }
+      return;
+    }
+
     if (typeof source === 'string') {
       setValueAtPath(this.boundModel, source, value);
       if (!this.proxyEnabled) {
@@ -497,6 +652,10 @@ export class BindingEngine<TModel extends Record<string, any> = Record<string, a
   }
 
   private createContext(component: BaseComponent<any>, componentId: string): BindingContext<TModel> {
+    // 新增：为上下文保存一个 touch 引用，用于在 zone 内标记脏对象
+    let touchTarget: object | null = null;
+    let touchKey: string | undefined;
+
     return {
       model: this.boundModel,
       component,
@@ -509,6 +668,12 @@ export class BindingEngine<TModel extends Record<string, any> = Record<string, a
         }
       },
       warn: (code: string, detail?: Record<string, any>) => this.warn(code, {componentId, ...detail}),
+      // 新增：touch 方法，支持在 zone hooks 内的脏收集
+      touch: (key?: string) => {
+        if (touchTarget) {
+          this.touchDirty(touchTarget, key);
+        }
+      },
       ...(this.ownerType === 'adapter' && this.owner ? {adapter: this.owner} : {}),
       ...(this.ownerType === 'app' && this.owner ? {app: this.owner} : {}),
     };

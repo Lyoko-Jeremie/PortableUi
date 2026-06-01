@@ -100,10 +100,38 @@ export type PortableUiCallbackSource<TModel extends Record<string, any> = Record
 
 export type PortableUiWritableBindingField = 'value' | 'checked' | 'valuePath' | 'activeTabId' | 'selectedId';
 
+// 新增：组件级变更检测模式
+export type ComponentChangeDetectionMode = 'binding' | 'tree' | 'hybrid';
+
+// 新增：ObjectKeyBinding - 对象 + 点分隔 key 绑定
+export interface ObjectKeyBinding<
+  TTarget extends Record<string, any> = Record<string, any>,
+  TValue = any,
+> {
+  // 绑定对象根
+  target: TTarget;
+
+  // deep 路径，例：profile.name / settings.theme.mode
+  key: string;
+
+  // rw: 可读可写, ro: 只读展示, wo: 仅写回
+  mode?: 'rw' | 'ro' | 'wo';
+
+  // manual: 外部 markDirty, proxy: 写入自动触发
+  detect?: 'manual' | 'proxy';
+
+  // 避免重复 update
+  equals?: (prev: TValue, next: TValue) => boolean;
+
+  // 组件级覆盖
+  changeDetection?: ComponentChangeDetectionMode;
+}
+
 type PortableUiBindingValue<TModel extends Record<string, any>> =
   | PortableUiReadableBindingSource<any, TModel>
   | PortableUiWritableBindingSource<any, TModel>
-  | PortableUiCallbackSource<TModel>;
+  | PortableUiCallbackSource<TModel>
+  | ObjectKeyBinding<any, any>;
 
 export type PortableUiBindingMap<
   TProps extends Record<string, any> = Record<string, any>,
@@ -133,12 +161,19 @@ export interface BindingOptions {
   proxy?: boolean;
   warn?: boolean;
   strict?: boolean;
+  // 新增：是否启用 zone 自动脏检测
+  zoneAutoDirty?: boolean;
+  // 全局默认 changeDetection
+  changeDetection?: ComponentChangeDetectionMode;
 }
 
 export interface PortableUiBindingHost<TModel extends Record<string, any> = Record<string, any>> {
   boundModel: TModel;
   getModel<TResolvedModel extends TModel = TModel>(): TResolvedModel;
   markDirty(path?: string): void;
+  // 新增：对象级脏标记（可选）
+  markDirtyObject?(target: object, key?: string): void;
+  markDirtyAll?(target: object): void;
 }
 
 export interface BindingContext<TModel extends Record<string, any> = Record<string, any>> {
@@ -150,6 +185,8 @@ export interface BindingContext<TModel extends Record<string, any> = Record<stri
   get: (path: string) => any;
   set: (path: string, value: any) => void;
   warn: (code: string, detail?: Record<string, any>) => void;
+  // 新增：在 zone 内标记本对象的路径脏，等待 zone 稳定后自动 flush
+  touch: (key?: string) => void;
 }
 
 type ConstructorProps<TCtor extends ComponentCtor> = ConstructorParameters<TCtor>[0] extends undefined
