@@ -29,12 +29,12 @@ export class Input extends BaseComponent<InputState> {
 
   protected render(): ComponentElement {
     const props = this.props as InputProps;
-    const state = this.signalState();
     const input = document.createElement('input');
 
     applyCommonElementProps(input, props, 'portableui-input');
     input.type = props.type ?? 'text';
 
+    input.value = this.signalState().value ?? '';
     effect(() => {
       input.value = this.signalState().value ?? '';
     });

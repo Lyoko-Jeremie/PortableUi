@@ -22,23 +22,23 @@ export class Button extends BaseComponent<ButtonState> {
 
   protected render(): ComponentElement {
     const props = this.props as ButtonProps;
-    const state = this.signalState();
     const button = document.createElement('button');
 
     applyCommonElementProps(button, props, 'portableui-button');
     button.type = props.type ?? 'button';
 
+    button.disabled = this.signalState().disabled ?? false;
     effect(() => {
       button.disabled = this.signalState().disabled ?? false;
     });
 
+    button.textContent = this.signalState().text ?? '';
     effect(() => {
       button.textContent = this.signalState().text ?? '';
     });
 
     if (props.onClick) {
       button.addEventListener('click', (event) => {
-        const currentState = this.signalState();
         props.onClick?.(this, event as MouseEvent);
       });
     }

@@ -22,8 +22,8 @@ export class Label extends BaseComponent<LabelState> {
     const label = document.createElement('label');
 
     applyCommonElementProps(label, props, 'portableui-label');
-    const state = this.signalState();
 
+    label.textContent = this.signalState().text ?? '';
     effect(() => {
       label.textContent = this.signalState().text ?? '';
     });

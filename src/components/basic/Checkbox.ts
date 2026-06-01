@@ -26,7 +26,6 @@ export class Checkbox extends BaseComponent<CheckboxState> {
 
   protected render(): ComponentElement {
     const props = this.props as CheckboxProps;
-    const state = this.signalState();
     const wrapper = document.createElement('label');
     const input = document.createElement('input');
     const text = document.createElement('span');
@@ -51,6 +50,7 @@ export class Checkbox extends BaseComponent<CheckboxState> {
       input.value = props.value;
     }
 
+    text.textContent = this.signalState().label ?? '';
     effect(() => {
       text.textContent = this.signalState().label ?? '';
     });
