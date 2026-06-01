@@ -153,7 +153,7 @@ export type PortableUiBindingMap<
   TProps extends Record<string, any> = Record<string, any>,
   TModel extends Record<string, any> = Record<string, any>,
 > = {
-  [K in PortableUiWritableBindingField]?: PortableUiWritableBindingSource<any, TModel>;
+  [K in PortableUiWritableBindingField]?: PortableUiWritableBindingSource<any, TModel> | ObjectKeyBinding<any, any>;
 } & {
   [K in `on${string}`]?: PortableUiCallbackSource<TModel>;
 } & {

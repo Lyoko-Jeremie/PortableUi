@@ -9,7 +9,7 @@
  */
 
 import {App} from '../../src/adaptor/App';
-import type {ObjectKeyPathOf} from '../../src/adaptor/types';
+import type {ObjectKeyPathOf, BindingContext} from '../../src/adaptor/types';
 
 // ============================================================================
 // 第一步：定义数据模型
@@ -268,7 +268,7 @@ app.add.Button({
   id: 'saveBtn',
   text: 'Save Profile',
   bind: {
-    onClick: (ctx) => {
+    onClick: (ctx: BindingContext) => {
       console.log('Saving user profile...');
 
       // 更新时间戳
@@ -294,7 +294,7 @@ app.add.Button({
   id: 'resetBtn',
   text: 'Reset to Default',
   bind: {
-    onClick: (ctx) => {
+    onClick: (_ctx: BindingContext) => {
       // 重置为初始值（这里简化处理）
       currentUser.profile.firstName = 'John';
       currentUser.profile.lastName = 'Doe';
