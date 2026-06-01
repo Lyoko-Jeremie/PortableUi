@@ -166,28 +166,28 @@ if (!el) {
 
 const root = new App(el, {id: 'root'});
 
-root.addButton({
+root.add.Button({
   id: 'btn1',
   text: 'Click Me',
   onClick: () => alert('Button clicked!'),
 });
 
-root.addInput({
+root.add.Input({
   id: 'input1',
   placeholder: 'Type here',
 });
 
-const tab1 = root.addTab({
+const tab1 = root.add.Tab({
   id: 'tab1',
 });
 
-tab1.addButton({
+tab1.add.Button({
   id: 'tabBtn1',
   text: 'Tab Button',
   onClick: () => alert('Tab button clicked!'),
 });
 
-tab1.addInput({
+tab1.add.Input({
   id: 'tabInput1',
   placeholder: 'Tab input',
 });
@@ -215,9 +215,9 @@ if (!host) {
 
 const app = new App(host, {id: 'imperative-demo'});
 
-const title = app.addLabel({id: 'title', text: '命令式接口示例'});
-const agree = app.addCheckbox({id: 'agree', label: '我已阅读并同意'});
-const theme = app.addSelect({
+const title = app.add.Label({id: 'title', text: '命令式接口示例'});
+const agree = app.add.Checkbox({id: 'agree', label: '我已阅读并同意'});
+const theme = app.add.Select({
   id: 'theme',
   placeholder: '选择主题',
   options: [
@@ -225,9 +225,9 @@ const theme = app.addSelect({
     {label: '深色', value: 'dark'},
   ],
 });
-const toast = app.addToast({id: 'toast', visible: false, message: '准备就绪'});
+const toast = app.add.Toast({id: 'toast', visible: false, message: '准备就绪'});
 
-app.addButton({
+app.add.Button({
   id: 'show-toast',
   text: '显示提示',
   onClick: () => {
@@ -235,9 +235,9 @@ app.addButton({
   },
 });
 
-const tab = app.addTab({id: 'settings-tab'});
-tab.addButton({id: 'tab-btn', text: 'Tab 内按钮'});
-tab.addInput({id: 'tab-input', placeholder: 'Tab 内输入框'});
+const tab = app.add.Tab({id: 'settings-tab'});
+tab.add.Button({id: 'tab-btn', text: 'Tab 内按钮'});
+tab.add.Input({id: 'tab-input', placeholder: 'Tab 内输入框'});
 
 void title;
 void agree;
