@@ -25,7 +25,7 @@ export class Label extends BaseComponent<LabelState> {
     const state = this.signalState();
 
     effect(() => {
-      label.textContent = state.text ?? '';
+      label.textContent = this.signalState().text ?? '';
     });
 
     if (props.htmlFor) {

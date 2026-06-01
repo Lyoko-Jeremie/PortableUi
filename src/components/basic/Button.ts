@@ -29,11 +29,11 @@ export class Button extends BaseComponent<ButtonState> {
     button.type = props.type ?? 'button';
 
     effect(() => {
-      button.disabled = state.disabled ?? false;
+      button.disabled = this.signalState().disabled ?? false;
     });
 
     effect(() => {
-      button.textContent = state.text ?? '';
+      button.textContent = this.signalState().text ?? '';
     });
 
     if (props.onClick) {

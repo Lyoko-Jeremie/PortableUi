@@ -36,7 +36,7 @@ export class Input extends BaseComponent<InputState> {
     input.type = props.type ?? 'text';
 
     effect(() => {
-      input.value = state.value ?? '';
+      input.value = this.signalState().value ?? '';
     });
 
     input.placeholder = props.placeholder ?? '';

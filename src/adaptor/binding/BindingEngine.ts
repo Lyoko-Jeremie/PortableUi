@@ -100,6 +100,7 @@ function getWritebackEvents(field: string): string[] {
     case 'value':
       return ['onInput', 'onChange', 'onSelect'];
     case 'checked':
+    case 'label':
     case 'valuePath':
       return ['onChange'];
     case 'activeTabId':

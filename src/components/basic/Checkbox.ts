@@ -36,7 +36,7 @@ export class Checkbox extends BaseComponent<CheckboxState> {
     applyCommonElementProps(wrapper, props, 'portableui-checkbox');
 
     effect(() => {
-      input.checked = state.checked ?? false;
+      input.checked = this.signalState().checked ?? false;
     });
 
     input.disabled = props.disabled ?? false;
@@ -52,7 +52,7 @@ export class Checkbox extends BaseComponent<CheckboxState> {
     }
 
     effect(() => {
-      text.textContent = state.label ?? '';
+      text.textContent = this.signalState().label ?? '';
     });
 
     input.addEventListener('change', (event) => {
