@@ -53,6 +53,12 @@ module.exports = {
       inject: 'body',
     }),
     new HtmlWebpackPlugin({
+      filename: 'signal-state.html',
+      template: './examples/basic/signal-state-template.html',
+      chunks: ['basic'],
+      inject: 'body',
+    }),
+    new HtmlWebpackPlugin({
       filename: 'complex.html',
       template: './examples/complex/template.html',
       chunks: ['complex'],
@@ -91,4 +97,3 @@ module.exports = {
     open: ['basic.html'],
   },
 };
-
