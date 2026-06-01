@@ -24,15 +24,20 @@ export class Label extends BaseComponent<LabelState> {
     applyCommonElementProps(label, props, 'portableui-label');
 
     label.textContent = this.signalState().text ?? '';
-    effect(() => {
-      label.textContent = this.signalState().text ?? '';
-    });
 
     if (props.htmlFor) {
       label.htmlFor = props.htmlFor;
     }
 
     return label;
+  }
+
+  protected onPropsChanged(): boolean {
+    if (this.element) {
+      this.element.textContent = this.signalState().text ?? '';
+      return true;
+    }
+    return false;
   }
 
   setText(text: string): void {

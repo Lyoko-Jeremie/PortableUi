@@ -34,10 +34,21 @@ export class Checkbox extends BaseComponent<CheckboxState> {
 
     applyCommonElementProps(wrapper, props, 'portableui-checkbox');
 
-    effect(() => {
-      input.checked = this.signalState().checked ?? false;
+    this.updateDom(input, text);
+
+    input.addEventListener('change', (event) => {
+      props.onChange?.(this, event, input.checked);
     });
 
+    wrapper.appendChild(input);
+    wrapper.appendChild(text);
+    return wrapper;
+  }
+
+  private updateDom(input: HTMLInputElement, text: HTMLSpanElement): void {
+    const props = this.props as CheckboxProps;
+
+    input.checked = this.signalState().checked ?? false;
     input.disabled = props.disabled ?? false;
     input.required = props.required ?? false;
     input.indeterminate = props.indeterminate ?? false;
@@ -51,17 +62,16 @@ export class Checkbox extends BaseComponent<CheckboxState> {
     }
 
     text.textContent = this.signalState().label ?? '';
-    effect(() => {
-      text.textContent = this.signalState().label ?? '';
-    });
+  }
 
-    input.addEventListener('change', (event) => {
-      props.onChange?.(this, event, input.checked);
-    });
-
-    wrapper.appendChild(input);
-    wrapper.appendChild(text);
-    return wrapper;
+  protected onPropsChanged(): boolean {
+    const input = this.element?.querySelector('input');
+    const text = this.element?.querySelector('span');
+    if (input && text) {
+      this.updateDom(input, text);
+      return true; // 表示已手动处理，不需要全量 rerender
+    }
+    return false;
   }
 
   isChecked(): boolean {

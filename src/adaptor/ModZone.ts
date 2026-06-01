@@ -81,7 +81,7 @@ const DEFAULT_ZONE_NAME = 'mod';
 const DEFAULT_PREFIX = 'PortableUiMod';
 
 /** 若 zone.js 已生效则返回当前 zone，否则返回 null。 */
-function getCurrentZone(): ZoneLike | null {
+export function getCurrentZone(): ZoneLike | null {
   const zoneCtor = (globalThis as typeof globalThis & {Zone?: ZoneGlobal}).Zone;
   if (!zoneCtor?.current || typeof zoneCtor.current.run !== 'function') {
     return null;

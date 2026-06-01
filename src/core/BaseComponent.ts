@@ -208,9 +208,14 @@ export abstract class BaseComponent<S extends BaseState = any, P extends Compone
 
     effect(() => {
       const currentState = this.signalState();
+      const prevProps = this.props;
       this.props = {...this.props, ...(currentState as Partial<P>)};
 
       if (this.mounted && this.element) {
+        // 如果子类实现了 onPropsChanged 并且该方法返回 true，则跳过全量 rerender
+        if ((this as any).onPropsChanged?.(this.props, prevProps)) {
+          return;
+        }
         this.rerender();
       }
     });
@@ -323,7 +328,10 @@ export abstract class BaseComponent<S extends BaseState = any, P extends Compone
    */
   setState(state: Partial<ComponentState>): void {
     this.state = {...this.state, ...state};
-    if (this.mounted) {
+    if (this.mounted && this.element) {
+      if ((this as any).onPropsChanged?.(this.props, this.props)) {
+        return;
+      }
       this.rerender();
     }
   }
