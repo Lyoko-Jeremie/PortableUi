@@ -116,6 +116,28 @@ export type ObjectKeyPathOf<T extends Record<string, any>> = IsAny<T> extends tr
     : ObjectKeyPathInner<T>;
 
 // 新增：组件级变更检测模式
+/**
+ * 变更检测模式：
+ * - 'binding': 基于绑定的变更检测，只在显式绑定触发时进行检测
+ *   @example
+ *   // 示例：当特定绑定值变化时才进行检测
+ *   const options: BindingOptions = { changeDetection: 'binding' };
+ *   adapter.bind(component, { value: model.fieldA });
+ *   // 仅当 fieldA 变化时检测，不会因为 fieldB 变化而触发
+ *
+ * - 'tree': 基于组件树的变更检测，自上而下传播检测
+ *   @example
+ *   // 示例：父组件变化时，子组件自动检测
+ *   const options: BindingOptions = { changeDetection: 'tree' };
+ *   // 当任何父级绑定数据变化时，整个子树都会自动检测
+ *   markDirty(); // 触发整个树的检测
+ *
+ * - 'hybrid': 混合模式，结合绑定和树级别的变更检测机制
+ *   @example
+ *   // 示例：既支持精确绑定又支持树级检测
+ *   const options: BindingOptions = { changeDetection: 'hybrid' };
+ *   // 绑定字段优先检测，同时支持手动 markDirty 进行树级检测
+ */
 export type ComponentChangeDetectionMode = 'binding' | 'tree' | 'hybrid';
 
 // 新增：ObjectKeyBinding - 对象 + 点分隔 key 绑定（泛型版本，带路径约束）
