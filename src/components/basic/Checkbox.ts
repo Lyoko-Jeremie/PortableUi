@@ -48,7 +48,6 @@ export class Checkbox extends BaseComponent<CheckboxState> {
     text.textContent = props.label ?? '';
 
     input.addEventListener('change', (event) => {
-      const currentState = this.signalState();
       props.onChange?.(this, event, input.checked);
     });
 
