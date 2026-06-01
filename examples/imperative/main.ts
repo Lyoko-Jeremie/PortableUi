@@ -204,7 +204,7 @@ app.add.Button({
   id: 'bind-model-direct-write',
   text: '直接写 model（proxy 自动刷新）',
   onClick: () => {
-    const model = app.getModel<{profile: {name: string; city: string}}>();
+    const model = app.getModel();
     model.profile.name = `User-${Math.floor(Math.random() * 100)}`;
     model.profile.city = model.profile.city === 'Nanjing' ? 'Shanghai' : 'Nanjing';
     toast.show(`已更新为 ${model.profile.name} / ${model.profile.city}`, 'success');
