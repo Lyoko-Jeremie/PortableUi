@@ -1,5 +1,5 @@
 import {BaseComponent} from '../../core';
-import {ComponentElement, ComponentProps} from '../../types';
+import {ComponentElement, ComponentProps, ComponentState} from '../../types';
 import {applyCommonElementProps} from '../basic/internal';
 
 export interface TreeNode {
@@ -18,45 +18,52 @@ export interface TreeViewProps extends ComponentProps {
   onToggle?: (self: TreeView, event: MouseEvent, node: TreeNode, expanded: boolean) => void;
 }
 
-export class TreeView extends BaseComponent {
+export interface TreeViewState extends ComponentState {
+  nodes: TreeNode[];
+  selectedId: string;
+  expandedIds: string[];
+}
+
+export class TreeView extends BaseComponent<TreeViewState> {
   constructor(props: TreeViewProps = {}) {
     super(props);
   }
 
   protected render(): ComponentElement {
     const props = this.props as TreeViewProps;
+    const state = this.signalState();
     const root = document.createElement('div');
     const tree = document.createElement('ul');
 
     applyCommonElementProps(root, props, 'portableui-treeview');
     tree.className = 'portableui-treeview-list';
 
-    const expandedIds = new Set(props.expandedIds ?? []);
-    this.renderNodes(tree, props.nodes ?? [], expandedIds, props.selectedId, props);
+    const expandedIds = new Set(state.expandedIds ?? props.expandedIds ?? []);
+    this.renderNodes(tree, state.nodes ?? props.nodes ?? [], expandedIds, state.selectedId ?? props.selectedId, props);
 
     root.appendChild(tree);
     return root;
   }
 
   setNodes(nodes: TreeNode[]): void {
-    this.update({nodes});
+    this.signalState({...this.signalState(), nodes: [...nodes]});
   }
 
   setSelectedId(selectedId: string): void {
-    this.update({selectedId});
+    this.signalState({...this.signalState(), selectedId});
   }
 
   setExpandedIds(expandedIds: string[]): void {
-    this.update({expandedIds});
+    this.signalState({...this.signalState(), expandedIds: [...expandedIds]});
   }
 
   expandAll(): void {
-    const props = this.props as TreeViewProps;
-    this.update({expandedIds: this.collectNodeIds(props.nodes ?? [])});
+    const state = this.signalState();
+    this.signalState({...state, expandedIds: this.collectNodeIds(state.nodes ?? [])});
   }
 
   collapseAll(): void {
-    this.update({expandedIds: []});
+    this.signalState({...this.signalState(), expandedIds: []});
   }
 
   private renderNodes(
@@ -84,7 +91,8 @@ export class TreeView extends BaseComponent {
         toggle.textContent = expanded ? '-' : '+';
         toggle.disabled = node.disabled ?? false;
         toggle.addEventListener('click', (event) => {
-          const nextExpandedIds = new Set((this.props as TreeViewProps).expandedIds ?? []);
+          const currentState = this.signalState();
+          const nextExpandedIds = new Set(currentState.expandedIds ?? []);
           const nextExpanded = !nextExpandedIds.has(node.id);
           if (nextExpanded) {
             nextExpandedIds.add(node.id);
@@ -92,7 +100,7 @@ export class TreeView extends BaseComponent {
             nextExpandedIds.delete(node.id);
           }
 
-          this.update({expandedIds: [...nextExpandedIds]});
+          this.signalState({...currentState, expandedIds: [...nextExpandedIds]});
           props.onToggle?.(this, event as MouseEvent, node, nextExpanded);
         });
         row.appendChild(toggle);
@@ -110,14 +118,15 @@ export class TreeView extends BaseComponent {
         label.classList.add('portableui-treeview-label-selected');
       }
 
-      label.addEventListener('click', (event) => {
-        if (node.disabled || !(props.selectable ?? true)) {
-          return;
-        }
+       label.addEventListener('click', (event) => {
+         if (node.disabled || !(props.selectable ?? true)) {
+           return;
+         }
 
-        this.update({selectedId: node.id});
-        props.onSelect?.(this, event as MouseEvent, node);
-      });
+         const currentState = this.signalState();
+         this.signalState({...currentState, selectedId: node.id});
+         props.onSelect?.(this, event as MouseEvent, node);
+       });
 
       row.appendChild(label);
       item.appendChild(row);

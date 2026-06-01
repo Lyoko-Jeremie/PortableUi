@@ -1,5 +1,5 @@
 import {BaseComponent} from '../../core';
-import {ComponentElement, ComponentProps} from '../../types';
+import {ComponentElement, ComponentProps, ComponentState} from '../../types';
 import {applyCommonElementProps} from '../basic/internal';
 
 export type ToastType = 'info' | 'success' | 'warning' | 'error';
@@ -13,7 +13,13 @@ export interface ToastProps extends ComponentProps {
   onClose?: (self: Toast) => void;
 }
 
-export class Toast extends BaseComponent {
+export interface ToastState extends ComponentState {
+  message: string;
+  visible: boolean;
+  type: ToastType;
+}
+
+export class Toast extends BaseComponent<ToastState> {
   private autoCloseTimer: number | null = null;
 
   constructor(props: ToastProps = {}) {
@@ -22,16 +28,17 @@ export class Toast extends BaseComponent {
 
   protected render(): ComponentElement {
     const props = this.props as ToastProps;
+    const state = this.signalState();
     const root = document.createElement('div');
 
     applyCommonElementProps(root, props, 'portableui-toast');
 
-    root.classList.add(`portableui-toast-${props.type ?? 'info'}`);
-    root.style.display = props.visible ?? false ? 'flex' : 'none';
+    root.classList.add(`portableui-toast-${state.type ?? props.type ?? 'info'}`);
+    root.style.display = (state.visible ?? props.visible) ?? false ? 'flex' : 'none';
 
     const message = document.createElement('span');
     message.className = 'portableui-toast-message';
-    message.textContent = props.message ?? '';
+    message.textContent = state.message ?? props.message ?? '';
     root.appendChild(message);
 
     if (props.closable ?? true) {
@@ -43,7 +50,7 @@ export class Toast extends BaseComponent {
       root.appendChild(closeButton);
     }
 
-    if (props.visible) {
+    if (state.visible ?? props.visible) {
       this.scheduleAutoClose();
     } else {
       this.clearAutoCloseTimer();
@@ -53,24 +60,26 @@ export class Toast extends BaseComponent {
   }
 
   show(message?: string, type?: ToastType): void {
-    const nextProps: Partial<ToastProps> = {visible: true};
+    const nextState: Partial<ToastState> = {visible: true};
 
     if (message !== undefined) {
-      nextProps.message = message;
+      nextState.message = message;
     }
 
     if (type !== undefined) {
-      nextProps.type = type;
+      nextState.type = type;
     }
 
-    this.update(nextProps);
+    const currentState = this.signalState();
+    this.signalState({...currentState, ...nextState} as ToastState);
     this.scheduleAutoClose();
   }
 
   hide(): void {
-    const wasVisible = (this.props as ToastProps).visible ?? false;
+    const state = this.signalState();
+    const wasVisible = state.visible ?? (this.props as ToastProps).visible ?? false;
     this.clearAutoCloseTimer();
-    this.update({visible: false});
+    this.signalState({...state, visible: false});
 
     if (wasVisible) {
       (this.props as ToastProps).onClose?.(this);
@@ -78,11 +87,11 @@ export class Toast extends BaseComponent {
   }
 
   setMessage(message: string): void {
-    this.update({message});
+    this.signalState({...this.signalState(), message});
   }
 
   setType(type: ToastType): void {
-    this.update({type});
+    this.signalState({...this.signalState(), type});
   }
 
   override unmount(): void {
@@ -98,9 +107,9 @@ export class Toast extends BaseComponent {
   private scheduleAutoClose(): void {
     this.clearAutoCloseTimer();
 
-    const props = this.props as ToastProps;
-    const duration = props.duration ?? 3000;
-    if (duration <= 0 || !(props.visible ?? false)) {
+    const state = this.signalState();
+    const duration = (this.props as ToastProps).duration ?? 3000;
+    if (duration <= 0 || !(state.visible ?? (this.props as ToastProps).visible ?? false)) {
       return;
     }
 

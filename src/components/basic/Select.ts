@@ -1,5 +1,5 @@
 import {BaseComponent} from '../../core';
-import {ComponentElement, ComponentProps} from '../../types';
+import {ComponentElement, ComponentProps, ComponentState} from '../../types';
 import {applyCommonElementProps} from './internal';
 
 export interface SelectOption {
@@ -19,13 +19,19 @@ export interface SelectProps extends ComponentProps {
   onChange?: (self: Select, event: Event, value: string | string[]) => void;
 }
 
-export class Select extends BaseComponent {
+export interface SelectState extends ComponentState {
+  value: string | string[];
+  options: SelectOption[];
+}
+
+export class Select extends BaseComponent<SelectState> {
   constructor(props: SelectProps = {}) {
     super(props);
   }
 
   protected render(): ComponentElement {
     const props = this.props as SelectProps;
+    const state = this.signalState();
     const select = document.createElement('select');
 
     applyCommonElementProps(select, props, 'portableui-select');
@@ -37,9 +43,10 @@ export class Select extends BaseComponent {
       select.name = props.name;
     }
 
-    this.buildOptions(select, props);
+    this.buildOptions(select, {...props, options: state.options ?? props.options, value: state.value ?? props.value});
 
     select.addEventListener('change', (event) => {
+      const currentState = this.signalState();
       props.onChange?.(this, event, this.readSelectValue(select));
     });
 
@@ -56,11 +63,11 @@ export class Select extends BaseComponent {
   }
 
   setValue(value: string | string[]): void {
-    this.update({value});
+    this.signalState({...this.signalState(), value});
   }
 
   setOptions(options: SelectOption[]): void {
-    this.update({options});
+    this.signalState({...this.signalState(), options: [...options]});
   }
 
   private buildOptions(select: HTMLSelectElement, props: SelectProps): void {

@@ -1,5 +1,5 @@
 import {BaseComponent} from '../../core';
-import {ComponentElement, ComponentProps} from '../../types';
+import {ComponentElement, ComponentProps, ComponentState} from '../../types';
 import {applyCommonElementProps} from '../basic/internal';
 
 export interface TableColumn<T = Record<string, unknown>> {
@@ -20,13 +20,19 @@ export interface TableProps<T = Record<string, unknown>> extends ComponentProps 
   onRowClick?: (self: Table<T>, event: MouseEvent, row: T, rowIndex: number) => void;
 }
 
-export class Table<T = Record<string, unknown>> extends BaseComponent {
+export interface TableState<T = Record<string, unknown>> extends ComponentState {
+  data: T[];
+  columns: TableColumn<T>[];
+}
+
+export class Table<T = Record<string, unknown>> extends BaseComponent<TableState<T>> {
   constructor(props: TableProps<T> = {}) {
     super(props);
   }
 
   protected render(): ComponentElement {
     const props = this.props as TableProps<T>;
+    const state = this.signalState();
     const root = document.createElement('div');
     const table = document.createElement('table');
     const thead = document.createElement('thead');
@@ -46,8 +52,8 @@ export class Table<T = Record<string, unknown>> extends BaseComponent {
 
     table.className = 'portableui-table-element';
 
-    this.buildHeader(thead, props.columns ?? []);
-    this.buildRows(tbody, props.columns ?? [], props.data ?? [], props);
+    this.buildHeader(thead, state.columns ?? props.columns ?? []);
+    this.buildRows(tbody, state.columns ?? props.columns ?? [], state.data ?? props.data ?? [], props);
 
     table.appendChild(thead);
     table.appendChild(tbody);
@@ -57,25 +63,24 @@ export class Table<T = Record<string, unknown>> extends BaseComponent {
   }
 
   setRows(data: T[]): void {
-    this.update({data});
+    this.signalState({...this.signalState(), data: [...data]});
   }
 
   setColumns(columns: TableColumn<T>[]): void {
-    this.update({columns});
+    this.signalState({...this.signalState(), columns: [...columns]});
   }
 
   getData(): T[] {
-    const props = this.props as TableProps<T>;
-    return [...(props.data ?? [])];
+    return [...(this.signalState().data ?? [])];
   }
 
   appendRow(row: T): void {
-    const props = this.props as TableProps<T>;
-    this.update({data: [...(props.data ?? []), row]});
+    const state = this.signalState();
+    this.signalState({...state, data: [...(state.data ?? []), row]});
   }
 
   clearRows(): void {
-    this.update({data: []});
+    this.signalState({...this.signalState(), data: []});
   }
 
   private buildHeader(thead: HTMLTableSectionElement, columns: TableColumn<T>[]): void {

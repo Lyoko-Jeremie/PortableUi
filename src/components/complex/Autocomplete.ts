@@ -21,6 +21,8 @@ export interface AutocompleteProps extends ComponentProps {
 export interface AutocompleteState extends ComponentState {
   query: string;
   open: boolean;
+  value?: string;
+  options?: Array<string | AutocompleteOption>;
 }
 
 export class Autocomplete extends BaseComponent<AutocompleteState> {
@@ -115,7 +117,7 @@ export class Autocomplete extends BaseComponent<AutocompleteState> {
 
   setOptions(options: Array<string | AutocompleteOption>): void {
     const currentState = this.signalState();
-    this.signalState({...currentState, options});
+    this.signalState({...currentState, options: [...options]});
   }
 
   private normalizeOptions(options: Array<string | AutocompleteOption>): AutocompleteOption[] {

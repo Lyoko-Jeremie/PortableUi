@@ -13,7 +13,7 @@ const COMPONENT_INSTANCE_KEY = '__portableui_component_instance__';
 export interface BaseState {
 }
 
-export abstract class BaseComponent<S extends BaseState = BaseState> {
+export abstract class BaseComponent<S extends BaseState = any> {
   signalState: ReturnType<typeof signal<S>>;
 
   /** 组件 DOM 元素 */

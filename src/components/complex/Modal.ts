@@ -1,5 +1,5 @@
 import {BaseComponent} from '../../core';
-import {ComponentElement, ComponentProps} from '../../types';
+import {ComponentElement, ComponentProps, ComponentState} from '../../types';
 import {applyCommonElementProps} from '../basic/internal';
 
 export interface ModalProps extends ComponentProps {
@@ -18,20 +18,27 @@ export interface ModalProps extends ComponentProps {
   onCancel?: (self: Modal, event: MouseEvent) => void;
 }
 
-export class Modal extends BaseComponent {
+export interface ModalState extends ComponentState {
+  visible: boolean;
+  title: string;
+  content: string | HTMLElement | null;
+}
+
+export class Modal extends BaseComponent<ModalState> {
   constructor(props: ModalProps = {}) {
     super(props);
   }
 
   protected render(): ComponentElement {
     const props = this.props as ModalProps;
+    const state = this.signalState();
     const overlay = document.createElement('div');
     const container = document.createElement('div');
     const header = document.createElement('div');
     const body = document.createElement('div');
 
     applyCommonElementProps(overlay, props, 'portableui-modal');
-    overlay.style.display = props.visible ?? false ? 'flex' : 'none';
+    overlay.style.display = (state.visible ?? props.visible) ?? false ? 'flex' : 'none';
 
     overlay.classList.add('portableui-modal-overlay');
     container.className = 'portableui-modal-container';
@@ -44,7 +51,7 @@ export class Modal extends BaseComponent {
 
     const title = document.createElement('h3');
     title.className = 'portableui-modal-title';
-    title.textContent = props.title ?? '';
+    title.textContent = state.title ?? props.title ?? '';
     header.appendChild(title);
 
     if (props.showCloseButton ?? true) {
@@ -56,10 +63,12 @@ export class Modal extends BaseComponent {
       header.appendChild(closeButton);
     }
 
-    if (props.content instanceof HTMLElement) {
+    if (state.content instanceof HTMLElement) {
+      body.appendChild(state.content);
+    } else if (props.content instanceof HTMLElement) {
       body.appendChild(props.content);
     } else {
-      body.textContent = props.content ?? '';
+      body.textContent = (state.content ?? props.content) ?? '';
     }
 
     container.appendChild(header);
@@ -74,6 +83,7 @@ export class Modal extends BaseComponent {
       cancelBtn.className = 'portableui-modal-cancel';
       cancelBtn.textContent = props.cancelText ?? 'Cancel';
       cancelBtn.addEventListener('click', (event) => {
+        const currentState = this.signalState();
         props.onCancel?.(this, event as MouseEvent);
         this.close();
       });
@@ -83,6 +93,7 @@ export class Modal extends BaseComponent {
       confirmBtn.className = 'portableui-modal-confirm';
       confirmBtn.textContent = props.confirmText ?? 'Confirm';
       confirmBtn.addEventListener('click', (event) => {
+        const currentState = this.signalState();
         props.onConfirm?.(this, event as MouseEvent);
       });
 
@@ -106,23 +117,26 @@ export class Modal extends BaseComponent {
   }
 
   open(): void {
-    const wasVisible = (this.props as ModalProps).visible ?? false;
-    this.update({visible: true});
+    const state = this.signalState();
+    const wasVisible = state.visible ?? (this.props as ModalProps).visible ?? false;
+    this.signalState({...state, visible: true});
     if (!wasVisible) {
       (this.props as ModalProps).onOpen?.(this);
     }
   }
 
   close(): void {
-    const wasVisible = (this.props as ModalProps).visible ?? false;
-    this.update({visible: false});
+    const state = this.signalState();
+    const wasVisible = state.visible ?? (this.props as ModalProps).visible ?? false;
+    this.signalState({...state, visible: false});
     if (wasVisible) {
       (this.props as ModalProps).onClose?.(this);
     }
   }
 
   toggle(): void {
-    if ((this.props as ModalProps).visible ?? false) {
+    const state = this.signalState();
+    if (state.visible ?? (this.props as ModalProps).visible ?? false) {
       this.close();
     } else {
       this.open();
@@ -130,11 +144,11 @@ export class Modal extends BaseComponent {
   }
 
   setTitle(title: string): void {
-    this.update({title});
+    this.signalState({...this.signalState(), title});
   }
 
   setContent(content: string | HTMLElement): void {
-    this.update({content});
+    this.signalState({...this.signalState(), content});
   }
 }
 

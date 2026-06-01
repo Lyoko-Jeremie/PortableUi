@@ -1,5 +1,5 @@
 import {BaseComponent} from '../../core';
-import {ComponentElement, ComponentProps} from '../../types';
+import {ComponentElement, ComponentProps, ComponentState} from '../../types';
 import {applyCommonElementProps} from './internal';
 
 export interface SliderProps extends ComponentProps {
@@ -13,13 +13,18 @@ export interface SliderProps extends ComponentProps {
   onChange?: (self: Slider, event: Event, value: number) => void;
 }
 
-export class Slider extends BaseComponent {
+export interface SliderState extends ComponentState {
+  value: number;
+}
+
+export class Slider extends BaseComponent<SliderState> {
   constructor(props: SliderProps = {}) {
     super(props);
   }
 
   protected render(): ComponentElement {
     const props = this.props as SliderProps;
+    const state = this.signalState();
     const wrapper = document.createElement('div');
     const input = document.createElement('input');
 
@@ -29,7 +34,7 @@ export class Slider extends BaseComponent {
     input.min = String(props.min ?? 0);
     input.max = String(props.max ?? 100);
     input.step = String(props.step ?? 1);
-    input.value = String(props.value ?? props.min ?? 0);
+    input.value = String(state.value ?? props.value ?? props.min ?? 0);
     input.disabled = props.disabled ?? false;
 
     wrapper.appendChild(input);
@@ -47,10 +52,12 @@ export class Slider extends BaseComponent {
       if (valueDisplay) {
         valueDisplay.textContent = input.value;
       }
+      const currentState = this.signalState();
       props.onInput?.(this, event, currentValue);
     });
 
     input.addEventListener('change', (event) => {
+      const currentState = this.signalState();
       props.onChange?.(this, event, Number(input.value));
     });
 
@@ -63,7 +70,7 @@ export class Slider extends BaseComponent {
   }
 
   setValue(value: number): void {
-    this.update({value});
+    this.signalState({...this.signalState(), value});
   }
 
   private getInputElement(): HTMLInputElement | null {

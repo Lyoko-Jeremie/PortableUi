@@ -1,5 +1,5 @@
 import {BaseComponent} from '../../core';
-import {ComponentElement, ComponentProps} from '../../types';
+import {ComponentElement, ComponentProps, ComponentState} from '../../types';
 import {applyCommonElementProps} from './internal';
 
 export interface CheckboxProps extends ComponentProps {
@@ -13,13 +13,18 @@ export interface CheckboxProps extends ComponentProps {
   onChange?: (self: Checkbox, event: Event, checked: boolean) => void;
 }
 
-export class Checkbox extends BaseComponent {
+export interface CheckboxState extends ComponentState {
+  checked: boolean;
+}
+
+export class Checkbox extends BaseComponent<CheckboxState> {
   constructor(props: CheckboxProps = {}) {
     super(props);
   }
 
   protected render(): ComponentElement {
     const props = this.props as CheckboxProps;
+    const state = this.signalState();
     const wrapper = document.createElement('label');
     const input = document.createElement('input');
     const text = document.createElement('span');
@@ -27,7 +32,7 @@ export class Checkbox extends BaseComponent {
     applyCommonElementProps(wrapper, props, 'portableui-checkbox');
 
     input.type = 'checkbox';
-    input.checked = props.checked ?? false;
+    input.checked = state.checked ?? props.checked ?? false;
     input.disabled = props.disabled ?? false;
     input.required = props.required ?? false;
     input.indeterminate = props.indeterminate ?? false;
@@ -43,6 +48,7 @@ export class Checkbox extends BaseComponent {
     text.textContent = props.label ?? '';
 
     input.addEventListener('change', (event) => {
+      const currentState = this.signalState();
       props.onChange?.(this, event, input.checked);
     });
 
@@ -57,7 +63,7 @@ export class Checkbox extends BaseComponent {
   }
 
   setChecked(checked: boolean): void {
-    this.update({checked});
+    this.signalState({...this.signalState(), checked});
   }
 
   private getInputElement(): HTMLInputElement | null {

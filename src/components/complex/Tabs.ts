@@ -1,5 +1,5 @@
 import {BaseComponent} from '../../core';
-import {ComponentElement, ComponentProps} from '../../types';
+import {ComponentElement, ComponentProps, ComponentState} from '../../types';
 import {applyCommonElementProps} from '../basic/internal';
 import {Container,} from '../container/Container';
 import type {ContainerProps} from '../container/Container';
@@ -26,13 +26,19 @@ export interface TabsProps extends ComponentProps {
   onTabChange?: (self: Tabs, event: MouseEvent, tab: TabItem) => void;
 }
 
-export class Tabs extends BaseComponent {
+export interface TabsState extends ComponentState {
+  tabs: TabItem[];
+  activeTabId: string;
+}
+
+export class Tabs extends BaseComponent<TabsState> {
   constructor(props: TabsProps = {}) {
     super(props);
   }
 
   protected render(): ComponentElement {
     const props = this.props as TabsProps;
+    const state = this.signalState();
     const root = document.createElement('div');
     const header = document.createElement('div');
     const body = document.createElement('div');
@@ -45,8 +51,8 @@ export class Tabs extends BaseComponent {
     }
     body.className = 'portableui-tabs-body';
 
-    const tabs = props.tabs ?? [];
-    const activeTabId = this.resolveActiveTabId(tabs, props.activeTabId);
+    const tabs = state.tabs ?? props.tabs ?? [];
+    const activeTabId = this.resolveActiveTabId(tabs, state.activeTabId ?? props.activeTabId);
 
     for (const tab of tabs) {
       const button = document.createElement('button');
@@ -63,7 +69,8 @@ export class Tabs extends BaseComponent {
         if (tab.disabled) {
           return;
         }
-        this.update({activeTabId: tab.id});
+        const currentState = this.signalState();
+        this.signalState({...currentState, activeTabId: tab.id});
         props.onTabChange?.(this, event as MouseEvent, tab);
       });
 
@@ -88,13 +95,13 @@ export class Tabs extends BaseComponent {
   }
 
   setTabs(tabs: TabItem[]): void {
-    this.update({tabs});
+    this.signalState({...this.signalState(), tabs: [...tabs]});
   }
 
   appendTab<C extends BaseComponent = Container>(tab: TabItem<C>): C {
-    const props = this.props as TabsProps;
-    const tabs = [...(props.tabs ?? []), tab];
-    this.update({tabs});
+    const state = this.signalState();
+    const tabs = [...(state.tabs ?? []), tab as unknown as TabItem<Container>];
+    this.signalState({...state, tabs});
     return tab.content;
   }
 
@@ -119,13 +126,13 @@ export class Tabs extends BaseComponent {
   }
 
   setActiveTab(tabId: string): void {
-    this.update({activeTabId: tabId});
+    this.signalState({...this.signalState(), activeTabId: tabId});
   }
 
   getActiveTabId(): string {
-    const props = this.props as TabsProps;
-    const tabs = props.tabs ?? [];
-    return this.resolveActiveTabId(tabs, props.activeTabId) ?? '';
+    const state = this.signalState();
+    const tabs = state.tabs ?? [];
+    return this.resolveActiveTabId(tabs, state.activeTabId) ?? '';
   }
 
   private resolveActiveTabId(tabs: TabItem[], activeTabId: string | undefined): string | undefined {

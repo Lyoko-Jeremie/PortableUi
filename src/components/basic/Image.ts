@@ -1,5 +1,5 @@
 import {BaseComponent} from '../../core';
-import {ComponentElement, ComponentProps} from '../../types';
+import {ComponentElement, ComponentProps, ComponentState} from '../../types';
 import {applyCommonElementProps} from './internal';
 
 export interface ImageProps extends ComponentProps {
@@ -15,19 +15,25 @@ export interface ImageProps extends ComponentProps {
   onError?: (self: Image, event: Event) => void;
 }
 
-export class Image extends BaseComponent {
+export interface ImageState extends ComponentState {
+  src: string;
+  alt: string;
+}
+
+export class Image extends BaseComponent<ImageState> {
   constructor(props: ImageProps = {}) {
     super(props);
   }
 
   protected render(): ComponentElement {
     const props = this.props as ImageProps;
+    const state = this.signalState();
     const image = document.createElement('img');
 
     applyCommonElementProps(image, props, 'portableui-image');
 
-    image.src = props.src ?? '';
-    image.alt = props.alt ?? '';
+    image.src = state.src ?? props.src ?? '';
+    image.alt = state.alt ?? props.alt ?? '';
 
     if (typeof props.width === 'number') {
       image.width = props.width;
@@ -58,10 +64,12 @@ export class Image extends BaseComponent {
     }
 
     image.addEventListener('load', (event) => {
+      const currentState = this.signalState();
       props.onLoad?.(this, event);
     });
 
     image.addEventListener('error', (event) => {
+      const currentState = this.signalState();
       props.onError?.(this, event);
     });
 
@@ -74,11 +82,11 @@ export class Image extends BaseComponent {
   }
 
   setSrc(src: string): void {
-    this.update({src});
+    this.signalState({...this.signalState(), src});
   }
 
   setAlt(alt: string): void {
-    this.update({alt});
+    this.signalState({...this.signalState(), alt});
   }
 }
 

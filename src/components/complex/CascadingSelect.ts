@@ -1,5 +1,5 @@
 import {BaseComponent} from '../../core';
-import {ComponentElement, ComponentProps} from '../../types';
+import {ComponentElement, ComponentProps, ComponentState} from '../../types';
 import {applyCommonElementProps} from '../basic/internal';
 
 export interface CascadingOption {
@@ -15,19 +15,25 @@ export interface CascadingSelectProps extends ComponentProps {
   onChange?: (self: CascadingSelect, event: Event, valuePath: string[]) => void;
 }
 
-export class CascadingSelect extends BaseComponent {
+export interface CascadingSelectState extends ComponentState {
+  valuePath: string[];
+  options: CascadingOption[];
+}
+
+export class CascadingSelect extends BaseComponent<CascadingSelectState> {
   constructor(props: CascadingSelectProps = {}) {
     super(props);
   }
 
   protected render(): ComponentElement {
     const props = this.props as CascadingSelectProps;
+    const state = this.signalState();
     const root = document.createElement('div');
 
     applyCommonElementProps(root, props, 'portableui-cascading-select');
 
-    const valuePath = [...(props.valuePath ?? [])];
-    let levelOptions = props.options ?? [];
+    const valuePath = [...(state.valuePath ?? props.valuePath ?? [])];
+    let levelOptions = state.options ?? props.options ?? [];
     let level = 0;
 
     while (levelOptions.length > 0) {
@@ -54,7 +60,8 @@ export class CascadingSelect extends BaseComponent {
           nextValuePath.push(select.value);
         }
 
-        this.update({valuePath: nextValuePath});
+        const currentState = this.signalState();
+        this.signalState({...currentState, valuePath: nextValuePath});
         props.onChange?.(this, event, nextValuePath);
       });
 
@@ -74,15 +81,15 @@ export class CascadingSelect extends BaseComponent {
   }
 
   setValuePath(valuePath: string[]): void {
-    this.update({valuePath});
+    this.signalState({...this.signalState(), valuePath: [...valuePath]});
   }
 
   getValuePath(): string[] {
-    return [...(((this.props as CascadingSelectProps).valuePath) ?? [])];
+    return [...(this.signalState().valuePath ?? [])];
   }
 
   setOptions(options: CascadingOption[]): void {
-    this.update({options});
+    this.signalState({...this.signalState(), options: [...options]});
   }
 }
 

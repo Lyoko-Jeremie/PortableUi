@@ -1,5 +1,5 @@
 import {BaseComponent} from '../../core';
-import {ComponentElement, ComponentProps} from '../../types';
+import {ComponentElement, ComponentProps, ComponentState} from '../../types';
 import {applyCommonElementProps} from './internal';
 
 export interface CanvasProps extends ComponentProps {
@@ -12,22 +12,29 @@ export interface CanvasProps extends ComponentProps {
   onClick?: (self: Canvas, event: MouseEvent) => void;
 }
 
-export class Canvas extends BaseComponent {
+export interface CanvasState extends ComponentState {
+  width: number;
+  height: number;
+}
+
+export class Canvas extends BaseComponent<CanvasState> {
   constructor(props: CanvasProps = {}) {
     super(props);
   }
 
   protected render(): ComponentElement {
     const props = this.props as CanvasProps;
+    const state = this.signalState();
     const canvas = document.createElement('canvas');
 
     applyCommonElementProps(canvas, props, 'portableui-canvas');
 
-    canvas.width = props.width ?? 300;
-    canvas.height = props.height ?? 150;
+    canvas.width = state.width ?? props.width ?? 300;
+    canvas.height = state.height ?? props.height ?? 150;
 
     if (props.onClick) {
       canvas.addEventListener('click', (event) => {
+        const currentState = this.signalState();
         props.onClick?.(this, event as MouseEvent);
       });
     }
@@ -66,7 +73,7 @@ export class Canvas extends BaseComponent {
   }
 
   setSize(width: number, height: number): void {
-    this.update({width, height});
+    this.signalState({...this.signalState(), width, height});
   }
 
   toDataURL(type?: string, quality?: number): string {

@@ -1,5 +1,5 @@
 import {BaseComponent} from '../../core';
-import {ComponentElement, ComponentProps} from '../../types';
+import {ComponentElement, ComponentProps, ComponentState} from '../../types';
 import {applyCommonElementProps} from './internal';
 
 export interface RadioProps extends ComponentProps {
@@ -12,13 +12,18 @@ export interface RadioProps extends ComponentProps {
   onChange?: (self: Radio, event: Event, checked: boolean) => void;
 }
 
-export class Radio extends BaseComponent {
+export interface RadioState extends ComponentState {
+  checked: boolean;
+}
+
+export class Radio extends BaseComponent<RadioState> {
   constructor(props: RadioProps = {}) {
     super(props);
   }
 
   protected render(): ComponentElement {
     const props = this.props as RadioProps;
+    const state = this.signalState();
     const wrapper = document.createElement('label');
     const input = document.createElement('input');
     const text = document.createElement('span');
@@ -26,7 +31,7 @@ export class Radio extends BaseComponent {
     applyCommonElementProps(wrapper, props, 'portableui-radio');
 
     input.type = 'radio';
-    input.checked = props.checked ?? false;
+    input.checked = state.checked ?? props.checked ?? false;
     input.disabled = props.disabled ?? false;
     input.required = props.required ?? false;
 
@@ -41,6 +46,7 @@ export class Radio extends BaseComponent {
     text.textContent = props.label ?? '';
 
     input.addEventListener('change', (event) => {
+      const currentState = this.signalState();
       props.onChange?.(this, event, input.checked);
     });
 
@@ -55,7 +61,7 @@ export class Radio extends BaseComponent {
   }
 
   setChecked(checked: boolean): void {
-    this.update({checked});
+    this.signalState({...this.signalState(), checked});
   }
 
   private getInputElement(): HTMLInputElement | null {

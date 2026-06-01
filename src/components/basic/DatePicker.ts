@@ -1,5 +1,5 @@
 import {BaseComponent} from '../../core';
-import {ComponentElement, ComponentProps} from '../../types';
+import {ComponentElement, ComponentProps, ComponentState} from '../../types';
 import {applyCommonElementProps} from './internal';
 
 export interface DatePickerProps extends ComponentProps {
@@ -11,19 +11,24 @@ export interface DatePickerProps extends ComponentProps {
   onChange?: (self: DatePicker, event: Event, value: string) => void;
 }
 
-export class DatePicker extends BaseComponent {
+export interface DatePickerState extends ComponentState {
+  value: string;
+}
+
+export class DatePicker extends BaseComponent<DatePickerState> {
   constructor(props: DatePickerProps = {}) {
     super(props);
   }
 
   protected render(): ComponentElement {
     const props = this.props as DatePickerProps;
+    const state = this.signalState();
     const input = document.createElement('input');
 
     applyCommonElementProps(input, props, 'portableui-date-picker');
 
     input.type = 'date';
-    input.value = props.value ?? '';
+    input.value = state.value ?? props.value ?? '';
     input.disabled = props.disabled ?? false;
     input.required = props.required ?? false;
 
@@ -36,6 +41,7 @@ export class DatePicker extends BaseComponent {
     }
 
     input.addEventListener('change', (event) => {
+      const currentState = this.signalState();
       props.onChange?.(this, event, input.value);
     });
 
@@ -48,7 +54,7 @@ export class DatePicker extends BaseComponent {
   }
 
   setValue(value: string): void {
-    this.update({value});
+    this.signalState({...this.signalState(), value});
   }
 }
 

@@ -1,5 +1,5 @@
 import {BaseComponent} from '../../core';
-import {ComponentElement, ComponentProps} from '../../types';
+import {ComponentElement, ComponentProps, ComponentState} from '../../types';
 import {applyCommonElementProps} from './internal';
 
 export interface InputProps extends ComponentProps {
@@ -17,18 +17,23 @@ export interface InputProps extends ComponentProps {
   onChange?: (self: Input, event: Event, value: string) => void;
 }
 
-export class Input extends BaseComponent {
+export interface InputState extends ComponentState {
+  value: string;
+}
+
+export class Input extends BaseComponent<InputState> {
   constructor(props: InputProps = {}) {
     super(props);
   }
 
   protected render(): ComponentElement {
     const props = this.props as InputProps;
+    const state = this.signalState();
     const input = document.createElement('input');
 
     applyCommonElementProps(input, props, 'portableui-input');
     input.type = props.type ?? 'text';
-    input.value = props.value ?? '';
+    input.value = state.value ?? props.value ?? '';
     input.placeholder = props.placeholder ?? '';
     input.disabled = props.disabled ?? false;
     input.readOnly = props.readonly ?? false;
@@ -51,10 +56,12 @@ export class Input extends BaseComponent {
     }
 
     input.addEventListener('input', (event) => {
+      const currentState = this.signalState();
       props.onInput?.(this, event, input.value);
     });
 
     input.addEventListener('change', (event) => {
+      const currentState = this.signalState();
       props.onChange?.(this, event, input.value);
     });
 
@@ -67,7 +74,7 @@ export class Input extends BaseComponent {
   }
 
   setValue(value: string): void {
-    this.update({value});
+    this.signalState({...this.signalState(), value});
   }
 
   focus(): void {

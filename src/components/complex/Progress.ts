@@ -1,5 +1,5 @@
 import {BaseComponent} from '../../core';
-import {ComponentElement, ComponentProps} from '../../types';
+import {ComponentElement, ComponentProps, ComponentState} from '../../types';
 import {applyCommonElementProps} from '../basic/internal';
 
 export interface ProgressProps extends ComponentProps {
@@ -13,13 +13,20 @@ export interface ProgressProps extends ComponentProps {
   height?: string | number;
 }
 
-export class Progress extends BaseComponent {
+export interface ProgressState extends ComponentState {
+  value: number;
+  min: number;
+  max: number;
+}
+
+export class Progress extends BaseComponent<ProgressState> {
   constructor(props: ProgressProps = {}) {
     super(props);
   }
 
   protected render(): ComponentElement {
     const props = this.props as ProgressProps;
+    const state = this.signalState();
     const root = document.createElement('div');
     const track = document.createElement('div');
     const bar = document.createElement('div');
@@ -29,9 +36,9 @@ export class Progress extends BaseComponent {
     track.className = 'portableui-progress-track';
     bar.className = 'portableui-progress-bar';
 
-    const min = props.min ?? 0;
-    const max = props.max ?? 100;
-    const value = this.clamp(props.value ?? 0, min, max);
+    const min = state.min ?? props.min ?? 0;
+    const max = state.max ?? props.max ?? 100;
+    const value = this.clamp(state.value ?? props.value ?? 0, min, max);
     const ratio = max > min ? ((value - min) / (max - min)) * 100 : 0;
 
     if (props.indeterminate ?? false) {
@@ -70,17 +77,17 @@ export class Progress extends BaseComponent {
   }
 
   setValue(value: number): void {
-    this.update({value});
+    this.signalState({...this.signalState(), value});
   }
 
   increment(step: number = 1): void {
-    const props = this.props as ProgressProps;
-    const nextValue = (props.value ?? 0) + step;
-    this.update({value: nextValue});
+    const state = this.signalState();
+    const nextValue = (state.value ?? 0) + step;
+    this.signalState({...state, value: nextValue});
   }
 
   setRange(min: number, max: number): void {
-    this.update({min, max});
+    this.signalState({...this.signalState(), min, max});
   }
 
   private clamp(value: number, min: number, max: number): number {

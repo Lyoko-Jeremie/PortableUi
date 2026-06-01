@@ -1,5 +1,5 @@
 import {BaseComponent} from '../../core';
-import {ComponentElement, ComponentProps} from '../../types';
+import {ComponentElement, ComponentProps, ComponentState} from '../../types';
 import {applyCommonElementProps} from './internal';
 
 export interface TextBoxProps extends ComponentProps {
@@ -15,17 +15,22 @@ export interface TextBoxProps extends ComponentProps {
   onChange?: (self: TextBox, event: Event, value: string) => void;
 }
 
-export class TextBox extends BaseComponent {
+export interface TextBoxState extends ComponentState {
+  value: string;
+}
+
+export class TextBox extends BaseComponent<TextBoxState> {
   constructor(props: TextBoxProps = {}) {
     super(props);
   }
 
   protected render(): ComponentElement {
     const props = this.props as TextBoxProps;
+    const state = this.signalState();
     const textarea = document.createElement('textarea');
 
     applyCommonElementProps(textarea, props, 'portableui-textbox');
-    textarea.value = props.value ?? '';
+    textarea.value = state.value ?? props.value ?? '';
     textarea.placeholder = props.placeholder ?? '';
     textarea.rows = props.rows ?? 4;
     textarea.cols = props.cols ?? 30;
@@ -38,10 +43,12 @@ export class TextBox extends BaseComponent {
     }
 
     textarea.addEventListener('input', (event) => {
+      const currentState = this.signalState();
       props.onInput?.(this, event, textarea.value);
     });
 
     textarea.addEventListener('change', (event) => {
+      const currentState = this.signalState();
       props.onChange?.(this, event, textarea.value);
     });
 
@@ -54,7 +61,7 @@ export class TextBox extends BaseComponent {
   }
 
   setValue(value: string): void {
-    this.update({value});
+    this.signalState({...this.signalState(), value});
   }
 }
 

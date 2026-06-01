@@ -1,5 +1,5 @@
 import {BaseComponent} from '../../core';
-import {ComponentElement, ComponentProps} from '../../types';
+import {ComponentElement, ComponentProps, ComponentState} from '../../types';
 import {applyCommonElementProps} from './internal';
 
 export interface ButtonProps extends ComponentProps {
@@ -9,22 +9,29 @@ export interface ButtonProps extends ComponentProps {
   onClick?: (self: Button, event: MouseEvent) => void;
 }
 
-export class Button extends BaseComponent {
+export interface ButtonState extends ComponentState {
+  text: string | null;
+  disabled: boolean;
+}
+
+export class Button extends BaseComponent<ButtonState> {
   constructor(props: ButtonProps = {}) {
     super(props);
   }
 
   protected render(): ComponentElement {
     const props = this.props as ButtonProps;
+    const state = this.signalState();
     const button = document.createElement('button');
 
     applyCommonElementProps(button, props, 'portableui-button');
     button.type = props.type ?? 'button';
-    button.disabled = props.disabled ?? false;
-    button.textContent = props.text ?? '';
+    button.disabled = state.disabled ?? props.disabled ?? false;
+    button.textContent = (state.text ?? props.text) ?? '';
 
     if (props.onClick) {
       button.addEventListener('click', (event) => {
+        const currentState = this.signalState();
         props.onClick?.(this, event as MouseEvent);
       });
     }
@@ -33,11 +40,11 @@ export class Button extends BaseComponent {
   }
 
   setText(text: string): void {
-    this.update({text});
+    this.signalState({...this.signalState(), text});
   }
 
   setDisabled(disabled: boolean): void {
-    this.update({disabled});
+    this.signalState({...this.signalState(), disabled});
   }
 }
 
