@@ -1,4 +1,5 @@
 import {BaseComponent} from '../../core';
+import {effect} from 'alien-signals';
 import {ComponentElement, ComponentProps, ComponentState} from '../../types';
 import {applyCommonElementProps} from './internal';
 
@@ -21,7 +22,11 @@ export class Label extends BaseComponent<LabelState> {
     const label = document.createElement('label');
 
     applyCommonElementProps(label, props, 'portableui-label');
-    label.textContent = props.text ?? '';
+    const state = this.signalState();
+
+    effect(() => {
+      label.textContent = state.text ?? '';
+    });
 
     if (props.htmlFor) {
       label.htmlFor = props.htmlFor;

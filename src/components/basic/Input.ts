@@ -1,4 +1,5 @@
 import {BaseComponent} from '../../core';
+import {effect} from 'alien-signals';
 import {ComponentElement, ComponentProps, ComponentState} from '../../types';
 import {applyCommonElementProps} from './internal';
 
@@ -33,7 +34,11 @@ export class Input extends BaseComponent<InputState> {
 
     applyCommonElementProps(input, props, 'portableui-input');
     input.type = props.type ?? 'text';
-    input.value = state.value ?? props.value ?? '';
+
+    effect(() => {
+      input.value = state.value ?? '';
+    });
+
     input.placeholder = props.placeholder ?? '';
     input.disabled = props.disabled ?? false;
     input.readOnly = props.readonly ?? false;

@@ -1,4 +1,5 @@
 import {BaseComponent} from '../../core';
+import {effect} from 'alien-signals';
 import {ComponentElement, ComponentProps, ComponentState} from '../../types';
 import {applyCommonElementProps} from './internal';
 
@@ -26,8 +27,14 @@ export class Button extends BaseComponent<ButtonState> {
 
     applyCommonElementProps(button, props, 'portableui-button');
     button.type = props.type ?? 'button';
-    button.disabled = state.disabled ?? props.disabled ?? false;
-    button.textContent = (state.text ?? props.text) ?? '';
+
+    effect(() => {
+      button.disabled = state.disabled ?? false;
+    });
+
+    effect(() => {
+      button.textContent = state.text ?? '';
+    });
 
     if (props.onClick) {
       button.addEventListener('click', (event) => {

@@ -1,4 +1,5 @@
 import {BaseComponent} from '../../core';
+import {effect} from 'alien-signals';
 import {ComponentElement, ComponentProps, ComponentState} from '../../types';
 import {applyCommonElementProps} from './internal';
 
@@ -15,6 +16,7 @@ export interface CheckboxProps extends ComponentProps {
 
 export interface CheckboxState extends ComponentState {
   checked: boolean;
+  label?: string;
 }
 
 export class Checkbox extends BaseComponent<CheckboxState> {
@@ -29,10 +31,14 @@ export class Checkbox extends BaseComponent<CheckboxState> {
     const input = document.createElement('input');
     const text = document.createElement('span');
 
+    input.type = 'checkbox';
+
     applyCommonElementProps(wrapper, props, 'portableui-checkbox');
 
-    input.type = 'checkbox';
-    input.checked = state.checked ?? props.checked ?? false;
+    effect(() => {
+      input.checked = state.checked ?? false;
+    });
+
     input.disabled = props.disabled ?? false;
     input.required = props.required ?? false;
     input.indeterminate = props.indeterminate ?? false;
@@ -45,7 +51,9 @@ export class Checkbox extends BaseComponent<CheckboxState> {
       input.value = props.value;
     }
 
-    text.textContent = props.label ?? '';
+    effect(() => {
+      text.textContent = state.label ?? '';
+    });
 
     input.addEventListener('change', (event) => {
       props.onChange?.(this, event, input.checked);
