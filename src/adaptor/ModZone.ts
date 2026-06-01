@@ -1,8 +1,8 @@
 import 'zone.js';
 
 /**
- * Minimal Zone contract used by this helper.
- * Keep it intentionally narrow so the helper does not depend on full zone typings.
+ * 本工具使用的最小 Zone 契约。
+ * 这里故意保持类型收敛，避免依赖 zone.js 的完整类型定义。
  */
 type ZoneLike = {
   name?: string;
@@ -14,7 +14,7 @@ type ZoneGlobal = {
   current?: ZoneLike;
 };
 
-/** Options for creating a mod-specific zone facade. */
+/** 创建 mod 专属 zone 门面的配置项。 */
 export interface CreateModZoneOptions {
   name?: string;
   prefix?: string;
@@ -23,7 +23,7 @@ export interface CreateModZoneOptions {
   rethrowErrors?: boolean;
 }
 
-/** Structured metadata passed to mod error reporters. */
+/** 传给 mod 错误上报器的结构化上下文信息。 */
 export interface ModZoneErrorContext {
   zoneName: string;
   phase: 'runGuarded' | 'wrap';
@@ -33,10 +33,10 @@ export interface ModZoneErrorContext {
 export type ModZoneErrorReporter = (error: unknown, context: ModZoneErrorContext) => void;
 
 /**
- * Error policy for guarded execution.
- * - onError: custom sink for observability.
- * - rethrow: fail-fast when needed.
- * - fallback: return value when error is swallowed.
+ * 受保护执行（guarded）时的错误策略。
+ * - onError：自定义错误上报出口，便于观测。
+ * - rethrow：是否在上报后继续抛出，启用快速失败。
+ * - fallback：当错误被吞掉时返回的兜底值。
  */
 export interface ModZoneGuardOptions<T = unknown> {
   onError?: ModZoneErrorReporter;
@@ -44,43 +44,43 @@ export interface ModZoneGuardOptions<T = unknown> {
   fallback?: T | (() => T);
 }
 
-/** Wrapper options for external callbacks. */
+/** 外部回调包装器的可选项。 */
 export interface ModZoneWrapOptions<TResult = unknown> extends ModZoneGuardOptions<TResult> {
   outer?: boolean;
   guarded?: boolean;
 }
 
 /**
- * Public mod-zone facade.
- * API remains available even when Zone is unavailable (graceful no-op mode).
+ * 对外公开的 mod-zone 门面。
+ * 即使运行时没有 Zone，也会提供可用 API（优雅降级为 no-op 模式）。
  */
 export interface ModZone {
   readonly name: string;
   readonly enabled: boolean;
-  /** Alias of runIn. */
+  /** runIn 的别名。 */
   run<T>(callback: () => T): T;
-  /** Run logic inside the mod zone. */
+  /** 在 mod zone 内执行逻辑。 */
   runIn<T>(callback: () => T): T;
-  /** Run logic inside the outer zone captured at create-time. */
+  /** 在创建时捕获的外层 zone 中执行逻辑。 */
   runOuter<T>(callback: () => T): T;
-  /** Guard execution with centralized error reporting and optional fallback. */
+  /** 使用统一错误上报与可选兜底值执行逻辑。 */
   runGuarded<T>(callback: () => T, options?: ModZoneGuardOptions<T>): T | undefined;
   /**
-   * Wrap external callbacks so they execute in the desired zone with optional guard policy.
-   * The wrapper preserves original `this` and arguments.
+   * 包装外部回调，使其在目标 zone 中运行，并可附加 guarded 策略。
+   * 包装后会保持原始的 `this` 与参数语义。
    */
   wrap<TArgs extends any[], TResult>(
     callback: (...args: TArgs) => TResult,
     options?: ModZoneWrapOptions<TResult>
   ): (...args: TArgs) => TResult | undefined;
-  /** Create a child mod zone under current zone context. */
+  /** 在当前 zone 上下文下派生一个子 mod zone。 */
   fork(name: string, options?: Omit<CreateModZoneOptions, 'name'>): ModZone;
 }
 
 const DEFAULT_ZONE_NAME = 'mod';
 const DEFAULT_PREFIX = 'PortableUiMod';
 
-/** Returns the current zone if zone.js is active, otherwise null. */
+/** 若 zone.js 已生效则返回当前 zone，否则返回 null。 */
 function getCurrentZone(): ZoneLike | null {
   const zoneCtor = (globalThis as typeof globalThis & {Zone?: ZoneGlobal}).Zone;
   if (!zoneCtor?.current || typeof zoneCtor.current.run !== 'function') {
@@ -94,7 +94,7 @@ function runDirect<T>(callback: () => T): T {
   return callback();
 }
 
-/** Default error reporter used when callers do not provide one. */
+/** 调用方未提供上报器时使用的默认错误上报函数。 */
 function defaultErrorReporter(error: unknown, context: ModZoneErrorContext): void {
   console.error(`[PortableUi ModZone Error][${context.zoneName}]`, error, context);
 }
@@ -128,7 +128,7 @@ function normalizeOptions(options: string | CreateModZoneOptions | undefined): R
 }
 
 export function createModZone(options?: string | CreateModZoneOptions): ModZone {
-  // Normalize once so all branches share identical defaults.
+  // 统一归一化配置，保证各分支使用一致默认值。
   const normalized = normalizeOptions(options);
   const zoneName = normalized.prefix
     ? `${normalized.prefix}:${normalized.name}`
@@ -137,7 +137,7 @@ export function createModZone(options?: string | CreateModZoneOptions): ModZone 
   const defaultOnError = normalized.onError ?? defaultErrorReporter;
   const defaultRethrow = normalized.rethrowErrors ?? false;
 
-  // Factory for guarded methods (runGuarded).
+  // runGuarded 的工厂函数。
   const createRunGuarded = (
     runScope: <T>(callback: () => T) => T,
     getContext: () => ModZoneErrorContext
@@ -156,7 +156,7 @@ export function createModZone(options?: string | CreateModZoneOptions): ModZone 
     };
   };
 
-  // Factory for wrapper methods (wrap) used by external event APIs.
+  // wrap 的工厂函数，主要用于对接外部事件系统回调。
   const createWrap = (
     runScope: <T>(callback: () => T) => T,
     getContext: (args?: readonly unknown[]) => ModZoneErrorContext
@@ -167,7 +167,7 @@ export function createModZone(options?: string | CreateModZoneOptions): ModZone 
     ): ((...args: TArgs) => TResult | undefined) => {
       const guarded = options?.guarded ?? true;
       return function wrapped(this: unknown, ...args: TArgs): TResult | undefined {
-        // Preserve caller context and args.
+        // 保留调用方 this 与参数。
         const invoke = () => callback.apply(this, args);
         if (!guarded) {
           return runScope(invoke);
@@ -187,7 +187,7 @@ export function createModZone(options?: string | CreateModZoneOptions): ModZone 
     };
   };
 
-  // Graceful fallback: Zone API is missing, keep the same facade behavior.
+  // 优雅降级：当 Zone API 不可用时，维持同一套门面行为。
   if (!outerZone?.fork) {
     const runGuarded = createRunGuarded(runDirect, () => ({
       zoneName,
@@ -218,7 +218,7 @@ export function createModZone(options?: string | CreateModZoneOptions): ModZone 
     };
   }
 
-  // Normal mode: fork one dedicated inner zone for this mod instance.
+  // 正常模式：为当前 mod 实例 fork 一个专属 inner zone。
   const innerZone = outerZone.fork({
     name: zoneName,
     ...(Object.keys(normalized.properties).length > 0 ? {properties: normalized.properties} : {}),
@@ -256,7 +256,7 @@ export function createModZone(options?: string | CreateModZoneOptions): ModZone 
     runOuter,
     runGuarded,
     wrap(callback, options) {
-      // Some integrations need explicit outer-zone execution.
+      // 某些集成场景需要明确在 outer zone 执行。
       if (options?.outer) {
         return wrapOuter(callback, options);
       }
