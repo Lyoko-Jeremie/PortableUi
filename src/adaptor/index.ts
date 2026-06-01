@@ -1,6 +1,9 @@
 export {App} from './App';
 export type {AppOptions, AppScope, AppTabOptions, BuiltInAddMethods} from './App';
 
+export {createModZone} from './ModZone';
+export type {CreateModZoneOptions, ModZone} from './ModZone';
+
 export {CreatePortableUi, createPortableUiFactory, registerDeclarativeComponent} from './CreatePortableUi';
 export type {BuiltInDeclarativeRegistry} from './CreatePortableUi';
 export type {
