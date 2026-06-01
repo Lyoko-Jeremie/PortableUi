@@ -1,3 +1,4 @@
+import {it, expect} from '@jest/globals';
 import type {ObjectKeyBinding, ObjectKeyPathOf} from '../../src/adaptor/types';
 
 // ============================================================================
@@ -136,3 +137,7 @@ const _passwordBinding: _passwordBinding = {
 // ✅ 错误的路径会在编译时被捕获
 // ✅ IDE 应该在编辑时提供代码补全和类型检查
 
+it('ObjectKeyPathOf and ObjectKeyBinding type tests pass at compile time', () => {
+  // 所有类型检查均通过编译验证，此处为运行时占位断言
+  expect(true).toBe(true);
+});

@@ -286,13 +286,18 @@ export class App extends AppScopeBase<BuiltInDeclarativeRegistry> {
 
   /**
    * 标记对象路径脏，触发双向绑定刷新
+   * - 无参数：标记全部绑定为脏（触发全量刷新）
    * - 旧用法：markDirty('path.to.field') - 路径字符串，针对全局 model
    * - 新用法：markDirty(target, 'key.path') - 对象级脏标记，针对组件绑定的数据对象
    */
+  markDirty(): void;
   markDirty(path: string): void;
   markDirty<T extends Record<string, any>>(target: T, key?: ObjectKeyPathOf<T>): void;
-  markDirty(target: object | string, key?: string): void {
-    if (typeof target === 'string') {
+  markDirty(target?: object | string, key?: string): void {
+    if (target === undefined) {
+      // 无参数：标记全部绑定为脏
+      this.bindingEngine.markDirty();
+    } else if (typeof target === 'string') {
       // 旧用法：路径字符串
       this.bindingEngine.markDirty(target);
     } else {

@@ -311,8 +311,9 @@ export class BindingEngine<TModel extends Record<string, any> = Record<string, a
           continue;
         }
 
-        // 新增：ObjectKeyBinding 的初始化放在 attachComponent 中
+        // 新增：ObjectKeyBinding 的初始化：读取初始值放入 preparedProps，动态订阅放在 attachComponent 中
         if (isObjectKeyBinding(source)) {
+          preparedProps[field] = getValueAtPath(source.target, source.key);
           continue;
         }
 
@@ -449,9 +450,7 @@ export class BindingEngine<TModel extends Record<string, any> = Record<string, a
 
         this.objectBindingIndex.add(objReg);
 
-        // 初始化组件值
-        const initialValue = getValueAtPath(source.target, source.key);
-        prepared.props[field] = initialValue;
+        // 初始值已在 prepareComponentBindings 中设置到 prepared.props，此处无需重复设置
 
         continue;
       }
