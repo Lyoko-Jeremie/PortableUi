@@ -1,4 +1,4 @@
-import {signal} from 'alien-signals';
+import {computed, signal} from 'alien-signals';
 
 import type {BindingContext} from '../../src';
 import {App, Button, Input} from '../../src';
@@ -255,5 +255,114 @@ describe('App imperative adaptor', () => {
     await flushBindings();
     expect(cityInput.getValue()).toBe('');
   });
+
+  it.each(['binding', 'tree', 'hybrid'] as const)(
+    'keeps static text fallback for Label/Checkbox when bind source is initially undefined (%s)',
+    async (mode) => {
+      type FallbackModel = {
+        form: {
+          title?: string;
+          checkboxLabel?: string;
+          checked?: boolean;
+        };
+      };
+
+      const app = new App<FallbackModel>(host, {
+        id: 'root',
+        model: {
+          form: {},
+        },
+        bindingOptions: {
+          changeDetection: mode,
+        },
+      });
+
+      const title = app.add.Label({
+        id: `fallback-label-${mode}`,
+        text: 'Loading title...',
+        bind: {
+          text: 'form.title',
+        },
+      });
+
+      const agree = app.add.Checkbox({
+        id: `fallback-checkbox-${mode}`,
+        label: 'Loading option...',
+        bind: {
+          label: 'form.checkboxLabel',
+          checked: 'form.checked',
+        },
+      });
+
+      expect(title.getElement()?.textContent).toBe('Loading title...');
+      expect(agree.getElement()?.querySelector('span')?.textContent).toBe('Loading option...');
+
+      const model = app.getModel();
+      model.form.title = 'Ready title';
+      model.form.checkboxLabel = 'Ready option';
+      model.form.checked = true;
+      app.markDirty('form.title');
+      app.markDirty('form.checkboxLabel');
+      app.markDirty('form.checked');
+      await flushBindings();
+
+      expect(title.getElement()?.textContent).toBe('Ready title');
+      expect(agree.getElement()?.querySelector('span')?.textContent).toBe('Ready option');
+      expect(agree.isChecked()).toBe(true);
+    }
+  );
+
+  it.each(['binding', 'tree', 'hybrid'] as const)(
+    'reads callable computed bindings for Label/Checkbox immediately (%s)',
+    async (mode) => {
+      const titleState = signal('Initial title');
+      const checkboxLabelState = signal('Initial checkbox');
+
+      const titleComputed = computed(() => titleState());
+      const labelComputed = computed(() => checkboxLabelState());
+
+      const app = new App(host, {
+        id: 'root-callable',
+        model: {
+          form: {
+            checked: false,
+          },
+        },
+        bindingOptions: {
+          changeDetection: mode,
+        },
+      });
+
+      const title = app.add.Label({
+        id: `callable-label-${mode}`,
+        bind: {
+          text: titleComputed,
+        },
+      });
+
+      const checkbox = app.add.Checkbox({
+        id: `callable-checkbox-${mode}`,
+        bind: {
+          label: labelComputed,
+          checked: 'form.checked',
+        },
+      });
+
+      expect(title.getElement()?.textContent).toBe('Initial title');
+      expect(checkbox.getElement()?.querySelector('span')?.textContent).toBe('Initial checkbox');
+
+      titleState('Updated title');
+      checkboxLabelState('Updated checkbox');
+      const model = app.getModel<{form: {checked: boolean}}>();
+      model.form.checked = true;
+      app.markDirty('form.checked');
+      await flushBindings();
+
+      expect(title.getElement()?.textContent).toBe('Updated title');
+      expect(checkbox.getElement()?.querySelector('span')?.textContent).toBe('Updated checkbox');
+      expect(checkbox.isChecked()).toBe(true);
+    }
+  );
+
 });
 

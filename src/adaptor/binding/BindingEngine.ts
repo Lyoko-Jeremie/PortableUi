@@ -5,7 +5,6 @@ import type {
   BindingContext,
   BindingOptions,
   ObjectKeyBinding,
-  ObjectKeyPathOf,
   PortableUiBindingHost,
   PortableUiBindingMap,
   PortableUiBindingsMap,
@@ -71,6 +70,10 @@ function isWritableSignal<T = any>(value: unknown): value is PortableUiWritableS
 
 function isReadableSignal(value: unknown): value is () => any {
   return typeof value === 'function' && (isSignal(value as () => void) || isComputed(value as () => void));
+}
+
+function isCallableBindingSource(value: unknown): value is () => any {
+  return typeof value === 'function';
 }
 
 function isObjectKeyBinding(value: unknown): value is ObjectKeyBinding<any, any> {
@@ -341,11 +344,17 @@ export class BindingEngine<TModel extends Record<string, any> = Record<string, a
 
         // 新增：ObjectKeyBinding 的初始化：读取初始值放入 preparedProps，动态订阅放在 attachComponent 中
         if (isObjectKeyBinding(source)) {
-          preparedProps[field] = getValueAtPath(source.target, source.key);
+          const nextValue = getValueAtPath(source.target, source.key);
+          if (nextValue !== undefined || !Object.prototype.hasOwnProperty.call(preparedProps, field)) {
+            preparedProps[field] = nextValue;
+          }
           continue;
         }
 
-        preparedProps[field] = this.readBindingValue(source as PortableUiReadableBindingSource<any>, componentId, field);
+        const nextValue = this.readBindingValue(source as PortableUiReadableBindingSource<any>, componentId, field);
+        if (nextValue !== undefined || !Object.prototype.hasOwnProperty.call(preparedProps, field)) {
+          preparedProps[field] = nextValue;
+        }
       }
     }
 
@@ -496,10 +505,10 @@ export class BindingEngine<TModel extends Record<string, any> = Record<string, a
       };
       registrations.push(registration);
 
-      if (isReadableSignal(source)) {
+      if (isCallableBindingSource(source) || isReadableSignal(source)) {
         let initialRun = true;
         const dispose = effect(() => {
-          source();
+          (source as () => any)();
           if (initialRun) {
             initialRun = false;
             return;
@@ -638,6 +647,10 @@ export class BindingEngine<TModel extends Record<string, any> = Record<string, a
       return getValueAtPath(this.boundModel, source);
     }
 
+    if (isCallableBindingSource(source)) {
+      return source();
+    }
+
     if (isReadableSignal(source)) {
       return source();
     }
@@ -692,7 +705,6 @@ export class BindingEngine<TModel extends Record<string, any> = Record<string, a
   private createContext(component: BaseComponent<any>, componentId: string): BindingContext<TModel> {
     // 新增：为上下文保存一个 touch 引用，用于在 zone 内标记脏对象
     let touchTarget: object | null = null;
-    let touchKey: string | undefined;
 
     return {
       model: this.boundModel,
