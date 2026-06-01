@@ -40,6 +40,7 @@ export class CascadingSelect extends BaseComponent<CascadingSelectState> {
       const select = document.createElement('select');
       select.className = 'portableui-cascading-select-level';
       select.dataset.level = String(level);
+      const levelIndex = level;
 
       const placeholderOption = document.createElement('option');
       placeholderOption.value = '';
@@ -55,12 +56,15 @@ export class CascadingSelect extends BaseComponent<CascadingSelectState> {
       }
 
       select.addEventListener('change', (event) => {
-        const nextValuePath = [...valuePath.slice(0, level)];
+        const currentState = this.signalState();
+        const currentValuePath = [
+          ...(currentState.valuePath ?? (this.props as CascadingSelectProps).valuePath ?? []),
+        ];
+        const nextValuePath = [...currentValuePath.slice(0, levelIndex)];
         if (select.value) {
           nextValuePath.push(select.value);
         }
 
-        const currentState = this.signalState();
         this.signalState({...currentState, valuePath: nextValuePath});
         props.onChange?.(this, event, nextValuePath);
       });

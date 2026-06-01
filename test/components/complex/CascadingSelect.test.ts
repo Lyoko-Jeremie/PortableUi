@@ -45,5 +45,31 @@ describe('CascadingSelect', () => {
     expect(onChange).toHaveBeenCalledTimes(1);
     expect(component.getValuePath()).toEqual(['asia']);
   });
+
+  it('should replace parent selection without keeping stale child path', () => {
+    const component = new CascadingSelect({
+      options: [
+        {
+          label: 'China',
+          value: 'cn',
+          children: [{label: 'Shanghai', value: 'sh'}],
+        },
+        {
+          label: 'USA',
+          value: 'us',
+          children: [{label: 'New York', value: 'ny'}],
+        },
+      ],
+      valuePath: ['cn', 'sh'],
+    });
+
+    component.mount(container);
+
+    const level0 = container.querySelector('select[data-level="0"]') as HTMLSelectElement;
+    level0.value = 'us';
+    level0.dispatchEvent(new Event('change', {bubbles: true}));
+
+    expect(component.getValuePath()).toEqual(['us']);
+  });
 });
 
