@@ -31,6 +31,170 @@ export abstract class BaseComponent<S extends BaseState = any> {
   /** 是否已挂载 */
   protected mounted: boolean = false;
 
+  private static escapeAttributeSelectorValue(value: string): string {
+    return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+  }
+
+  private getActiveElementWithinRoot(element: HTMLElement): HTMLElement | null {
+    const rootNode = element.getRootNode();
+    const activeElement = rootNode instanceof ShadowRoot ? rootNode.activeElement : document.activeElement;
+
+    if (!(activeElement instanceof HTMLElement) || !element.contains(activeElement)) {
+      return null;
+    }
+
+    return activeElement;
+  }
+
+  private getElementPath(root: HTMLElement, target: HTMLElement): number[] | null {
+    if (root === target) {
+      return [];
+    }
+
+    const path: number[] = [];
+    let current: HTMLElement | null = target;
+
+    while (current && current !== root) {
+      const parentElement: HTMLElement | null = current.parentElement;
+      if (!parentElement) {
+        return null;
+      }
+
+      const index = Array.prototype.indexOf.call(parentElement.children, current) as number;
+      if (index < 0) {
+        return null;
+      }
+
+      path.unshift(index);
+      current = parentElement;
+    }
+
+    return current === root ? path : null;
+  }
+
+  private resolveElementByPath(root: HTMLElement, path: number[]): HTMLElement | null {
+    let current: HTMLElement | null = root;
+
+    for (const index of path) {
+      if (!current || index < 0 || index >= current.children.length) {
+        return null;
+      }
+
+      const next = current.children.item(index);
+      if (!(next instanceof HTMLElement)) {
+        return null;
+      }
+
+      current = next;
+    }
+
+    return current;
+  }
+
+  private captureFocusState(element: HTMLElement): {
+    isRootFocused: boolean;
+    selectorId: string | null;
+    elementPath: number[] | null;
+    selectionStart: number | null;
+    selectionEnd: number | null;
+    selectionDirection: SelectionDirection | null;
+  } | null {
+    const activeElement = this.getActiveElementWithinRoot(element);
+    if (!activeElement) {
+      return null;
+    }
+
+    const isRootFocused = activeElement === element;
+    const selectorId = activeElement.id || (isRootFocused ? element.id || null : null);
+    const isTextLikeInput = activeElement instanceof HTMLInputElement || activeElement instanceof HTMLTextAreaElement;
+
+    return {
+      isRootFocused,
+      selectorId,
+      elementPath: this.getElementPath(element, activeElement),
+      selectionStart: isTextLikeInput ? activeElement.selectionStart : null,
+      selectionEnd: isTextLikeInput ? activeElement.selectionEnd : null,
+      selectionDirection: isTextLikeInput ? activeElement.selectionDirection : null,
+    };
+  }
+
+  private restoreFocusState(element: HTMLElement, focusState: ReturnType<BaseComponent['captureFocusState']>): void {
+    if (!focusState) {
+      return;
+    }
+
+    let target: HTMLElement | null = null;
+    if (focusState.isRootFocused) {
+      target = element;
+    } else if (focusState.selectorId) {
+      const selectorId = BaseComponent.escapeAttributeSelectorValue(focusState.selectorId);
+      const selector = `[id="${selectorId}"]`;
+      target = element.matches(selector) ? element : (element.querySelector(selector) as HTMLElement | null);
+    }
+
+    if (!target && focusState.elementPath) {
+      target = this.resolveElementByPath(element, focusState.elementPath);
+    }
+
+    if (!target) {
+      return;
+    }
+
+    target.focus();
+
+    if (focusState.selectionStart != null && focusState.selectionEnd != null &&
+      (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) &&
+      typeof target.setSelectionRange === 'function') {
+      try {
+        target.setSelectionRange(
+          focusState.selectionStart,
+          focusState.selectionEnd,
+          focusState.selectionDirection ?? 'none'
+        );
+      } catch {
+        // Ignore selection restore failures for non-text inputs or browser edge cases.
+      }
+    }
+  }
+
+  private hasPropChanges(nextProps: ComponentProps): boolean {
+    const currentKeys = Object.keys(this.props);
+    const nextKeys = Object.keys(nextProps);
+
+    if (currentKeys.length !== nextKeys.length) {
+      return true;
+    }
+
+    for (const key of nextKeys) {
+      if (!Object.prototype.hasOwnProperty.call(this.props, key)) {
+        return true;
+      }
+
+      const currentValue = this.getComparisonValue(key);
+      if (!Object.is(currentValue, nextProps[key])) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private getComparisonValue(key: string): unknown {
+    if (!this.element) {
+      return (this.props as Record<string, unknown>)[key];
+    }
+
+    if (key === 'value' && (this.element instanceof HTMLInputElement || this.element instanceof HTMLTextAreaElement || this.element instanceof HTMLSelectElement)) {
+      return this.element.value;
+    }
+
+    if (key === 'checked' && this.element instanceof HTMLInputElement) {
+      return this.element.checked;
+    }
+
+    return (this.props as Record<string, unknown>)[key];
+  }
+
   /**
    * 构造函数
    * @param props - 组件属性
@@ -130,6 +294,10 @@ export abstract class BaseComponent<S extends BaseState = any> {
   update(props: Partial<ComponentProps>): void {
     const nextProps = {...this.props, ...props};
 
+    if (this.mounted && this.element && !this.hasPropChanges(nextProps)) {
+      return;
+    }
+
     if (!this.mounted || !this.element) {
       this.props = nextProps;
       this.signalState({...this.signalState(), ...nextProps} as S);
@@ -170,12 +338,14 @@ export abstract class BaseComponent<S extends BaseState = any> {
   protected rerender(): void {
     if (!this.element) return;
 
+    const focusState = this.captureFocusState(this.element);
     const newElement = this.render();
     if (newElement && this.element.parentNode) {
       this.bindElementMetadata(newElement);
       this.unbindElementMetadata(this.element);
       this.element.parentNode.replaceChild(newElement, this.element);
       this.element = newElement;
+      this.restoreFocusState(newElement, focusState);
     }
   }
 

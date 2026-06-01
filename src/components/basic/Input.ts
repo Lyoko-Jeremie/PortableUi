@@ -56,12 +56,10 @@ export class Input extends BaseComponent<InputState> {
     }
 
     input.addEventListener('input', (event) => {
-      const currentState = this.signalState();
       props.onInput?.(this, event, input.value);
     });
 
     input.addEventListener('change', (event) => {
-      const currentState = this.signalState();
       props.onChange?.(this, event, input.value);
     });
 
@@ -74,6 +72,10 @@ export class Input extends BaseComponent<InputState> {
   }
 
   setValue(value: string): void {
+    if (this.getValue() === value) {
+      return;
+    }
+
     this.signalState({...this.signalState(), value});
   }
 

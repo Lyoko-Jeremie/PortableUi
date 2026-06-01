@@ -1,6 +1,6 @@
 import {signal} from 'alien-signals';
 
-import type {BindingContext} from '../../src/adaptor';
+import type {BindingContext} from '../../src';
 import {App, Button, Input} from '../../src';
 
 /** Query inside PortableUi's Shadow DOM on a host element */
@@ -114,9 +114,14 @@ describe('App imperative adaptor', () => {
       throw new Error('Expected imperative components to mount.');
     }
 
+    inputElement.focus();
     inputElement.value = 'bob@example.com';
     inputElement.dispatchEvent(new Event('input', {bubbles: true}));
     expect(app.getModel<{form: {email: string}}>().form.email).toBe('bob@example.com');
+
+    await flushBindings();
+    expect(input.getElement()).toBe(inputElement);
+    expect((host.shadowRoot ?? document).activeElement).toBe(inputElement);
 
     buttonElement.dispatchEvent(new MouseEvent('click', {bubbles: true}));
     await flushBindings();

@@ -22,6 +22,22 @@ class TestLeafComponent extends BaseComponent {
   }
 }
 
+class TestInputBindingComponent extends BaseComponent {
+  protected render(): HTMLElement {
+    const root = document.createElement('div');
+    const input = document.createElement('input');
+    const props = this.props as { value?: string };
+
+    input.value = props.value ?? '';
+    input.addEventListener('input', () => {
+      this.update({value: input.value});
+    });
+
+    root.appendChild(input);
+    return root;
+  }
+}
+
 describe('BaseComponent component tree query', () => {
   let host: HTMLElement;
 
@@ -90,6 +106,27 @@ describe('BaseComponent component tree query', () => {
 
     expect(owner?.getId()).toBe('child');
     expect(BaseComponent.queryParentComponent(host)).toBeNull();
+  });
+
+  it('should keep focus and caret when rerendering input binding repeatedly', () => {
+    const component = new TestInputBindingComponent({id: 'binding-host', value: ''});
+    component.mount(host);
+
+    let input = host.querySelector('input') as HTMLInputElement;
+    input.focus();
+    input.setSelectionRange(0, 0);
+
+    for (const text of ['a', 'ab', 'abc']) {
+      input.value = text;
+      input.setSelectionRange(text.length, text.length);
+      input.dispatchEvent(new Event('input', {bubbles: true}));
+
+      input = host.querySelector('input') as HTMLInputElement;
+      expect(document.activeElement).toBe(input);
+      expect(input.selectionStart).toBe(text.length);
+      expect(input.selectionEnd).toBe(text.length);
+      expect(input.value).toBe(text);
+    }
   });
 });
 
