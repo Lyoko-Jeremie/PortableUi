@@ -171,7 +171,7 @@ export abstract class BaseComponent<S extends BaseState = any> {
       }
 
       const currentValue = this.getComparisonValue(key);
-      if (!Object.is(currentValue, nextProps[key])) {
+      if (!Object.is(currentValue, (nextProps as Record<string, unknown>)[key])) {
         return true;
       }
     }

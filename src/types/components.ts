@@ -12,9 +12,6 @@ export interface ComponentProps {
   className?: string;
   /** 内联样式 */
   style?: Record<string, string>;
-
-  /** 数据属性 */
-  [key: string]: any;
 }
 
 /** 组件状态 */

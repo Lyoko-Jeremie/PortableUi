@@ -40,11 +40,11 @@ export class HtmlContainer extends BaseComponent {
   }
 
   setHtmlContent(html: NativeHtmlContent): void {
-    this.update({html});
+    this.update({html} as Partial<ComponentProps>);
   }
 
   clearHtmlContent(): void {
-    this.update({html: ''});
+    this.update({html: ''} as Partial<ComponentProps>);
   }
 }
 

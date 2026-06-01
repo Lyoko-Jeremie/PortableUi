@@ -431,7 +431,7 @@ export class BindingEngine<TModel extends Record<string, any> = Record<string, a
 
           const nextValue = getValueAtPath(source.target, source.key);
           const equals = source.equals ?? ((a: any, b: any) => a === b);
-          const prevValue = component.getProps()[field];
+          const prevValue = (component.getProps() as Record<string, unknown>)[field];
 
           if (!equals(prevValue, nextValue)) {
             component.update({[field]: nextValue});

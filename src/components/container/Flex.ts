@@ -65,7 +65,7 @@ export class Flex extends Container {
 
     // 应用额外样式
     const extraStyles: Record<string, string | number> = {};
-    if (props.display === 'inline') {
+    if (props.inline) {
       extraStyles.display = 'inline-flex';
     }
     if (props.backgroundColor) {
