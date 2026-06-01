@@ -3,7 +3,7 @@ import 'zone.js';
 
 import '../../src/css/theme1.scss';
 import '../styles/demo-shell.scss';
-import {App, type BindingContext} from '../../src';
+import {App, Container, HtmlContainer, HtmlLabel, type BindingContext} from '../../src';
 import type {Label, Toast} from '../../src';
 import {ensurePortableUiRootScope} from '../utils/ensurePortableUiRoot';
 import {syncHeadStylesToShadowRoot} from '../utils/syncHeadStylesToShadowRoot';
@@ -131,6 +131,63 @@ const createCard = (title: string, description: string): {card: HTMLElement; bod
   return {card, body};
 };
 
+const createShowcaseGroup = (title: string): {group: HTMLElement; body: HTMLElement} => {
+  const group = document.createElement('section');
+  group.style.display = 'flex';
+  group.style.flexDirection = 'column';
+  group.style.gap = '10px';
+  group.style.marginBottom = '14px';
+
+  const heading = document.createElement('h3');
+  heading.textContent = title;
+  heading.style.margin = '0';
+  heading.style.fontSize = '16px';
+
+  const body = document.createElement('div');
+  body.style.display = 'grid';
+  body.style.gridTemplateColumns = 'repeat(auto-fill, minmax(280px, 1fr))';
+  body.style.gap = '12px';
+
+  group.append(heading, body);
+  return {group, body};
+};
+
+const createShowcaseHost = (title: string, target: HTMLElement): HTMLElement => {
+  const host = document.createElement('div');
+  host.style.border = '1px solid #e5e7eb';
+  host.style.borderRadius = '8px';
+  host.style.padding = '10px';
+  host.style.background = '#fff';
+
+  const heading = document.createElement('div');
+  heading.textContent = title;
+  heading.style.fontSize = '12px';
+  heading.style.fontWeight = '600';
+  heading.style.marginBottom = '8px';
+  heading.style.color = '#374151';
+
+  const mountPoint = document.createElement('div');
+  mountPoint.style.display = 'flex';
+  mountPoint.style.flexWrap = 'wrap';
+  mountPoint.style.gap = '8px';
+  mountPoint.style.alignItems = 'center';
+
+  host.append(heading, mountPoint);
+  target.appendChild(host);
+  return mountPoint;
+};
+
+const createInlineBox = (text: string): HTMLElement => {
+  const node = document.createElement('div');
+  node.textContent = text;
+  node.style.padding = '6px 10px';
+  node.style.borderRadius = '6px';
+  node.style.background = '#eef2ff';
+  node.style.color = '#1e3a8a';
+  node.style.fontSize = '12px';
+  return node;
+};
+
 const appendById = (id: string, target: HTMLElement): void => {
   const component = app.getComponent(id);
   const element = component?.getElement();
@@ -165,8 +222,9 @@ grid.className = 'zonejs-grid';
 const bindingCard = createCard('1. 双向绑定', '输入框和复选框通过 App 的 bind 语法直接同步到 model。');
 const asyncCard = createCard('2. Zone 异步回调', '点击按钮后触发 Promise 和 setTimeout，观察 Zone 上下文如何被保留。');
 const notesCard = createCard('3. 使用说明', '这个示例不依赖额外框架，整页 UI 都由 App + 组件完成。');
+const showcaseCard = createCard('4. 全量组件展示', '此区域集中展示当前库中的基础、复杂和容器组件。');
 
-grid.append(bindingCard.card, asyncCard.card, notesCard.card);
+grid.append(bindingCard.card, asyncCard.card, notesCard.card, showcaseCard.card);
 app.root.append(hero, grid);
 
 const nameInput = app.add.Input({
@@ -209,6 +267,212 @@ app.add.Button({
   },
 });
 
+const tabsCardA = new Container({
+  id: 'zone-show-tabs-content-a',
+  direction: 'vertical',
+  gap: 6,
+  children: [createInlineBox('Tab A content')],
+});
+const tabsCardB = new Container({
+  id: 'zone-show-tabs-content-b',
+  direction: 'vertical',
+  gap: 6,
+  children: [createInlineBox('Tab B content')],
+});
+
+const showcaseModal = app.add.Modal({
+  id: 'zone-show-modal',
+  title: 'Modal 组件',
+  content: '这个弹窗用于演示 Modal 在 zonejs 页面中的展示。',
+  visible: false,
+  width: 360,
+});
+
+const showcaseToast = app.add.Toast({
+  id: 'zone-show-toast',
+  message: 'Toast 组件已挂载',
+  type: 'info',
+  visible: false,
+  duration: 1800,
+});
+
+app.add.Label({
+  id: 'zone-show-label',
+  text: 'Label 组件',
+});
+app.add.Input({
+  id: 'zone-show-input',
+  placeholder: 'Input 组件',
+  value: 'hello zonejs',
+});
+app.add.Button({
+  id: 'zone-show-button',
+  text: 'Button 组件',
+});
+app.add.TextBox({
+  id: 'zone-show-textbox',
+  rows: 3,
+  value: 'TextBox 组件\n支持多行文本',
+});
+app.add.Select({
+  id: 'zone-show-select',
+  options: [
+    {label: 'Option A', value: 'a'},
+    {label: 'Option B', value: 'b'},
+  ],
+  value: 'a',
+});
+app.add.Checkbox({
+  id: 'zone-show-checkbox',
+  label: 'Checkbox 组件',
+  checked: true,
+});
+app.add.Radio({
+  id: 'zone-show-radio',
+  label: 'Radio 组件',
+  name: 'zone-show-radio-group',
+  checked: true,
+});
+app.add.Slider({
+  id: 'zone-show-slider',
+  min: 0,
+  max: 100,
+  value: 35,
+});
+app.add.DatePicker({
+  id: 'zone-show-date',
+  value: '2026-06-01',
+});
+app.add.FileUpload({
+  id: 'zone-show-file',
+  multiple: true,
+});
+app.add.Image({
+  id: 'zone-show-image',
+  src: 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22180%22 height=%2290%22%3E%3Crect width=%22180%22 height=%2290%22 fill=%22%23dbeafe%22/%3E%3Ctext x=%2290%22 y=%2250%22 font-size=%2214%22 text-anchor=%22middle%22 fill=%22%231e3a8a%22%3EImage Component%3C/text%3E%3C/svg%3E',
+  alt: 'zonejs image demo',
+  width: 180,
+  height: 90,
+});
+app.add.Canvas({
+  id: 'zone-show-canvas',
+  width: 180,
+  height: 90,
+  onDraw: (_self, ctx, canvas) => {
+    ctx.fillStyle = '#e0e7ff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#3730a3';
+    ctx.font = '14px sans-serif';
+    ctx.fillText('Canvas Component', 24, 48);
+  },
+});
+
+app.add.Autocomplete({
+  id: 'zone-show-autocomplete',
+  value: 'ap',
+  minChars: 1,
+  options: ['Apple', 'Apricot', 'Banana', 'Orange'],
+});
+app.add.CascadingSelect({
+  id: 'zone-show-cascading',
+  valuePath: ['cn', 'sh'],
+  options: [
+    {
+      label: 'China',
+      value: 'cn',
+      children: [
+        {label: 'Shanghai', value: 'sh'},
+        {label: 'Beijing', value: 'bj'},
+      ],
+    },
+    {
+      label: 'USA',
+      value: 'us',
+      children: [
+        {label: 'New York', value: 'ny'},
+        {label: 'Seattle', value: 'sea'},
+      ],
+    },
+  ],
+});
+app.add.Progress({
+  id: 'zone-show-progress',
+  value: 68,
+  showLabel: true,
+});
+app.add.Table({
+  id: 'zone-show-table',
+  columns: [
+    {key: 'name', title: 'Name'},
+    {key: 'score', title: 'Score'},
+  ],
+  data: [
+    {name: 'Ada', score: 98},
+    {name: 'Bob', score: 86},
+  ],
+});
+app.add.TreeView({
+  id: 'zone-show-tree',
+  expandedIds: ['root'],
+  nodes: [
+    {
+      id: 'root',
+      label: 'Root Node',
+      children: [
+        {id: 'child-a', label: 'Child A'},
+        {id: 'child-b', label: 'Child B'},
+      ],
+    },
+  ],
+});
+app.add.Tabs({
+  id: 'zone-show-tabs',
+  tabs: [
+    {id: 'tab-a', title: 'Tab A', content: tabsCardA},
+    {id: 'tab-b', title: 'Tab B', content: tabsCardB},
+  ],
+  activeTabId: 'tab-a',
+});
+app.add.Button({
+  id: 'zone-show-open-modal',
+  text: '打开 Modal',
+  onClick: () => showcaseModal.open(),
+});
+app.add.Button({
+  id: 'zone-show-show-toast',
+  text: '触发 Toast',
+  onClick: () => showcaseToast.show('Toast 触发成功', 'success'),
+});
+
+app.add.Container({
+  id: 'zone-show-container',
+  direction: 'horizontal',
+  gap: 8,
+  children: [createInlineBox('Container child 1'), createInlineBox('Container child 2')],
+});
+app.add.Flex({
+  id: 'zone-show-flex',
+  gap: 8,
+  children: [createInlineBox('Flex A'), createInlineBox('Flex B')],
+});
+app.add.Grid({
+  id: 'zone-show-grid',
+  columns: 2,
+  gap: 8,
+  children: [createInlineBox('Grid 1'), createInlineBox('Grid 2'), createInlineBox('Grid 3')],
+});
+app.add.GridItem({
+  id: 'zone-show-griditem',
+  columnSpan: 2,
+  children: [createInlineBox('Standalone GridItem')],
+});
+app.add.Group({
+  id: 'zone-show-group',
+  title: 'Group 标题',
+  gap: 8,
+  children: [createInlineBox('Group body')],
+});
+
 app.add.Button({
   id: 'zone-sync-now',
   text: '同步更新并 markDirty',
@@ -245,6 +509,23 @@ const appendLog = (text: string): void => {
   logList.prepend(item);
 };
 
+const showcaseRoot = document.createElement('div');
+showcaseRoot.style.display = 'flex';
+showcaseRoot.style.flexDirection = 'column';
+showcaseRoot.style.gap = '8px';
+
+const basicShowcase = createShowcaseGroup('基础组件');
+const complexShowcase = createShowcaseGroup('复杂组件');
+const containerShowcase = createShowcaseGroup('容器组件');
+
+showcaseRoot.append(basicShowcase.group, complexShowcase.group, containerShowcase.group);
+showcaseCard.body.appendChild(showcaseRoot);
+
+const appendComponentToShowcase = (id: string, title: string, target: HTMLElement): void => {
+  const mountPoint = createShowcaseHost(title, target);
+  appendById(id, mountPoint);
+};
+
 appendById('zone-name', bindingCard.body);
 appendById('zone-active', bindingCard.body);
 appendById('zone-city', bindingCard.body);
@@ -254,6 +535,50 @@ appendById('zone-run-async', formControls);
 appendById('zone-counter', statePanel);
 appendById('zone-status', statePanel);
 appendById('zone-toast', asyncCard.body);
+
+appendComponentToShowcase('zone-show-label', 'Label', basicShowcase.body);
+appendComponentToShowcase('zone-show-input', 'Input', basicShowcase.body);
+appendComponentToShowcase('zone-show-button', 'Button', basicShowcase.body);
+appendComponentToShowcase('zone-show-textbox', 'TextBox', basicShowcase.body);
+appendComponentToShowcase('zone-show-select', 'Select', basicShowcase.body);
+appendComponentToShowcase('zone-show-checkbox', 'Checkbox', basicShowcase.body);
+appendComponentToShowcase('zone-show-radio', 'Radio', basicShowcase.body);
+appendComponentToShowcase('zone-show-slider', 'Slider', basicShowcase.body);
+appendComponentToShowcase('zone-show-date', 'DatePicker', basicShowcase.body);
+appendComponentToShowcase('zone-show-file', 'FileUpload', basicShowcase.body);
+appendComponentToShowcase('zone-show-image', 'Image', basicShowcase.body);
+appendComponentToShowcase('zone-show-canvas', 'Canvas', basicShowcase.body);
+
+const htmlLabelHost = createShowcaseHost('HtmlLabel', basicShowcase.body);
+const htmlLabel = new HtmlLabel({
+  id: 'zone-show-html-label',
+  html: '<strong>HtmlLabel</strong> 支持 <em>innerHTML</em>',
+});
+htmlLabel.mount(htmlLabelHost);
+
+appendComponentToShowcase('zone-show-autocomplete', 'Autocomplete', complexShowcase.body);
+appendComponentToShowcase('zone-show-cascading', 'CascadingSelect', complexShowcase.body);
+appendComponentToShowcase('zone-show-progress', 'Progress', complexShowcase.body);
+appendComponentToShowcase('zone-show-table', 'Table', complexShowcase.body);
+appendComponentToShowcase('zone-show-tree', 'TreeView', complexShowcase.body);
+appendComponentToShowcase('zone-show-tabs', 'Tabs', complexShowcase.body);
+appendComponentToShowcase('zone-show-open-modal', 'Modal Trigger Button', complexShowcase.body);
+appendComponentToShowcase('zone-show-show-toast', 'Toast Trigger Button', complexShowcase.body);
+appendComponentToShowcase('zone-show-toast', 'Toast', complexShowcase.body);
+appendComponentToShowcase('zone-show-modal', 'Modal', complexShowcase.body);
+
+appendComponentToShowcase('zone-show-container', 'Container', containerShowcase.body);
+appendComponentToShowcase('zone-show-flex', 'Flex', containerShowcase.body);
+appendComponentToShowcase('zone-show-grid', 'Grid', containerShowcase.body);
+appendComponentToShowcase('zone-show-griditem', 'GridItem', containerShowcase.body);
+appendComponentToShowcase('zone-show-group', 'Group', containerShowcase.body);
+
+const htmlContainerHost = createShowcaseHost('HtmlContainer', containerShowcase.body);
+const htmlContainer = new HtmlContainer({
+  id: 'zone-show-html-container',
+  html: '<div style="padding:6px 10px;border-radius:6px;background:#ecfeff;color:#155e75;">HtmlContainer raw HTML</div>',
+});
+htmlContainer.mount(htmlContainerHost);
 
 bindingCard.body.append(formControls);
 asyncCard.body.append(statePanel, logPanel);
