@@ -186,7 +186,7 @@ describe('CreatePortableUi typing', () => {
 
   it('accepts alien-signals writable signal and accessor bindings', () => {
     const nameSignal = signal('Alice');
-    const state = {name: 'Bob'};
+    const accessorSignal = signal('Bob');
 
     const config: PortableUiDeclarativeConfig<BuiltInDeclarativeRegistry> = {
       children: {
@@ -199,12 +199,7 @@ describe('CreatePortableUi typing', () => {
         accessorInput: {
           type: 'Input',
           bind: {
-            value: {
-              get: () => state.name,
-              set: (value: string) => {
-                state.name = value;
-              },
-            },
+            value: accessorSignal,
           },
         },
         boundButton: {
@@ -212,10 +207,11 @@ describe('CreatePortableUi typing', () => {
           props: {
             text: 'Save',
           },
+        },
+        label: {
+          type: 'Label',
           bind: {
-            onClick: (ctx: BindingContext) => {
-              ctx.set('form.name', 'Charlie');
-            },
+            text: 'form.name',
           },
         },
       },
@@ -301,12 +297,7 @@ const validAccessorBindingConfig: PortableUiDeclarativeConfig<BuiltInDeclarative
     input1: {
       type: 'Input',
       bind: {
-        value: {
-          get: () => stateForBindingSamples.name,
-          set: (value: string) => {
-            stateForBindingSamples.name = value;
-          },
-        },
+        value: writableNameSignal,
       },
     },
   },
@@ -343,4 +334,14 @@ const invalidReadonlySignalBindingMap: PortableUiBindingMap<StrictInputBindingPr
 };
 
 void invalidReadonlySignalBindingMap;
+
+interface StrictLabelBindingProps {
+  text?: string;
+}
+
+const validLabelBindingMap: PortableUiBindingMap<StrictLabelBindingProps> = {
+  text: 'form.labelText',
+};
+
+void validLabelBindingMap;
 

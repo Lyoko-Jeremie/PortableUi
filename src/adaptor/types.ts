@@ -17,7 +17,9 @@ type KnownKeys<T> = {
         : K;
 }[keyof T];
 
-type KnownProps<T> = Pick<T, KnownKeys<T>>;
+type KnownProps<T> = {
+  [K in KnownKeys<T>]: T[K];
+};
 
 export type PortableUiStrictProps<T> = KnownProps<T>;
 
@@ -80,13 +82,13 @@ export interface PortableUiWritableAccessor<T = any> extends PortableUiReadableA
   set: (value: T) => void;
 }
 
-export type PortableUiReadableBindingSource<T = any> =
-  | PathBinding<Record<string, any>>
+export type PortableUiReadableBindingSource<T = any, TModel extends Record<string, any> = Record<string, any>> =
+  | PathBinding<TModel>
   | PortableUiReadableSignal<T>
   | PortableUiReadableAccessor<T>;
 
-export type PortableUiWritableBindingSource<T = any> =
-  | PathBinding<Record<string, any>>
+export type PortableUiWritableBindingSource<T = any, TModel extends Record<string, any> = Record<string, any>> =
+  | PathBinding<TModel>
   | PortableUiWritableSignal<T>
   | PortableUiWritableAccessor<T>;
 
@@ -98,17 +100,20 @@ export type PortableUiCallbackSource<TModel extends Record<string, any> = Record
 
 export type PortableUiWritableBindingField = 'value' | 'checked' | 'valuePath' | 'activeTabId' | 'selectedId';
 
+type PortableUiBindingValue<TModel extends Record<string, any>> =
+  | PortableUiReadableBindingSource<any, TModel>
+  | PortableUiWritableBindingSource<any, TModel>
+  | PortableUiCallbackSource<TModel>;
+
 export type PortableUiBindingMap<
   TProps extends Record<string, any> = Record<string, any>,
   TModel extends Record<string, any> = Record<string, any>,
 > = {
-  value?: PortableUiModelPath<TModel> | PortableUiWritableSignal<any> | PortableUiWritableAccessor<any>;
-  checked?: PortableUiModelPath<TModel> | PortableUiWritableSignal<any> | PortableUiWritableAccessor<any>;
-  valuePath?: PortableUiModelPath<TModel> | PortableUiWritableSignal<any> | PortableUiWritableAccessor<any>;
-  activeTabId?: PortableUiModelPath<TModel> | PortableUiWritableSignal<any> | PortableUiWritableAccessor<any>;
-  selectedId?: PortableUiModelPath<TModel> | PortableUiWritableSignal<any> | PortableUiWritableAccessor<any>;
+  [K in PortableUiWritableBindingField]?: PortableUiWritableBindingSource<any, TModel>;
 } & {
   [K in `on${string}`]?: PortableUiCallbackSource<TModel>;
+} & {
+  [K: string]: PortableUiBindingValue<TModel> | undefined;
 };
 
 export interface BindableComponentProps<

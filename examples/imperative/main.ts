@@ -143,6 +143,18 @@ const previewLabel = app.add.Label({
   id: 'bind-preview',
   text: '预览：Alice / Nanjing',
 });
+const autoNameLabel = app.add.Label({
+  id: 'bind-auto-name-label',
+  bind: {
+    text: 'profile.name',
+  },
+});
+const autoCityLabel = app.add.Label({
+  id: 'bind-auto-city-label',
+  bind: {
+    text: 'profile.city',
+  },
+});
 const nameInput = app.add.Input({
   id: 'bind-name',
   placeholder: '姓名（绑定 profile.name）',
@@ -219,7 +231,7 @@ tabCard.body.append(tabMount);
 
 const bindingInfo = document.createElement('p');
 bindingInfo.className = 'imperative-card-note';
-bindingInfo.textContent = '输入框与 model/signal 双向同步；下方实时预览会跟随 name/city 变化。';
+bindingInfo.textContent = '输入框与 model/signal 双向同步；Label.text 也可直接绑定 profile.name/profile.city 自动追随变化。';
 bindingCard.body.append(bindingInfo);
 
 appendById('title', formCard.body);
@@ -237,6 +249,8 @@ appendById('tab-input', tabMount);
 appendById('bind-name', bindingCard.body);
 appendById('bind-city', bindingCard.body);
 appendById('bind-preview', bindingCard.body);
+appendById('bind-auto-name-label', bindingCard.body);
+appendById('bind-auto-city-label', bindingCard.body);
 appendById('bind-signal', bindingCard.body);
 appendById('bind-apply-preset', bindingCard.body);
 appendById('bind-signal-next', bindingCard.body);
