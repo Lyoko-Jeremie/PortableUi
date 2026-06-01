@@ -24,6 +24,7 @@ import {
   TextBox,
 } from '../components/basic';
 import {Container, Flex, Grid, GridItem, Group, type ContainerProps} from '../components/container';
+import type {NestedAddMountTarget} from '../components/container/imperative';
 import {BindingEngine} from './binding';
 import type {
   BindableComponentProps,
@@ -195,6 +196,14 @@ class AppScopeBase<
   }
 
   protected mountComponent<TCtor extends AnyComponentCtor>(ctor: TCtor, props: ComponentPropsOf<TCtor, TModel>): InstanceType<TCtor> {
+    return this.mountComponentAt(this.mountPoint, ctor, props);
+  }
+
+  private mountComponentAt<TCtor extends AnyComponentCtor>(
+    mountPoint: HTMLElement,
+    ctor: TCtor,
+    props: ComponentPropsOf<TCtor, TModel>
+  ): InstanceType<TCtor> {
     const componentKey = props.id ?? `${ctor.name}_${this.mountOrder.length}`;
     const prepared = this.bindingEngine.prepareComponentBindings(componentKey, props.id ?? componentKey, props as Record<string, any>);
     const instance = new ctor(prepared.props);
@@ -204,15 +213,32 @@ class AppScopeBase<
       throw new Error(`Duplicate component id: ${id}`);
     }
 
-    instance.mount(this.mountPoint);
+    instance.mount(mountPoint);
 
     if (id) {
       this.components.set(id, instance);
     }
 
     this.bindingEngine.attachComponent(prepared, instance);
+    this.installNestedAddMount(instance);
     this.mountOrder.push(instance);
     return instance as InstanceType<TCtor>;
+  }
+
+  private installNestedAddMount(instance: BaseComponent): void {
+    const addTarget = instance as BaseComponent & Partial<NestedAddMountTarget<TModel>>;
+    if (typeof addTarget.setAddMountComponent !== 'function') {
+      return;
+    }
+
+    addTarget.setAddMountComponent(<TCtor extends AnyComponentCtor>(ctor: TCtor, props: ComponentPropsOf<TCtor, TModel>) => {
+      const parentElement = instance.getElement();
+      if (!parentElement) {
+        throw new Error(`Failed to mount nested component: parent ${instance.getId()} is not mounted.`);
+      }
+
+      return this.mountComponentAt(parentElement, ctor, props);
+    });
   }
 
   private installGeneratedAddMethods(): void {

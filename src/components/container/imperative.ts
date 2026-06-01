@@ -1,4 +1,5 @@
 import {BaseComponent} from '../../core';
+import type {PortableUiBindingMap} from '../../adaptor/types';
 import {
   Button,
   Canvas,
@@ -29,23 +30,36 @@ import {TreeView} from '../complex/TreeView';
 
 export type AnyComponentCtor = new (props?: any) => BaseComponent<any>;
 
+type RawComponentPropsOf<TCtor extends AnyComponentCtor> = ConstructorParameters<TCtor>[0] extends undefined
+  ? Record<string, never>
+  : NonNullable<ConstructorParameters<TCtor>[0]>;
+
 /**
  * 从组件构造器中提取 props 类型：
  * - 若构造器参数可为 undefined，则将其视作“无需 props”组件，返回空对象类型；
  * - 否则返回首个构造参数的非空类型。
  */
-export type ComponentPropsOf<TCtor extends AnyComponentCtor> = ConstructorParameters<TCtor>[0] extends undefined
-  ? Record<string, never>
-  : NonNullable<ConstructorParameters<TCtor>[0]>;
+export type ComponentPropsOf<
+  TCtor extends AnyComponentCtor,
+  TModel extends Record<string, any> = Record<string, any>,
+> = RawComponentPropsOf<TCtor> & {
+  bind?: PortableUiBindingMap<RawComponentPropsOf<TCtor>, TModel>;
+};
+
+export type AddMountComponentFn<TModel extends Record<string, any> = Record<string, any>> = <TCtor extends AnyComponentCtor>(
+  ctor: TCtor,
+  props: ComponentPropsOf<TCtor, TModel>
+) => InstanceType<TCtor>;
+
+export interface NestedAddMountTarget<TModel extends Record<string, any> = Record<string, any>> {
+  setAddMountComponent(mountComponent: AddMountComponentFn<TModel>): void;
+}
 
 /**
  * 组件挂载函数：给定构造器和 props，返回对应组件实例。
  * 由容器在运行时注入，add 对象只负责类型安全地转发调用。
  */
-type MountComponentFn = <TCtor extends AnyComponentCtor>(
-  ctor: TCtor,
-  props: ComponentPropsOf<TCtor>
-) => InstanceType<TCtor>;
+type MountComponentFn = AddMountComponentFn;
 
 /**
  * add 对象单个方法的通用签名：
@@ -119,7 +133,15 @@ function resolveRegisteredComplexCtor<K extends keyof ComplexComponentCtors>(typ
  * - 将真正的挂载细节交由注入的 `mountComponent` 处理，保持该对象职责单一。
  */
 export class ContainerAddObject {
-  constructor(private readonly mountComponent: MountComponentFn) {}
+  private mountComponent: MountComponentFn;
+
+  constructor(mountComponent: MountComponentFn) {
+    this.mountComponent = mountComponent;
+  }
+
+  setMountComponent(mountComponent: MountComponentFn): void {
+    this.mountComponent = mountComponent;
+  }
 
   /**
    * 原始构造器挂载入口，供内部与高级场景复用。
@@ -259,6 +281,15 @@ export type BuiltInContainerWithNestedAddMethods = {
  */
 export function createContainerAddObject(mountComponent: MountComponentFn): ContainerAddObject {
   return new ContainerAddObject(mountComponent);
+}
+
+export function stripBindProp<TProps extends Record<string, any>>(props: TProps): TProps {
+  if (!Object.prototype.hasOwnProperty.call(props, 'bind')) {
+    return props;
+  }
+
+  const {bind: _bind, ...nextProps} = props as TProps & {bind?: unknown};
+  return nextProps as TProps;
 }
 
 /**

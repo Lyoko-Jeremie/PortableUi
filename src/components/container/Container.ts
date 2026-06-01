@@ -12,8 +12,11 @@ import {
   BuiltInContainerWithNestedAddMethods,
   ComponentPropsOf,
   AnyComponentCtor,
+  AddMountComponentFn,
+  NestedAddMountTarget,
   createContainerAddObject,
   registerContainerComponentCtors, ContainerAddObject,
+  stripBindProp,
 } from './imperative';
 
 export interface ContainerProps extends ComponentProps {
@@ -41,7 +44,7 @@ export interface ContainerProps extends ComponentProps {
   children?: (BaseComponent | HTMLElement)[];
 }
 
-export class Container extends BaseComponent {
+export class Container extends BaseComponent implements NestedAddMountTarget {
   // Lazily initialized imperative namespace, bound to this container instance.
   private addNamespace?: ContainerAddObject;
 
@@ -51,6 +54,15 @@ export class Container extends BaseComponent {
     }
 
     return this.addNamespace;
+  }
+
+  setAddMountComponent(mountComponent: AddMountComponentFn): void {
+    if (!this.addNamespace) {
+      this.addNamespace = createContainerAddObject(mountComponent);
+      return;
+    }
+
+    this.addNamespace.setMountComponent(mountComponent);
   }
 
   /** 子组件集合 */
@@ -69,7 +81,7 @@ export class Container extends BaseComponent {
     ctor: TCtor,
     props: ComponentPropsOf<TCtor>
   ): InstanceType<TCtor> {
-    const instance = new ctor(props);
+    const instance = new ctor(stripBindProp(props));
     this.addChild(instance);
     return instance as InstanceType<TCtor>;
   }

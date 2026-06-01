@@ -13,8 +13,11 @@ import {
   BuiltInContainerWithNestedAddMethods,
   ComponentPropsOf,
   AnyComponentCtor,
+  AddMountComponentFn,
+  NestedAddMountTarget,
   createContainerAddObject,
   registerContainerComponentCtors, ContainerAddObject,
+  stripBindProp,
 } from './imperative';
 
 export interface GridProps extends ContainerProps {
@@ -41,7 +44,7 @@ export interface GridItemProps extends ComponentProps {
   children?: (BaseComponent | HTMLElement)[];
 }
 
-export class GridItem extends BaseComponent {
+export class GridItem extends BaseComponent implements NestedAddMountTarget {
   // Lazily initialized imperative namespace, bound to this grid item instance.
   private addNamespace?: ContainerAddObject;
 
@@ -51,6 +54,15 @@ export class GridItem extends BaseComponent {
     }
 
     return this.addNamespace;
+  }
+
+  setAddMountComponent(mountComponent: AddMountComponentFn): void {
+    if (!this.addNamespace) {
+      this.addNamespace = createContainerAddObject(mountComponent);
+      return;
+    }
+
+    this.addNamespace.setMountComponent(mountComponent);
   }
 
   /** 子组件集合 */
@@ -133,7 +145,7 @@ export class GridItem extends BaseComponent {
     ctor: TCtor,
     props: ComponentPropsOf<TCtor>
   ): InstanceType<TCtor> {
-    const instance = new ctor(props);
+    const instance = new ctor(stripBindProp(props));
     this.addChild(instance);
     return instance as InstanceType<TCtor>;
   }

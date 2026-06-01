@@ -21,6 +21,11 @@ describe('Container typing', () => {
     const nestedGridItemButton = nestedGrid.add.GridItem({}).add.Button({text: 'nested grid item button'});
     const nestedGridButton = nestedGridItem.add.Button({text: 'nested grid item button'});
     const htmlLabel = container.add.HtmlLabel({html: '<strong>typed</strong>'});
+    const bindableInput = container.add.Input({
+      bind: {
+        value: 'form.email',
+      },
+    });
 
     const typedContainer: Container = childFlex;
     const typedFlex: Flex = nestedFlex;
@@ -41,6 +46,7 @@ describe('Container typing', () => {
     void nestedFlexButton;
     void nestedGridItemButton;
     void nestedGridButton;
+    void bindableInput;
 
     expect(childFlex).toBeInstanceOf(Flex);
     expect(childGrid).toBeInstanceOf(Grid);
