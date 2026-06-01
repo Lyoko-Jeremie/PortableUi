@@ -50,6 +50,7 @@ describe('Container', () => {
     const comp = new Container({
       gap: 10,
       padding: 5,
+      margin: 8,
       justifyContent: 'center',
       alignItems: 'center',
     });
@@ -59,6 +60,7 @@ describe('Container', () => {
     const styles = element?.getAttribute('style') || '';
     expect(styles).toContain('gap: 10px');
     expect(styles).toContain('padding: 5px');
+    expect(styles).toContain('margin: 8px');
     expect(styles).toContain('justify-content: center');
     expect(styles).toContain('align-items: center');
   });

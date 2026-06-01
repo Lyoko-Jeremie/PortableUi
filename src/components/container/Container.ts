@@ -30,6 +30,8 @@ export interface ContainerProps extends ComponentProps {
   gap?: string | number;
   /** 填充 */
   padding?: string | number;
+  /** 外边距 */
+  margin?: string | number;
   /** 背景色 */
   backgroundColor?: string;
   /** 宽度 */
@@ -99,6 +101,7 @@ export class Container extends BaseComponent implements NestedAddMountTarget {
       ...(props.alignItems && {alignItems: props.alignItems}),
       ...(props.gap !== undefined && {gap: props.gap}),
       ...(props.padding !== undefined && {padding: props.padding}),
+      ...(props.margin !== undefined && {margin: props.margin}),
       wrap: props.wrap ?? false,
     };
 

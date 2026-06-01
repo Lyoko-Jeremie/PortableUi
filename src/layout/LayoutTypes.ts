@@ -20,6 +20,8 @@ export interface LayoutConfig {
   gap?: string | number;
   /** 填充 */
   padding?: string | number;
+  /** 外边距 */
+  margin?: string | number;
   /** 是否换行 */
   wrap?: boolean;
 }
@@ -59,4 +61,3 @@ export type Unit = 'px' | 'em' | 'rem' | '%' | 'auto';
 
 /** 尺寸值 */
 export type SizeValue = string | number | 'auto' | 'fit-content' | 'max-content';
-

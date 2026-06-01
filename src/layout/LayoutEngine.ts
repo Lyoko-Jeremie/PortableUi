@@ -17,6 +17,7 @@ export class LayoutEngine {
       alignItems: this.mapAlignment(config.alignItems),
       gap: this.formatSize(config.gap),
       padding: this.formatSize(config.padding),
+      margin: this.formatSize(config.margin),
       flexWrap: config.wrap ? 'wrap' : 'nowrap',
     };
   }
@@ -32,6 +33,7 @@ export class LayoutEngine {
       alignItems: this.mapAlignment(config.alignItems),
       gap: this.formatSize(config.gap),
       padding: this.formatSize(config.padding),
+      margin: this.formatSize(config.margin),
       flexWrap: config.wrap ? 'wrap' : 'nowrap',
     };
   }
@@ -51,6 +53,7 @@ export class LayoutEngine {
       columnGap: this.formatSize(config.columnGap),
       rowGap: this.formatSize(config.rowGap),
       padding: this.formatSize(config.padding),
+      margin: this.formatSize(config.margin),
       justifyContent: this.mapAlignment(config.justifyContent),
       alignItems: this.mapAlignment(config.alignItems),
     };
@@ -146,4 +149,3 @@ export class LayoutEngine {
     return css;
   }
 }
-
