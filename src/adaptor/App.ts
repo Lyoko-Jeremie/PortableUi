@@ -25,7 +25,15 @@ import {
 } from '../components/basic';
 import {Container, Flex, Grid, GridItem, Group, type ContainerProps} from '../components/container';
 import {BindingEngine} from './binding';
-import type {BindableComponentProps, BindingOptions, DeclarativeRegistry, ObjectKeyPathOf, StyleIsolationConfig} from './types';
+import type {
+  BindableComponentProps,
+  BindingOptions,
+  DeclarativeRegistry,
+  ObjectKeyPathOf,
+  PortableUiBindingsMap,
+  PortableUiModelPath,
+  StyleIsolationConfig,
+} from './types';
 
 const PORTABLEUI_SCOPE_ATTR = 'data-portableui-root';
 const PORTABLEUI_MOUNT_ATTR = 'data-portableui-mount-root';
@@ -82,12 +90,12 @@ export type BuiltInAddMethods = {
   add: AppScopeAddMethods<BuiltInDeclarativeRegistry>;
 };
 
-export interface AppOptions {
+export interface AppOptions<TModel extends Record<string, any> = Record<string, any>> {
   id?: string;
-  rootProps?: Omit<ContainerProps, 'id'> & BindableComponentProps<Omit<ContainerProps, 'id'>>;
+  rootProps?: Omit<ContainerProps, 'id'> & BindableComponentProps<Omit<ContainerProps, 'id'>, TModel>;
   styleIsolation?: StyleIsolationConfig;
-  model?: Record<string, any>;
-  bindings?: Record<string, Record<string, any>>;
+  model?: TModel;
+  bindings?: PortableUiBindingsMap<TModel>;
   bindingOptions?: BindingOptions;
 }
 
@@ -144,7 +152,10 @@ function resolveMountRoot(container: HTMLElement, styleIsolation?: StyleIsolatio
   return mountRoot;
 }
 
-class AppScopeBase<TRegistry extends DeclarativeRegistry = BuiltInDeclarativeRegistry> {
+class AppScopeBase<
+  TRegistry extends DeclarativeRegistry = BuiltInDeclarativeRegistry,
+  TModel extends Record<string, any> = Record<string, any>,
+> {
   readonly add: AppScopeAddMethods<TRegistry>;
 
   constructor(
@@ -152,13 +163,13 @@ class AppScopeBase<TRegistry extends DeclarativeRegistry = BuiltInDeclarativeReg
     protected readonly components: Map<string, BaseComponent>,
     protected readonly mountOrder: BaseComponent[],
     protected readonly registry: TRegistry,
-    protected readonly bindingEngine: BindingEngine<Record<string, any>>
+    protected readonly bindingEngine: BindingEngine<TModel>
   ) {
     this.add = {} as AppScopeAddMethods<TRegistry>;
     this.installGeneratedAddMethods();
   }
 
-  protected createTabScope(options: AppTabOptions): AppScope<TRegistry> {
+  protected createTabScope(options: AppTabOptions): AppScope<TRegistry, TModel> {
     const className = options.className ? `${options.className} portableui-app-tab` : 'portableui-app-tab';
     const tab = this.mountComponent(Container, {
       ...options,
@@ -171,7 +182,7 @@ class AppScopeBase<TRegistry extends DeclarativeRegistry = BuiltInDeclarativeReg
       throw new Error(`Failed to mount tab: ${options.id}`);
     }
 
-    return new AppScopeBase(tabElement, this.components, this.mountOrder, this.registry, this.bindingEngine) as AppScope<TRegistry>;
+    return new AppScopeBase(tabElement, this.components, this.mountOrder, this.registry, this.bindingEngine) as AppScope<TRegistry, TModel>;
   }
 
   protected mountComponent<TCtor extends AnyComponentCtor>(ctor: TCtor, props: ComponentPropsOf<TCtor>): InstanceType<TCtor> {
@@ -224,15 +235,17 @@ class AppScopeBase<TRegistry extends DeclarativeRegistry = BuiltInDeclarativeReg
   }
 }
 
-export type AppScope<TRegistry extends DeclarativeRegistry = BuiltInDeclarativeRegistry> =
-  AppScopeBase<TRegistry> & {add: AppScopeAddMethods<TRegistry>};
+export type AppScope<
+  TRegistry extends DeclarativeRegistry = BuiltInDeclarativeRegistry,
+  TModel extends Record<string, any> = Record<string, any>,
+> = AppScopeBase<TRegistry, TModel> & {add: AppScopeAddMethods<TRegistry>};
 
-export class App extends AppScopeBase<BuiltInDeclarativeRegistry> {
-  readonly boundModel: Record<string, any>;
+export class App<TModel extends Record<string, any> = Record<string, any>> extends AppScopeBase<BuiltInDeclarativeRegistry, TModel> {
+  readonly boundModel: TModel;
   readonly root: HTMLElement;
   private readonly host: HTMLElement;
 
-  constructor(container: HTMLElement, options: AppOptions = {}) {
+  constructor(container: HTMLElement, options: AppOptions<TModel> = {}) {
     if (!container) {
       throw new Error('App requires a valid container element.');
     }
@@ -240,7 +253,7 @@ export class App extends AppScopeBase<BuiltInDeclarativeRegistry> {
     const components = new Map<string, BaseComponent>();
     const mountOrder: BaseComponent[] = [];
     const mountRoot = resolveMountRoot(container, options.styleIsolation);
-    const bindingEngine = new BindingEngine<Record<string, any>>({
+    const bindingEngine = new BindingEngine<TModel>({
       ownerType: 'app',
       ...(options.model ? {model: options.model} : {}),
       ...(options.bindings ? {bindings: options.bindings} : {}),
@@ -280,8 +293,8 @@ export class App extends AppScopeBase<BuiltInDeclarativeRegistry> {
     this.bindingEngine.setOwner(this);
   }
 
-  getModel<TModel extends Record<string, any> = Record<string, any>>(): TModel {
-    return this.bindingEngine.getModel() as TModel;
+  getModel<TResolvedModel extends TModel = TModel>(): TResolvedModel {
+    return this.bindingEngine.getModel() as TResolvedModel;
   }
 
   /**
@@ -291,7 +304,7 @@ export class App extends AppScopeBase<BuiltInDeclarativeRegistry> {
    * - 新用法：markDirty(target, 'key.path') - 对象级脏标记，针对组件绑定的数据对象
    */
   markDirty(): void;
-  markDirty(path: string): void;
+  markDirty(path: PortableUiModelPath<TModel>): void;
   markDirty<T extends Record<string, any>>(target: T, key?: ObjectKeyPathOf<T>): void;
   markDirty(target?: object | string, key?: string): void {
     if (target === undefined) {

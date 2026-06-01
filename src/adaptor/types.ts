@@ -186,7 +186,7 @@ export interface BindingOptions {
 export interface PortableUiBindingHost<TModel extends Record<string, any> = Record<string, any>> {
   boundModel: TModel;
   getModel<TResolvedModel extends TModel = TModel>(): TResolvedModel;
-  markDirty(path?: string): void;
+  markDirty(path?: PortableUiModelPath<TModel>): void;
   // 新增：对象级脏标记（可选）
   markDirtyObject?(target: object, key?: string): void;
   markDirtyAll?(target: object): void;
@@ -197,7 +197,7 @@ export interface BindingContext<TModel extends Record<string, any> = Record<stri
   component: BaseComponent<any>;
   adapter?: PortableUiBindingHost<TModel>;
   app?: PortableUiBindingHost<TModel>;
-  markDirty: (path?: string) => void;
+  markDirty: (path?: PortableUiModelPath<TModel>) => void;
   get: (path: string) => any;
   set: (path: string, value: any) => void;
   warn: (code: string, detail?: Record<string, any>) => void;

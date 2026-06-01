@@ -48,7 +48,7 @@ type CallbackRegistration = {
 
 type BindingEngineOptions<TModel extends Record<string, any>> = {
   model?: TModel;
-  bindings?: PortableUiBindingsMap;
+  bindings?: PortableUiBindingsMap<TModel>;
   options?: BindingOptions;
   ownerType: BindingOwnerType;
 };
@@ -189,7 +189,7 @@ export class BindingEngine<TModel extends Record<string, any> = Record<string, a
 
   private owner: PortableUiBindingHost<TModel> | null = null;
   private readonly model: TModel;
-  private readonly globalBindings: PortableUiBindingsMap;
+  private readonly globalBindings: PortableUiBindingsMap<TModel>;
   private readonly scheduler: ZoneScheduler;
   private readonly warnEnabled: boolean;
   private readonly strict: boolean;
@@ -208,7 +208,7 @@ export class BindingEngine<TModel extends Record<string, any> = Record<string, a
 
   constructor({model, bindings, options, ownerType}: BindingEngineOptions<TModel>) {
     this.model = (model ?? {}) as TModel;
-    this.globalBindings = bindings ?? {};
+    this.globalBindings = (bindings ?? {}) as PortableUiBindingsMap<TModel>;
     // 新增：传入 zone hooks
     const hooks: ZoneSchedulerHooks = {
       onTaskDone: () => this.onZoneTaskDone(),
