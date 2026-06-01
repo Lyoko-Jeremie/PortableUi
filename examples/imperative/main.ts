@@ -128,8 +128,15 @@ app.add.Button({
 });
 
 const tab = app.add.tab({id: 'settings-tab'});
-tab.add.Button({id: 'tab-btn', text: 'Tab 内按钮'});
-tab.add.Input({id: 'tab-input', placeholder: 'Tab 内输入框'});
+const tabInput = tab.add.Input({id: 'tab-input', placeholder: 'Tab 内输入框'});
+tab.add.Button({
+  id: 'tab-btn',
+  text: 'Tab 内按钮',
+  onClick: () => {
+    const value = String(tabInput.getValue() ?? '').trim();
+    toast.show(value ? `Tab 输入：${value}` : 'Tab 按钮已点击（输入框为空）', 'info');
+  },
+});
 
 const liveSignal = signal('Signal: ready');
 const previewLabel = app.add.Label({
@@ -241,4 +248,5 @@ void title;
 void nameInput;
 void cityInput;
 void signalInput;
+void tabInput;
 
