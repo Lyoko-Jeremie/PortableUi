@@ -1,4 +1,4 @@
-import { Button } from '../../../src/components/basic/Button';
+import { Button } from '../../../src';
 
 describe('Button', () => {
   let container: HTMLElement;
@@ -162,10 +162,13 @@ describe('Button', () => {
 
 
     it('should not mount twice', () => {
+      const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
       const btn = new Button();
       btn.mount(container);
       btn.mount(container);
       expect(container.querySelectorAll('button').length).toBe(1);
+      expect(warnSpy).toHaveBeenCalledTimes(1);
+      warnSpy.mockRestore();
     });
   });
 });
