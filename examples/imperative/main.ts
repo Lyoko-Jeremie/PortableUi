@@ -132,11 +132,18 @@ tab.add.Button({id: 'tab-btn', text: 'Tab 内按钮'});
 tab.add.Input({id: 'tab-input', placeholder: 'Tab 内输入框'});
 
 const liveSignal = signal('Signal: ready');
+const previewLabel = app.add.Label({
+  id: 'bind-preview',
+  text: '预览：Alice / Nanjing',
+});
 const nameInput = app.add.Input({
   id: 'bind-name',
   placeholder: '姓名（绑定 profile.name）',
   bind: {
     value: 'profile.name',
+  },
+  onInput: () => {
+    previewLabel.setText(`预览：${nameInput.getValue()} / ${cityInput.getValue()}`);
   },
 });
 const cityInput = app.add.Input({
@@ -144,6 +151,9 @@ const cityInput = app.add.Input({
   placeholder: '城市（绑定 profile.city）',
   bind: {
     value: 'profile.city',
+  },
+  onInput: () => {
+    previewLabel.setText(`预览：${nameInput.getValue()} / ${cityInput.getValue()}`);
   },
 });
 const signalInput = app.add.Input({
@@ -202,7 +212,7 @@ tabCard.body.append(tabMount);
 
 const bindingInfo = document.createElement('p');
 bindingInfo.className = 'imperative-card-note';
-bindingInfo.textContent = '输入框与 model/signal 双向同步，按钮可通过 ctx 或直接写 model 驱动刷新。';
+bindingInfo.textContent = '输入框与 model/signal 双向同步；下方实时预览会跟随 name/city 变化。';
 bindingCard.body.append(bindingInfo);
 
 appendById('title', formCard.body);
@@ -219,10 +229,13 @@ appendById('tab-input', tabMount);
 
 appendById('bind-name', bindingCard.body);
 appendById('bind-city', bindingCard.body);
+appendById('bind-preview', bindingCard.body);
 appendById('bind-signal', bindingCard.body);
 appendById('bind-apply-preset', bindingCard.body);
 appendById('bind-signal-next', bindingCard.body);
 appendById('bind-model-direct-write', bindingCard.body);
+
+previewLabel.setText(`预览：${nameInput.getValue()} / ${cityInput.getValue()}`);
 
 void title;
 void nameInput;
