@@ -1,4 +1,5 @@
 import {BaseComponent} from '../../src/core';
+import type {ComponentProps} from '../../src/types';
 
 class TestContainerComponent extends BaseComponent {
   protected render(): HTMLElement {
@@ -30,7 +31,7 @@ class TestInputBindingComponent extends BaseComponent {
 
     input.value = props.value ?? '';
     input.addEventListener('input', () => {
-      this.update({value: input.value});
+      this.update({value: input.value} as Partial<ComponentProps>);
     });
 
     root.appendChild(input);
@@ -109,7 +110,7 @@ describe('BaseComponent component tree query', () => {
   });
 
   it('should keep focus and caret when rerendering input binding repeatedly', () => {
-    const component = new TestInputBindingComponent({id: 'binding-host', value: ''});
+    const component = new TestInputBindingComponent({id: 'binding-host', value: ''} as ComponentProps);
     component.mount(host);
 
     let input = host.querySelector('input') as HTMLInputElement;
