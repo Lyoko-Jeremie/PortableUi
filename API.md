@@ -740,6 +740,43 @@ modal.mount(document.body);
 modal.open();
 ```
 
+### 模板 D：ModZone（mod 后加载场景）
+
+```ts
+import 'zone.js';
+import {createModZone, CreatePortableUi} from 'PortableUi';
+
+const modZone = createModZone({name: 'inventory'});
+
+const ui = modZone.runIn(() => CreatePortableUi(document.body, {
+  model: {player: {gold: 10}},
+  children: {
+    gold: {type: 'Input', bind: {value: 'player.gold'}},
+  },
+}));
+
+const onGoldChanged = modZone.wrap((nextGold: number) => {
+  ui.getModel<{player: {gold: number}}>().player.gold = nextGold;
+  ui.markDirty('player.gold');
+});
+
+const result = modZone.runGuarded(() => {
+  // risky operation
+  return 1;
+}, {fallback: 0});
+
+void onGoldChanged;
+void result;
+```
+
+`createModZone` 返回对象：
+
+- `run` / `runIn`：在 mod zone 内执行
+- `runOuter`：在外层 zone 执行
+- `runGuarded`：统一错误捕获 + 上报 + fallback
+- `wrap`：包装外部回调到指定 zone（默认 mod zone）
+- `fork`：创建子 zone
+
 ---
 
 ## 11. 关键行为与坑点（LLM 生成代码时应遵守）

@@ -392,5 +392,90 @@ app.add.Input({
 | `READONLY_BINDING_WRITE` | 向只读绑定源写入被阻止 | 提供 `set` 或改为只读展示 |
 | `INVALID_CALLBACK_BINDING` | 回调路径未映射到函数 | 检查 `model.actions` 路径拼写 |
 
+---
+
+## Mod 场景：ModZone 工具
+
+当 mod 在游戏启动后才被加载时，建议为 mod 创建专属 zone，并统一通过包装工具接入外部事件。
+
+### 核心 API
+
+- `createModZone(options)`
+- `modZone.runIn(fn)`：在 mod zone 内执行
+- `modZone.runOuter(fn)`：在外层 zone 执行
+- `modZone.runGuarded(fn, options?)`：统一错误捕获和上报
+- `modZone.wrap(callback, options?)`：自动包装外部回调到 zone
+- `modZone.fork(name)`：派生子 zone
+
+### 基础写法
+
+```typescript
+import 'zone.js';
+import {createModZone, CreatePortableUi} from 'PortableUi';
+
+const host = document.getElementById('app');
+if (!host) {
+  throw new Error('Missing #app');
+}
+
+const modZone = createModZone({
+  name: 'inventory-mod',
+  prefix: 'GameMod',
+});
+
+const ui = modZone.runIn(() => CreatePortableUi(host, {
+  model: {player: {gold: 10}},
+  children: {
+    goldInput: {
+      type: 'Input',
+      bind: {value: 'player.gold'},
+    },
+  },
+}));
+
+void ui;
+```
+
+### runGuarded：统一错误上报
+
+```typescript
+const modZone = createModZone({
+  name: 'combat-mod',
+  onError: (error, context) => {
+    console.warn('[mod error]', context.phase, context.zoneName, error);
+  },
+});
+
+const score = modZone.runGuarded(
+  () => {
+    // risky logic
+    return 100;
+  },
+  {
+    fallback: 0,
+  }
+);
+
+void score;
+```
+
+### wrap：包装外部事件回调
+
+```typescript
+const onPlayerGoldChanged = modZone.wrap((nextGold: number) => {
+  ui.getModel<{player: {gold: number}}>().player.gold = nextGold;
+  ui.markDirty('player.gold');
+});
+
+gameApi.on('player:goldChanged', onPlayerGoldChanged);
+```
+
+可选参数：
+
+- `outer: true`：回调在 `runOuter` 内执行
+- `guarded: false`：关闭内部 try/catch
+- `fallback`：抛错后返回兜底值
+- `rethrow: true`：上报后继续抛出
+
 
 
