@@ -1,5 +1,5 @@
 import {describe, it, expect, beforeEach, afterEach} from '@jest/globals';
-import {App} from '../src/adaptor/App';
+import {App} from '../../src/adaptor/App';
 
 describe('ObjectKeyBinding with zone.js dirty detection', () => {
   let host: HTMLElement;
@@ -24,7 +24,7 @@ describe('ObjectKeyBinding with zone.js dirty detection', () => {
       },
     });
 
-    const input = app.addInput({
+    const input = app.add.Input({
       id: 'nameInput',
       bind: {
         value: {
@@ -54,7 +54,7 @@ describe('ObjectKeyBinding with zone.js dirty detection', () => {
 
     const app = new App(host);
 
-    const nameInput = app.addInput({
+    const nameInput = app.add.Input({
       id: 'name',
       bind: {
         value: {
@@ -64,7 +64,7 @@ describe('ObjectKeyBinding with zone.js dirty detection', () => {
       },
     });
 
-    const emailInput = app.addInput({
+    const emailInput = app.add.Input({
       id: 'email',
       bind: {
         value: {
@@ -93,7 +93,7 @@ describe('ObjectKeyBinding with zone.js dirty detection', () => {
 
     const app = new App(host);
 
-    const input = app.addInput({
+    const input = app.add.Input({
       id: 'nameInput',
       bind: {
         value: {
