@@ -198,21 +198,33 @@ export interface ObjectKeyBinding<
   changeDetection?: ComponentChangeDetectionMode;
 }
 
-type PortableUiBindingValue<TModel extends Record<string, any>> =
-  | PortableUiReadableBindingSource<any, TModel>
-  | PortableUiWritableBindingSource<any, TModel>
-  | PortableUiCallbackSource<TModel>
-  | ObjectKeyBinding<any, any>;
+type PortableUiBindingValue<
+  TField extends string,
+  TValue,
+  TModel extends Record<string, any>,
+> = string extends TField
+  ? PortableUiReadableBindingSource<TValue, TModel>
+    | PortableUiWritableBindingSource<TValue, TModel>
+    | PortableUiCallbackSource<TModel>
+    | ObjectKeyBinding<any, TValue>
+  : TField extends `on${string}`
+    ? PortableUiCallbackSource<TModel>
+    : TField extends PortableUiWritableBindingField
+      ? PortableUiWritableBindingSource<TValue, TModel> | ObjectKeyBinding<any, TValue>
+      : PortableUiReadableBindingSource<TValue, TModel> | ObjectKeyBinding<any, TValue>;
+
+type PortableUiBindingPropKeys<TProps extends Record<string, any>> =
+  Extract<KnownKeys<TProps>, string> extends never
+    ? Extract<keyof TProps, string>
+    : Extract<KnownKeys<TProps>, string>;
 
 export type PortableUiBindingMap<
   TProps extends Record<string, any> = Record<string, any>,
   TModel extends Record<string, any> = Record<string, any>,
 > = {
-  [K in PortableUiWritableBindingField]?: PortableUiWritableBindingSource<any, TModel> | ObjectKeyBinding<any, any>;
+  [K in PortableUiBindingPropKeys<TProps>]?: PortableUiBindingValue<K, TProps[K], TModel>;
 } & {
   [K in `on${string}`]?: PortableUiCallbackSource<TModel>;
-} & {
-  [K: string]: PortableUiBindingValue<TModel> | undefined;
 };
 
 export interface BindableComponentProps<

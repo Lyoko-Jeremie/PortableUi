@@ -45,15 +45,24 @@ type RawComponentPropsOf<TCtor extends AnyComponentCtor> = ConstructorParameters
   ? Record<string, never>
   : NonNullable<ConstructorParameters<TCtor>[0]>;
 
-type ComponentPropsOf<TCtor extends AnyComponentCtor> = RawComponentPropsOf<TCtor> & BindableComponentProps<RawComponentPropsOf<TCtor>>;
+type ComponentPropsOf<
+  TCtor extends AnyComponentCtor,
+  TModel extends Record<string, any>,
+> = RawComponentPropsOf<TCtor> & BindableComponentProps<RawComponentPropsOf<TCtor>, TModel>;
 
-type GeneratedAddMethods<TRegistry extends DeclarativeRegistry> = {
+type GeneratedAddMethods<
+  TRegistry extends DeclarativeRegistry,
+  TModel extends Record<string, any>,
+> = {
   [K in Extract<keyof TRegistry, string>]: (
-    props: ComponentPropsOf<TRegistry[K]>
+    props: ComponentPropsOf<TRegistry[K], TModel>
   ) => InstanceType<TRegistry[K]>;
 };
 
-type AppScopeAddMethods<TRegistry extends DeclarativeRegistry> = GeneratedAddMethods<TRegistry> & {
+type AppScopeAddMethods<
+  TRegistry extends DeclarativeRegistry,
+  TModel extends Record<string, any> = Record<string, any>,
+> = GeneratedAddMethods<TRegistry, TModel> & {
   tab: (options: AppTabOptions) => AppScope<TRegistry>;
 };
 
@@ -87,7 +96,7 @@ const builtInComponentRegistry = {
 
 export type BuiltInDeclarativeRegistry = typeof builtInComponentRegistry;
 export type BuiltInAddMethods = {
-  add: AppScopeAddMethods<BuiltInDeclarativeRegistry>;
+  add: AppScopeAddMethods<BuiltInDeclarativeRegistry, Record<string, any>>;
 };
 
 export interface AppOptions<TModel extends Record<string, any> = Record<string, any>> {
@@ -156,7 +165,7 @@ class AppScopeBase<
   TRegistry extends DeclarativeRegistry = BuiltInDeclarativeRegistry,
   TModel extends Record<string, any> = Record<string, any>,
 > {
-  readonly add: AppScopeAddMethods<TRegistry>;
+  readonly add: AppScopeAddMethods<TRegistry, TModel>;
 
   constructor(
     protected mountPoint: HTMLElement,
@@ -165,7 +174,7 @@ class AppScopeBase<
     protected readonly registry: TRegistry,
     protected readonly bindingEngine: BindingEngine<TModel>
   ) {
-    this.add = {} as AppScopeAddMethods<TRegistry>;
+    this.add = {} as AppScopeAddMethods<TRegistry, TModel>;
     this.installGeneratedAddMethods();
   }
 
@@ -185,7 +194,7 @@ class AppScopeBase<
     return new AppScopeBase(tabElement, this.components, this.mountOrder, this.registry, this.bindingEngine) as AppScope<TRegistry, TModel>;
   }
 
-  protected mountComponent<TCtor extends AnyComponentCtor>(ctor: TCtor, props: ComponentPropsOf<TCtor>): InstanceType<TCtor> {
+  protected mountComponent<TCtor extends AnyComponentCtor>(ctor: TCtor, props: ComponentPropsOf<TCtor, TModel>): InstanceType<TCtor> {
     const componentKey = props.id ?? `${ctor.name}_${this.mountOrder.length}`;
     const prepared = this.bindingEngine.prepareComponentBindings(componentKey, props.id ?? componentKey, props as Record<string, any>);
     const instance = new ctor(prepared.props);
@@ -229,7 +238,7 @@ class AppScopeBase<
         configurable: true,
         enumerable: false,
         writable: true,
-        value: (props: ComponentPropsOf<typeof componentCtor>) => this.mountComponent(componentCtor, props),
+        value: (props: ComponentPropsOf<typeof componentCtor, TModel>) => this.mountComponent(componentCtor, props),
       });
     }
   }
@@ -238,7 +247,7 @@ class AppScopeBase<
 export type AppScope<
   TRegistry extends DeclarativeRegistry = BuiltInDeclarativeRegistry,
   TModel extends Record<string, any> = Record<string, any>,
-> = AppScopeBase<TRegistry, TModel> & {add: AppScopeAddMethods<TRegistry>};
+> = AppScopeBase<TRegistry, TModel> & {add: AppScopeAddMethods<TRegistry, TModel>};
 
 export class App<TModel extends Record<string, any> = Record<string, any>> extends AppScopeBase<BuiltInDeclarativeRegistry, TModel> {
   readonly boundModel: TModel;
