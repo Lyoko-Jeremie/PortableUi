@@ -24,16 +24,6 @@ export interface TabsProps extends ComponentProps {
   activeTabId?: string;
   stretch?: boolean;
   onTabChange?: (self: Tabs, event: MouseEvent, tab: TabItem) => void;
-  /** 外边距 */
-  margin?: string | number;
-  /** 填充 */
-  padding?: string | number;
-  /** 宽度 */
-  width?: string | number;
-  /** 高度 */
-  height?: string | number;
-  /** 背景色 */
-  backgroundColor?: string;
 }
 
 export interface TabsState extends ComponentState {
@@ -55,22 +45,6 @@ export class Tabs extends BaseComponent<TabsState> {
 
     applyCommonElementProps(root, props, 'portableui-tabs');
 
-    // 应用布局属性
-    if (props.margin !== undefined) {
-      root.style.margin = typeof props.margin === 'number' ? `${props.margin}px` : String(props.margin);
-    }
-    if (props.padding !== undefined) {
-      root.style.padding = typeof props.padding === 'number' ? `${props.padding}px` : String(props.padding);
-    }
-    if (props.width !== undefined) {
-      root.style.width = typeof props.width === 'number' ? `${props.width}px` : String(props.width);
-    }
-    if (props.height !== undefined) {
-      root.style.height = typeof props.height === 'number' ? `${props.height}px` : String(props.height);
-    }
-    if (props.backgroundColor !== undefined) {
-      root.style.backgroundColor = props.backgroundColor;
-    }
 
     header.className = 'portableui-tabs-header';
     if (props.stretch) {

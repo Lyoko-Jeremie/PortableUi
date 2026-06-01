@@ -10,6 +10,16 @@ export interface ComponentProps {
   id?: string;
   /** CSS 类名 */
   className?: string;
+  /** 外边距 */
+  margin?: string | number;
+  /** 内边距 */
+  padding?: string | number;
+  /** 宽度 */
+  width?: string | number;
+  /** 高度 */
+  height?: string | number;
+  /** 背景色 */
+  backgroundColor?: string;
   /** 内联样式 */
   style?: Record<string, string>;
 }
