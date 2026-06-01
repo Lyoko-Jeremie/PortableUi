@@ -340,11 +340,15 @@ export class App<TModel extends Record<string, any> = Record<string, any>> exten
    */
   markDirty(): void;
   markDirty(path: PortableUiModelPath<TModel>): void;
+  markDirty(component: BaseComponent<any>, field?: string): void;
   markDirty<T extends Record<string, any>>(target: T, key?: ObjectKeyPathOf<T>): void;
   markDirty(target?: object | string, key?: string): void {
     if (target === undefined) {
       // 无参数：标记全部绑定为脏
       this.bindingEngine.markDirty();
+    } else if (target instanceof BaseComponent) {
+      // 组件级：直接按组件刷新其绑定
+      this.bindingEngine.markDirtyComponent(target, key);
     } else if (typeof target === 'string') {
       // 旧用法：路径字符串
       this.bindingEngine.markDirty(target);

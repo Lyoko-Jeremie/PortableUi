@@ -196,6 +196,7 @@ export class BindingEngine<TModel extends Record<string, any> = Record<string, a
   private readonly proxyEnabled: boolean;
   private readonly ownerType: BindingOwnerType;
   private readonly registrations = new Map<string, ValueBindingRegistration[]>();
+  private readonly componentRefs = new Map<string, ComponentRef>();
   private readonly disposers = new Map<string, Array<() => void>>();
   private readonly pendingUpdates = new Map<string, () => void>();
   private readonly emittedWarnings = new Set<string>();
@@ -286,6 +287,33 @@ export class BindingEngine<TModel extends Record<string, any> = Record<string, a
 
   setOwner(owner: PortableUiBindingHost<TModel> | any): void {
     this.owner = owner;
+  }
+
+  markDirtyComponent(componentOrId: BaseComponent<any> | string, field?: string): void {
+    const componentId = typeof componentOrId === 'string' ? componentOrId : componentOrId.getId();
+    if (!componentId) {
+      return;
+    }
+
+    const registrations = this.registrations.get(componentId) ?? [];
+    for (const registration of registrations) {
+      if (field && registration.propName !== field) {
+        continue;
+      }
+      this.queueComponentRefresh(componentId, registration);
+    }
+
+    const objectRegs = this.objectBindingIndex.collectByComponent(componentId);
+    for (const reg of objectRegs) {
+      if (field && reg.propName !== field) {
+        continue;
+      }
+      if (reg.updateFn) {
+        this.scheduler.run(() => {
+          reg.updateFn?.();
+        });
+      }
+    }
   }
 
   getModel(): TModel {
@@ -406,6 +434,10 @@ export class BindingEngine<TModel extends Record<string, any> = Record<string, a
 
   attachComponent(prepared: PreparedComponentBinding, component: BaseComponent<any>): void {
     prepared.componentRef.current = component;
+    this.componentRefs.set(prepared.componentId, prepared.componentRef);
+    component.setBindingDirtyRequester((field?: string) => {
+      this.markDirtyComponent(prepared.componentId, field);
+    });
 
     if (!prepared.bindings) {
       // 新增：即使没有绑定也要在索引中注册组件以便清理
@@ -496,6 +528,10 @@ export class BindingEngine<TModel extends Record<string, any> = Record<string, a
   }
 
   detachComponent(componentId: string): void {
+    const componentRef = this.componentRefs.get(componentId);
+    componentRef?.current?.setBindingDirtyRequester(null);
+    this.componentRefs.delete(componentId);
+
     this.registrations.delete(componentId);
 
     // 新增：从对象索引中清理
@@ -540,12 +576,14 @@ export class BindingEngine<TModel extends Record<string, any> = Record<string, a
   }
 
   destroy(): void {
-    for (const componentId of Array.from(this.registrations.keys())) {
+    for (const componentId of Array.from(this.componentRefs.keys())) {
       this.detachComponent(componentId);
     }
 
     // 新增：清理对象索引
     this.objectBindingIndex.clear();
+
+    this.componentRefs.clear();
 
     this.pendingUpdates.clear();
     this.pendingDirtyObjects.length = 0;

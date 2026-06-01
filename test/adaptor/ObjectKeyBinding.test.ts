@@ -109,6 +109,31 @@ describe('ObjectKeyBinding with zone.js dirty detection', () => {
 
     app.destroy();
   });
+
+  it('should support component.markDirty(field) for object bindings', () => {
+    const userData = {name: 'Ivy'};
+
+    const app = new App(host);
+
+    const input = app.add.Input({
+      id: 'nameInput2',
+      bind: {
+        value: {
+          target: userData,
+          key: 'name',
+          detect: 'manual',
+        } as any,
+      },
+    });
+
+    userData.name = 'Judy';
+    input.markDirty('value');
+
+    return Promise.resolve().then(() => {
+      expect(input.getValue()).toBe('Judy');
+      app.destroy();
+    });
+  });
 });
 
 

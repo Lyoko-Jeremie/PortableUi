@@ -15,6 +15,7 @@ export interface BaseState {
 
 export abstract class BaseComponent<S extends BaseState = any, P extends ComponentProps = ComponentProps> {
   signalState: ReturnType<typeof signal<S>>;
+  private bindingDirtyRequester: ((field?: string) => void) | null = null;
 
   /** 组件 DOM 元素 */
   protected element: ComponentElement = null;
@@ -375,6 +376,22 @@ export abstract class BaseComponent<S extends BaseState = any, P extends Compone
    */
   isMounted(): boolean {
     return this.mounted;
+  }
+
+  /**
+   * 由绑定层注入脏标记回调；普通业务代码无需直接调用。
+   */
+  setBindingDirtyRequester(requester: ((field?: string) => void) | null): void {
+    this.bindingDirtyRequester = requester;
+  }
+
+  /**
+   * 组件级脏标记：
+   * - 无参数：刷新该组件上所有绑定字段
+   * - 传 field：仅刷新指定绑定字段（如 value / checked）
+   */
+  markDirty(field?: string): void {
+    this.bindingDirtyRequester?.(field);
   }
 
   /**

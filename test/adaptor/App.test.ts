@@ -174,6 +174,16 @@ describe('App imperative adaptor', () => {
     accessorElement.value = 'Delta';
     accessorElement.dispatchEvent(new Event('input', {bubbles: true}));
     expect(store.draft).toBe('Delta');
+
+    store.draft = 'Omega';
+    accessorInput.markDirty('value');
+    await flushBindings();
+    expect(accessorInput.getValue()).toBe('Omega');
+
+    store.draft = 'Sigma';
+    app.markDirty(accessorInput, 'value');
+    await flushBindings();
+    expect(accessorInput.getValue()).toBe('Sigma');
   });
 
   it('supports bind in nested Container.add calls', async () => {
