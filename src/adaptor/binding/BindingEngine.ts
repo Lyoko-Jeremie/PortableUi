@@ -514,12 +514,12 @@ export class BindingEngine<TModel extends Record<string, any> = Record<string, a
             initialRun = false;
             // 如果初始值由于某种原因在同步阶段没对齐（虽然正常在 prepare 时已经对齐了），
             // 这里可以做一个同步 update，但为了稳定性，如果是 sync 模式则直接 queue
-            if (this.schedulerOptions?.flush === 'sync') {
-              const component = prepared.componentRef.current;
-              if (component) {
-                component.update({[field]: value});
-              }
-            }
+            // if (this.schedulerOptions?.flush === 'sync') {
+            //   const component = prepared.componentRef.current;
+            //   if (component) {
+            //     component.update({[field]: value});
+            //   }
+            // }
             return;
           }
           this.queueComponentRefresh(prepared.componentId, registration);
@@ -545,9 +545,9 @@ export class BindingEngine<TModel extends Record<string, any> = Record<string, a
     }
 
     // 如果是同步模式，强制刷一遍 pending 以确保 DOM 立即反映最新状态
-    if (this.schedulerOptions?.flush === 'sync') {
-      this.flushCollectedDirty();
-    }
+    // if (this.schedulerOptions?.flush === 'sync') {
+    //   this.flushCollectedDirty();
+    // }
   }
 
   detachComponent(componentId: string): void {
